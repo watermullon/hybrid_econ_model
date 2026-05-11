@@ -1,0 +1,90 @@
+scenarios:
+  base_hit_everyone_happy:
+    description: "LP reaches 2.0x in a reasonable period; GP retains meaningful residual assets."
+    years: 8
+    real_estate:
+      initial_noi_yield: 0.075
+      annual_noi_growth: 0.025
+      annual_nav_appreciation: 0.04
+      gross_rent_yield: 0.12
+    hedge_fund:
+      annual_returns: [0.20, 0.15, 0.10, 0.12, 0.08, 0.06, 0.06, 0.06]
+
+  fast_success_crypto_bull:
+    description: "Crypto sleeve accelerates LP 2.0x outcome quickly; tests GP convexity and fairness optics."
+    years: 5
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.02
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [1.50, 0.80, 0.20, 0.05, 0.05]
+
+  slow_grind:
+    description: "Moderate real estate performance and weak crypto; LP eventually does okay but time horizon drifts."
+    years: 15
+    real_estate:
+      initial_noi_yield: 0.065
+      annual_noi_growth: 0.015
+      annual_nav_appreciation: 0.02
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.02, -0.05, 0.04, 0.03, 0.06, 0.02, 0.04, 0.05, 0.03, 0.02, 0.04, 0.04, 0.03, 0.03, 0.03]
+
+  hedge_fund_failure_re_survival:
+    description: "Hedge fund sleeve suffers major impairment, while real estate survives and cash-flows."
+    years: 12
+    real_estate:
+      initial_noi_yield: 0.075
+      annual_noi_growth: 0.02
+      annual_nav_appreciation: 0.025
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [-0.70, -0.20, 0.05, 0.05, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
+
+  real_estate_distress_crypto_success:
+    description: "Real estate underperforms but crypto performs strongly enough to protect LP outcome."
+    years: 8
+    real_estate:
+      initial_noi_yield: 0.045
+      annual_noi_growth: -0.01
+      annual_nav_appreciation: -0.03
+      gross_rent_yield: 0.08
+    hedge_fund:
+      annual_returns: [0.60, 0.40, 0.25, 0.15, 0.10, 0.05, 0.05, 0.05]
+
+  exceptional_dynasty_outcome:
+    description: "Both sleeves perform strongly; LP receives excellent return and GP retains very large residual value."
+    years: 10
+    real_estate:
+      initial_noi_yield: 0.085
+      annual_noi_growth: 0.04
+      annual_nav_appreciation: 0.08
+      gross_rent_yield: 0.13
+    hedge_fund:
+      annual_returns: [0.80, 0.50, 0.30, 0.20, 0.15, 0.10, 0.10, 0.08, 0.08, 0.08]
+
+  liquidity_trap:
+    description: "Economic hurdle is reached on NAV, but liquid resources are insufficient to redeem LPs."
+    years: 10
+    liquidity:
+      max_refinance_or_sale_capacity_pct_of_re_nav: 0.05
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.07
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.10, 0.08, 0.08, 0.05, 0.05, 0.05, 0.04, 0.04, 0.04, 0.04]
+
+  failure_never_reaches_hurdle:
+    description: "Both sleeves disappoint; LP never reaches 2.0x."
+    years: 12
+    real_estate:
+      initial_noi_yield: 0.045
+      annual_noi_growth: 0.00
+      annual_nav_appreciation: -0.01
+      gross_rent_yield: 0.08
+    hedge_fund:
+      annual_returns: [-0.40, -0.20, 0.00, 0.03, -0.10, 0.04, 0.03, 0.02, 0.02, 0.02, 0.02, 0.02]

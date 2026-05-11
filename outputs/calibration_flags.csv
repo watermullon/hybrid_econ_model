@@ -1,0 +1,240 @@
+scenario,flag,severity,explanation
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_20,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_20,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_20,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_20,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_20,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_20,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_30,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_30,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_30,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_30,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_30,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_30,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_40,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_40,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_40,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_allocation_sensitivity__base_hit_everyone_happy__hf_40,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_20,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_20,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_20,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_20,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_20,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_20,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_30,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 4.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_30,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_30,FAST_GP_DYNASTY_OUTCOME,medium,LP redemption is fast and GP residual NAV is large.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_30,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_30,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_40,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 2.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_40,FAST_GP_DYNASTY_OUTCOME,medium,LP redemption is fast and GP residual NAV is large.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__fast_success_crypto_bull__hf_40,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_20,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 7.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_20,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_20,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_20,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_20,LP_GOOD_IRR_GP_LARGE_RESIDUAL,medium,LP IRR is attractive while GP residual NAV is large.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_30,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 5.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_30,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_30,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_30,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_40,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 4.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_40,FAST_GP_DYNASTY_OUTCOME,medium,LP redemption is fast and GP residual NAV is large.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_allocation_sensitivity__exceptional_dynasty_outcome__hf_40,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_25,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_25,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_25,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_25,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_50,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_50,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_50,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_50,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_50,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_50,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_75,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_75,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_75,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_75,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_75,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_harvest_sensitivity__base_hit_everyone_happy__harvest_75,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_25,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_25,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_25,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_50,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_50,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_50,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_50,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_50,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_75,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_75,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_75,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_75,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+hf_harvest_sensitivity__fast_success_crypto_bull__harvest_75,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_25,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_25,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_25,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_50,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 10.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_50,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_50,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_50,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_50,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_75,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 10.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_75,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_75,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_75,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+hf_harvest_sensitivity__exceptional_dynasty_outcome__harvest_75,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_50x,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_50x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_50x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_50x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_50x,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_50x,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_75x,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_75x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_75x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_75x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_75x,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_1_75x,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_2_00x,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_2_00x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_2_00x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_2_00x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_2_00x,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+lp_hurdle_sensitivity__base_hit_everyone_happy__hurdle_2_00x,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_50x,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_50x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_50x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_50x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_50x,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_50x,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_75x,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_75x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_75x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_75x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_75x,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_1_75x,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_2_00x,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_2_00x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_2_00x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_2_00x,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+lp_hurdle_sensitivity__fast_success_crypto_bull__hurdle_2_00x,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_50x,LP_HURDLE_ACHIEVED,info,LP reached 1.50x in year 15.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_50x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_50x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_50x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_50x,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_75x,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_75x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_75x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__slow_grind__hurdle_1_75x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__slow_grind__hurdle_2_00x,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+lp_hurdle_sensitivity__slow_grind__hurdle_2_00x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__slow_grind__hurdle_2_00x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__slow_grind__hurdle_2_00x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_50x,LP_HURDLE_ACHIEVED,info,LP reached 1.50x in year 7.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_50x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_50x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_50x,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_75x,LP_HURDLE_ACHIEVED,info,LP reached 1.75x in year 8.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_75x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_75x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_75x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_1_75x,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_2_00x,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_2_00x,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_2_00x,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_2_00x,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+lp_hurdle_sensitivity__exceptional_dynasty_outcome__hurdle_2_00x,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_25,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_25,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_25,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_25,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_40,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_40,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_40,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_40,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_60,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_60,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_60,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_60,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_60,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+re_liquidity_sensitivity__base_hit_everyone_happy__re_liquidity_60,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+re_liquidity_sensitivity__slow_grind__re_liquidity_25,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+re_liquidity_sensitivity__slow_grind__re_liquidity_25,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__slow_grind__re_liquidity_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__slow_grind__re_liquidity_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__slow_grind__re_liquidity_40,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+re_liquidity_sensitivity__slow_grind__re_liquidity_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__slow_grind__re_liquidity_40,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__slow_grind__re_liquidity_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__slow_grind__re_liquidity_60,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+re_liquidity_sensitivity__slow_grind__re_liquidity_60,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__slow_grind__re_liquidity_60,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__slow_grind__re_liquidity_60,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_25,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_25,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_25,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_25,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_40,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_40,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_40,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_40,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_60,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 10.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_60,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_60,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_60,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__liquidity_trap__re_liquidity_60,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_25,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_25,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_25,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_40,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 8.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_40,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_40,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_60,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 7.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_60,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_60,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+re_liquidity_sensitivity__exceptional_dynasty_outcome__re_liquidity_60,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+twenty_year_horizon__base_hit_everyone_happy__years_20,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 14.
+twenty_year_horizon__base_hit_everyone_happy__years_20,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+twenty_year_horizon__base_hit_everyone_happy__years_20,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+twenty_year_horizon__base_hit_everyone_happy__years_20,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+twenty_year_horizon__base_hit_everyone_happy__years_20,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+twenty_year_horizon__slow_grind__years_20,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 20.
+twenty_year_horizon__slow_grind__years_20,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+twenty_year_horizon__slow_grind__years_20,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+twenty_year_horizon__slow_grind__years_20,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+twenty_year_horizon__slow_grind__years_20,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+twenty_year_horizon__hedge_fund_failure_re_survival__years_20,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 18.
+twenty_year_horizon__hedge_fund_failure_re_survival__years_20,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+twenty_year_horizon__hedge_fund_failure_re_survival__years_20,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+twenty_year_horizon__hedge_fund_failure_re_survival__years_20,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+twenty_year_horizon__hedge_fund_failure_re_survival__years_20,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+twenty_year_horizon__failure_never_reaches_hurdle__years_20,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+twenty_year_horizon__failure_never_reaches_hurdle__years_20,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+twenty_year_horizon__failure_never_reaches_hurdle__years_20,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+twenty_year_horizon__failure_never_reaches_hurdle__years_20,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+twenty_year_horizon__failure_never_reaches_hurdle__years_20,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+twenty_year_horizon__failure_never_reaches_hurdle__years_20,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.

@@ -1,0 +1,9 @@
+pandas
+numpy
+numpy-financial
+pyyaml
+pydantic
+openpyxl
+pytest
+streamlit
+plotly

@@ -1,0 +1,77 @@
+model:
+  currency: "USD"
+  periods_per_year: 1
+  max_years: 15
+  initial_lp_capital: 10000000
+  gp_co_investment: 0
+
+allocation:
+  method: "fixed"
+  hedge_fund_allocation_pct: 0.10
+  real_estate_allocation_pct: 0.85
+  reserve_allocation_pct: 0.05
+
+waterfall:
+  lp_hurdle_moic: 2.0
+  lp_receives_100_percent_until_hurdle: true
+  gp_receives_residual_after_lp_hurdle: true
+  include_unrealized_nav_in_hurdle_test: true
+  require_liquidity_for_lp_redemption: true
+
+liquidity:
+  hf_liquidation_allowed: true
+  hf_liquidation_capacity_pct_per_year: 1.0
+  reserve_liquidation_capacity_pct_per_year: 1.0
+  real_estate_liquidation_capacity_pct_per_year: 0.0
+  max_refinance_or_sale_capacity_pct_of_re_nav: 0.25
+
+fees:
+  real_estate_asset_management_fee:
+    enabled: true
+    rate: 0.03
+    basis: "gross_rent"
+  hedge_fund_fees:
+    model_as_net_returns: true
+    management_fee_rate: 0.0
+    performance_fee_rate: 0.0
+
+distribution_policy:
+  distribute_re_cashflow_annually: true
+  distribute_hf_realized_gains_annually: false
+  hf_positive_return_harvest_rate: 0.0
+  retain_cash_until_hurdle_redemption: false
+
+lp_cash_yield_policy:
+  enabled: false
+  target_annual_yield_on_unreturned_capital: 0.0
+  source_priority:
+    - net_re_cashflow
+    - hf_harvest
+    - retained_cash
+    - reserve
+  reduce_lp_hurdle: true
+
+reserve:
+  annual_return: 0.0
+
+reporting:
+  output_excel: true
+  output_csv: true
+  output_markdown: true
+
+flag_thresholds:
+  fast_gp_dynasty_max_year: 4
+  fast_gp_dynasty_residual_multiple: 0.5
+  slow_time_horizon_year: 8
+  gp_survivability_first_years: 5
+  gp_survivability_fee_threshold: 250000
+  hf_major_drawdown_pct: 0.50
+  re_nav_impairment_pct: 0.20
+  lp_good_irr_threshold: 0.12
+  lp_good_irr_gp_residual_multiple: 1.0
+  long_zero_distribution_years: 3
+
+gp_survivability:
+  first_n_years: 5
+  minimum_cumulative_fees: 500000
+  minimum_average_annual_fees: 100000

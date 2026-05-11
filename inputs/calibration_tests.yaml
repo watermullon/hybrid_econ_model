@@ -1,0 +1,123 @@
+calibration_tests:
+  hf_allocation_sensitivity:
+    description: "Tests whether larger hedge fund sleeve allocations make LP redemption more realistic."
+    base_scenarios:
+      - base_hit_everyone_happy
+      - fast_success_crypto_bull
+      - exceptional_dynasty_outcome
+    variants:
+      - label: hf_20
+        description: "20% HF, 75% RE, 5% reserve."
+        scenario_overrides:
+          allocation:
+            method: "fixed"
+            hedge_fund_allocation_pct: 0.20
+            real_estate_allocation_pct: 0.75
+            reserve_allocation_pct: 0.05
+      - label: hf_30
+        description: "30% HF, 65% RE, 5% reserve."
+        scenario_overrides:
+          allocation:
+            method: "fixed"
+            hedge_fund_allocation_pct: 0.30
+            real_estate_allocation_pct: 0.65
+            reserve_allocation_pct: 0.05
+      - label: hf_40
+        description: "40% HF, 55% RE, 5% reserve."
+        scenario_overrides:
+          allocation:
+            method: "fixed"
+            hedge_fund_allocation_pct: 0.40
+            real_estate_allocation_pct: 0.55
+            reserve_allocation_pct: 0.05
+
+  hf_harvest_sensitivity:
+    description: "Tests whether harvesting positive HF returns into retained cash improves redemption liquidity."
+    base_scenarios:
+      - base_hit_everyone_happy
+      - fast_success_crypto_bull
+      - exceptional_dynasty_outcome
+    variants:
+      - label: harvest_25
+        description: "Harvest 25% of positive HF gains into retained cash."
+        scenario_overrides:
+          distribution_policy:
+            hf_positive_return_harvest_rate: 0.25
+            distribute_hf_realized_gains_annually: false
+      - label: harvest_50
+        description: "Harvest 50% of positive HF gains into retained cash."
+        scenario_overrides:
+          distribution_policy:
+            hf_positive_return_harvest_rate: 0.50
+            distribute_hf_realized_gains_annually: false
+      - label: harvest_75
+        description: "Harvest 75% of positive HF gains into retained cash."
+        scenario_overrides:
+          distribution_policy:
+            hf_positive_return_harvest_rate: 0.75
+            distribute_hf_realized_gains_annually: false
+
+  lp_hurdle_sensitivity:
+    description: "Tests where the LP hurdle becomes economically balanced."
+    base_scenarios:
+      - base_hit_everyone_happy
+      - fast_success_crypto_bull
+      - slow_grind
+      - exceptional_dynasty_outcome
+    variants:
+      - label: hurdle_1_50x
+        description: "LP hurdle reduced to 1.50x."
+        config_overrides:
+          waterfall:
+            lp_hurdle_moic: 1.50
+      - label: hurdle_1_75x
+        description: "LP hurdle reduced to 1.75x."
+        config_overrides:
+          waterfall:
+            lp_hurdle_moic: 1.75
+      - label: hurdle_2_00x
+        description: "Baseline 2.00x LP hurdle."
+        config_overrides:
+          waterfall:
+            lp_hurdle_moic: 2.00
+
+  re_liquidity_sensitivity:
+    description: "Tests whether LP redemption is mainly constrained by conservative RE liquidity assumptions."
+    base_scenarios:
+      - base_hit_everyone_happy
+      - slow_grind
+      - liquidity_trap
+      - exceptional_dynasty_outcome
+    variants:
+      - label: re_liquidity_25
+        description: "25% RE refi/sale capacity."
+        scenario_overrides:
+          liquidity:
+            max_refinance_or_sale_capacity_pct_of_re_nav: 0.25
+      - label: re_liquidity_40
+        description: "40% RE refi/sale capacity."
+        scenario_overrides:
+          liquidity:
+            max_refinance_or_sale_capacity_pct_of_re_nav: 0.40
+      - label: re_liquidity_60
+        description: "60% RE refi/sale capacity."
+        scenario_overrides:
+          liquidity:
+            max_refinance_or_sale_capacity_pct_of_re_nav: 0.60
+
+  twenty_year_horizon:
+    description: "Tests whether LP eventually wins with more time or remains structurally trapped."
+    base_scenarios:
+      - base_hit_everyone_happy
+      - slow_grind
+      - hedge_fund_failure_re_survival
+      - failure_never_reaches_hurdle
+    variants:
+      - label: years_20
+        description: "Extend horizon to 20 years, repeating each scenario's final HF return."
+        extend_hf_returns_by_repeating_last: true
+        config_overrides:
+          model:
+            max_years: 20
+        scenario_overrides:
+          years: 20
