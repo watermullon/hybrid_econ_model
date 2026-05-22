@@ -4,7 +4,11 @@ from dataclasses import asdict
 
 from src.metrics import annual_irr, economic_moic, moic
 from src.model_types import (
+    BackendLiquidityStrategySettings,
+    CashflowRoute,
+    CashflowRoutingSettings,
     FlagResult,
+    HurdleCompletionTriggerSettings,
     LPCashYieldPolicy,
     ModelConfig,
     RefinanceEvent,
@@ -44,7 +48,15 @@ def run_all_scenarios(config: ModelConfig, scenarios: dict[str, Scenario]) -> li
 def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> ScenarioResult:
     liquidity = merge_model(config.liquidity, scenario.liquidity)
     distribution_policy = merge_model(config.distribution_policy, scenario.distribution_policy)
+    cashflow_routing = merge_model(config.cashflow_routing, scenario.cashflow_routing)
     lp_cash_yield_policy = merge_model(config.lp_cash_yield_policy, scenario.lp_cash_yield_policy)
+    backend_liquidity_strategy = merge_model(
+        config.backend_liquidity_strategy, scenario.backend_liquidity_strategy
+    )
+    if lp_cash_yield_policy.enabled and not lp_cash_yield_policy.reduce_lp_hurdle:
+        raise ValueError(
+            "LP cash yield policy is invalid: actual LP cash yield payments must reduce the LP cash hurdle."
+        )
     reserve_settings = merge_model(config.reserve, scenario.reserve)
     refinance_events_by_year = events_by_year(scenario.refinance_events)
 
@@ -65,6 +77,16 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
     cumulative_lp_cash_yield_shortfall = 0.0
     cumulative_refinance_proceeds = 0.0
     cumulative_refinance_to_lp = 0.0
+    refinance_liability = 0.0
+    cumulative_reinvested_into_hf = 0.0
+    cumulative_cash_added_to_reserve = 0.0
+    total_trigger_cash_from_retained_cash = 0.0
+    total_trigger_cash_from_reserve = 0.0
+    total_trigger_cash_from_hf_liquidation = 0.0
+    total_trigger_cash_from_refi = 0.0
+    total_trigger_cash_from_re_sale = 0.0
+    hurdle_trigger_year: int | None = None
+    lp_hurdle_shortfall_after_final_trigger = 0.0
 
     for year in range(1, scenario.years + 1):
         re_opening_nav = re_nav
@@ -80,12 +102,14 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         gross_rent = re_opening_nav * gross_rent_yield
         re_asset_mgmt_fee = calculate_re_fee(config, re_opening_nav, re_noi, gross_rent)
         net_re_cashflow = re_noi - re_asset_mgmt_fee
+        re_cashflow_generated = net_re_cashflow
         re_nav = re_opening_nav * (1 + re_appreciation_rate)
 
         hf_return = scenario.hedge_fund.annual_returns[year - 1]
         hf_nav_pre_harvest = hf_opening_nav * (1 + hf_return)
         hf_gain = max(0.0, hf_nav_pre_harvest - hf_opening_nav)
         hf_harvest = hf_gain * distribution_policy.hf_positive_return_harvest_rate
+        hf_harvest_generated = hf_harvest
         hf_nav = hf_nav_pre_harvest - hf_harvest
 
         reserve_nav = reserve_opening_nav * (1 + reserve_settings.annual_return)
@@ -94,8 +118,42 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         gp_fees = re_asset_mgmt_fee
         gp_cumulative_fees += gp_fees
 
+        re_cashflow_to_lp = 0.0
+        re_cashflow_to_hf = 0.0
+        re_cashflow_to_reserve = 0.0
+        hf_harvest_to_lp = 0.0
+        hf_harvest_to_hf = 0.0
+        hf_harvest_to_reserve = 0.0
+        lp_distribution = 0.0
+
         net_re_cash_bucket = net_re_cashflow
         hf_harvest_cash_bucket = hf_harvest
+
+        if cashflow_routing.enabled:
+            lp_remaining_hurdle = max(0.0, lp_hurdle_amount - lp_cumulative_distribution)
+            re_route = route_cashflow(re_cashflow_generated, cashflow_routing.re_cashflow)
+            re_cashflow_to_lp = min(re_route["lp"], lp_remaining_hurdle)
+            lp_distribution += re_cashflow_to_lp
+            lp_cumulative_distribution += re_cashflow_to_lp
+            retained_cash += re_route["lp"] - re_cashflow_to_lp
+            re_cashflow_to_hf = re_route["hf"]
+            re_cashflow_to_reserve = re_route["reserve"]
+
+            lp_remaining_hurdle = max(0.0, lp_hurdle_amount - lp_cumulative_distribution)
+            hf_route = route_cashflow(hf_harvest_generated, cashflow_routing.hf_harvest)
+            hf_harvest_to_lp = min(hf_route["lp"], lp_remaining_hurdle)
+            lp_distribution += hf_harvest_to_lp
+            lp_cumulative_distribution += hf_harvest_to_lp
+            retained_cash += hf_route["lp"] - hf_harvest_to_lp
+            hf_harvest_to_hf = hf_route["hf"]
+            hf_harvest_to_reserve = hf_route["reserve"]
+
+            hf_nav += re_cashflow_to_hf + hf_harvest_to_hf
+            reserve_nav += re_cashflow_to_reserve + hf_harvest_to_reserve
+            cumulative_reinvested_into_hf += re_cashflow_to_hf + hf_harvest_to_hf
+            cumulative_cash_added_to_reserve += re_cashflow_to_reserve + hf_harvest_to_reserve
+            net_re_cash_bucket = 0.0
+            hf_harvest_cash_bucket = 0.0
 
         lp_cash_yield_target = 0.0
         lp_cash_yield_paid = 0.0
@@ -119,29 +177,31 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
                 policy=lp_cash_yield_policy,
             )
             cumulative_lp_cash_yield_shortfall += lp_cash_yield_shortfall
+            lp_distribution += lp_cash_yield_paid
             if lp_cash_yield_policy.reduce_lp_hurdle:
                 lp_cumulative_distribution += lp_cash_yield_paid
 
         distributable_cash = 0.0
-        if distribution_policy.distribute_re_cashflow_annually:
-            distributable_cash += net_re_cash_bucket
-        else:
-            retained_cash += net_re_cash_bucket
-        if distribution_policy.distribute_hf_realized_gains_annually:
-            distributable_cash += hf_harvest_cash_bucket
-        else:
-            retained_cash += hf_harvest_cash_bucket
+        if not cashflow_routing.enabled:
+            if distribution_policy.distribute_re_cashflow_annually:
+                distributable_cash += net_re_cash_bucket
+            else:
+                retained_cash += net_re_cash_bucket
+            if distribution_policy.distribute_hf_realized_gains_annually:
+                distributable_cash += hf_harvest_cash_bucket
+            else:
+                retained_cash += hf_harvest_cash_bucket
         retained_cash += reserve_return_cash
 
         lp_remaining_hurdle = max(0.0, lp_hurdle_amount - lp_cumulative_distribution)
-        lp_distribution, retained_excess = (
+        legacy_lp_distribution, retained_excess = (
             (0.0, distributable_cash)
             if distribution_policy.retain_cash_until_hurdle_redemption
             else pay_lp_distribution(distributable_cash, lp_remaining_hurdle)
         )
         retained_cash += retained_excess
-        lp_cumulative_distribution += lp_distribution
-        lp_distribution += lp_cash_yield_paid
+        lp_cumulative_distribution += legacy_lp_distribution
+        lp_distribution += legacy_lp_distribution
 
         refinance_proceeds = 0.0
         refinance_use_of_proceeds = ""
@@ -149,6 +209,7 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
             event_proceeds = re_nav * refinance_event.pct_of_re_nav
             refinance_proceeds += event_proceeds
             cumulative_refinance_proceeds += event_proceeds
+            refinance_liability += event_proceeds
             refinance_use_of_proceeds = append_event_text(refinance_use_of_proceeds, refinance_event.use_of_proceeds)
             if refinance_event.use_of_proceeds == "lp_distribution":
                 lp_remaining_hurdle = max(0.0, lp_hurdle_amount - lp_cumulative_distribution)
@@ -165,7 +226,7 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
                 raise ValueError(f"Unsupported refinance use_of_proceeds: {refinance_event.use_of_proceeds}")
 
         lp_remaining_hurdle = max(0.0, lp_hurdle_amount - lp_cumulative_distribution)
-        fund_nav_before_redemption = re_nav + hf_nav + reserve_nav + retained_cash
+        fund_nav_before_redemption = re_nav + hf_nav + reserve_nav + retained_cash - refinance_liability
         economic_hurdle_passed = (
             fund_nav_before_redemption + lp_cumulative_distribution >= lp_hurdle_amount
             if config.waterfall.include_unrealized_nav_in_hurdle_test
@@ -177,6 +238,7 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
             re_nav=re_nav,
             retained_cash=retained_cash,
             liquidity=liquidity,
+            refinance_liability=refinance_liability,
         )
         liquidity_hurdle_passed = (
             liquidity_available >= lp_remaining_hurdle
@@ -185,7 +247,51 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         )
 
         event_flag = ""
-        if economic_hurdle_passed and liquidity_hurdle_passed:
+        trigger_result = evaluate_hurdle_completion_trigger(
+            trigger=config.hurdle_completion_trigger,
+            backend_strategy=backend_liquidity_strategy,
+            year=year,
+            lp_remaining_hurdle=lp_remaining_hurdle,
+            lp_cumulative_distribution=lp_cumulative_distribution,
+            initial_lp_capital=initial_lp_capital,
+            economic_hurdle_passed=economic_hurdle_passed,
+            retained_cash=retained_cash,
+            reserve_nav=reserve_nav,
+            hf_nav=hf_nav,
+            re_nav=re_nav,
+            refinance_liability=refinance_liability,
+            reserve_liquidation_capacity_pct=liquidity.reserve_liquidation_capacity_pct_per_year,
+        )
+        if trigger_result["executed"]:
+            lp_distribution += trigger_result["lp_distribution"]
+            lp_cumulative_distribution += trigger_result["lp_distribution"]
+            retained_cash = trigger_result["retained_cash"]
+            reserve_nav = trigger_result["reserve_nav"]
+            hf_nav = trigger_result["hf_nav"]
+            re_nav = trigger_result["re_nav"]
+            refinance_liability += trigger_result["from_refi"]
+            lp_remaining_hurdle = 0.0
+            gp_residual_nav = re_nav + hf_nav + reserve_nav + retained_cash - refinance_liability
+            fund_nav = gp_residual_nav
+            event_flag = append_event_text(event_flag, "HURDLE_COMPLETION_TRIGGER_EXECUTED")
+            year_hurdle_achieved = year
+            hurdle_trigger_year = year
+            total_trigger_cash_from_retained_cash += trigger_result["from_retained_cash"]
+            total_trigger_cash_from_reserve += trigger_result["from_reserve"]
+            total_trigger_cash_from_hf_liquidation += trigger_result["from_hf_liquidation"]
+            total_trigger_cash_from_refi += trigger_result["from_refi"]
+            total_trigger_cash_from_re_sale += trigger_result["from_re_sale"]
+            lp_hurdle_shortfall_after_final_trigger = 0.0
+        elif trigger_result["attempted"]:
+            event_flag = append_event_text(event_flag, "HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT")
+            lp_hurdle_shortfall_after_final_trigger = trigger_result["shortfall_after_trigger"]
+
+        if year_hurdle_achieved == year:
+            pass
+        elif trigger_result["attempted"]:
+            liquidity_constrained = liquidity_constrained or economic_hurdle_passed
+            fund_nav = fund_nav_before_redemption
+        elif not backend_liquidity_strategy.enabled and economic_hurdle_passed and liquidity_hurdle_passed:
             redemption = redeem_lp(
                 lp_remaining_hurdle=lp_remaining_hurdle,
                 retained_cash=retained_cash,
@@ -193,6 +299,7 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
                 hf_nav=hf_nav,
                 re_nav=re_nav,
                 liquidity=liquidity,
+                refinance_liability=refinance_liability,
             )
             lp_distribution += redemption.lp_distribution
             lp_cumulative_distribution += redemption.lp_distribution
@@ -200,8 +307,8 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
             reserve_nav = redemption.reserve_nav
             hf_nav = redemption.hf_nav
             re_nav = redemption.re_nav
-            gp_residual_nav = redemption.gp_residual_nav
-            fund_nav = redemption.fund_nav
+            gp_residual_nav = redemption.gp_residual_nav - refinance_liability
+            fund_nav = redemption.fund_nav - refinance_liability
             event_flag = redemption.event_flag
             year_hurdle_achieved = year
             lp_remaining_hurdle = 0.0
@@ -223,15 +330,24 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
                 gross_rent=gross_rent,
                 re_asset_mgmt_fee=re_asset_mgmt_fee,
                 net_re_cashflow=net_re_cashflow,
+                re_cashflow_generated=re_cashflow_generated,
+                re_cashflow_to_lp=re_cashflow_to_lp,
+                re_cashflow_to_hf=re_cashflow_to_hf,
+                re_cashflow_to_reserve=re_cashflow_to_reserve,
                 re_appreciation_rate=re_appreciation_rate,
                 re_closing_nav=re_nav,
                 hf_opening_nav=hf_opening_nav,
                 hf_return=hf_return,
                 hf_harvest=hf_harvest,
+                hf_harvest_generated=hf_harvest_generated,
+                hf_harvest_to_lp=hf_harvest_to_lp,
+                hf_harvest_to_hf=hf_harvest_to_hf,
+                hf_harvest_to_reserve=hf_harvest_to_reserve,
                 hf_closing_nav=hf_nav,
                 refinance_proceeds=refinance_proceeds,
                 refinance_use_of_proceeds=refinance_use_of_proceeds,
                 cumulative_refinance_proceeds=cumulative_refinance_proceeds,
+                refinance_liability=refinance_liability,
                 reserve_opening_nav=reserve_opening_nav,
                 reserve_closing_nav=reserve_nav,
                 retained_cash=retained_cash,
@@ -242,6 +358,14 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
                 lp_cash_yield_coverage_ratio=(
                     lp_cash_yield_paid / lp_cash_yield_target if lp_cash_yield_target > 0 else None
                 ),
+                cumulative_reinvested_into_hf=cumulative_reinvested_into_hf,
+                cumulative_cash_distributed_to_lp=lp_cumulative_distribution,
+                cumulative_cash_added_to_reserve=cumulative_cash_added_to_reserve,
+                hf_reinvestment_source_re=re_cashflow_to_hf,
+                hf_reinvestment_source_hf=hf_harvest_to_hf,
+                total_cash_reinvested=re_cashflow_to_hf + hf_harvest_to_hf,
+                total_cash_distributed=lp_distribution,
+                total_cash_reserved=re_cashflow_to_reserve + hf_harvest_to_reserve,
                 lp_distribution=lp_distribution,
                 lp_cumulative_distribution=lp_cumulative_distribution,
                 lp_remaining_hurdle=lp_remaining_hurdle,
@@ -252,6 +376,19 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
                 gp_cumulative_fees=gp_cumulative_fees,
                 gp_residual_nav=gp_residual_nav,
                 fund_nav=fund_nav,
+                hurdle_trigger_eligible=trigger_result["eligible"],
+                hurdle_trigger_attempted=trigger_result["attempted"],
+                hurdle_trigger_executed=trigger_result["executed"],
+                hurdle_trigger_required_cash=trigger_result["required_cash"],
+                trigger_cash_from_retained_cash=trigger_result["from_retained_cash"],
+                trigger_cash_from_reserve=trigger_result["from_reserve"],
+                trigger_cash_from_hf_liquidation=trigger_result["from_hf_liquidation"],
+                trigger_cash_from_refi=trigger_result["from_refi"],
+                trigger_cash_from_re_sale=trigger_result["from_re_sale"],
+                lp_hurdle_shortfall_after_trigger=trigger_result["shortfall_after_trigger"],
+                hf_nav_liquidated_for_hurdle=trigger_result["from_hf_liquidation"],
+                refi_proceeds_for_hurdle=trigger_result["from_refi"],
+                re_nav_sold_for_hurdle=trigger_result["from_re_sale"],
                 event_flag=event_flag,
             )
         )
@@ -279,6 +416,12 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
     gp_total_value_multiple = gp_total_economics / config.model.gp_co_investment if config.model.gp_co_investment > 0 else None
     gp_survivability = calculate_gp_survivability(config, cashflows)
     lp_experience = calculate_lp_experience(config, cashflows, initial_lp_capital, lp_hurdle_amount)
+    total_re_cashflow_generated = sum(row.re_cashflow_generated for row in cashflows)
+    total_hf_harvest_generated = sum(row.hf_harvest_generated for row in cashflows)
+    total_cash_sources = total_re_cashflow_generated + total_hf_harvest_generated
+    total_reinvested_into_hf = sum(row.total_cash_reinvested for row in cashflows)
+    total_distributed_to_lp = sum(row.total_cash_distributed for row in cashflows)
+    total_added_to_reserve = sum(row.total_cash_reserved for row in cashflows)
     flags = build_flags(
         name=name,
         config=config,
@@ -319,6 +462,7 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         "year_hurdle_achieved": year_hurdle_achieved,
         "liquidity_constrained": liquidity_constrained,
         "final_fund_nav": final_fund_nav,
+        "final_refinance_liability": refinance_liability,
         "gp_cumulative_fees": gp_cumulative_fees,
         "gp_residual_nav": gp_residual_nav,
         "gp_total_economics": gp_total_economics,
@@ -329,6 +473,31 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         "gp_survivability_risk": gp_survivability["gp_survivability_risk"],
         "lp_final_unrecovered_hurdle": max(0.0, lp_hurdle_amount - lp_cumulative_distribution),
         "lp_redeemed_by_model_end": year_hurdle_achieved is not None,
+        "total_re_cashflow_generated": total_re_cashflow_generated,
+        "total_hf_harvest_generated": total_hf_harvest_generated,
+        "total_reinvested_into_hf": total_reinvested_into_hf,
+        "total_distributed_to_lp": total_distributed_to_lp,
+        "total_added_to_reserve": total_added_to_reserve,
+        "pct_total_cash_distributed": total_distributed_to_lp / total_cash_sources if total_cash_sources > 0 else None,
+        "pct_total_cash_reinvested": total_reinvested_into_hf / total_cash_sources if total_cash_sources > 0 else None,
+        "pct_total_cash_reserved": total_added_to_reserve / total_cash_sources if total_cash_sources > 0 else None,
+        "years_until_lp_1x_cash_return": year_until_cash_multiple(cashflows, initial_lp_capital, 1.0),
+        "years_until_lp_2x_cash_return": year_until_cash_multiple(cashflows, initial_lp_capital, config.waterfall.lp_hurdle_moic),
+        "lp_cashflow_profile_type": classify_lp_cashflow_profile(cashflows, initial_lp_capital),
+        "hurdle_completion_trigger_enabled": config.hurdle_completion_trigger.enabled,
+        "backend_liquidity_strategy_enabled": backend_liquidity_strategy.enabled,
+        "backend_liquidity_target_years": ", ".join(str(year) for year in backend_liquidity_strategy.target_years),
+        "backend_liquidity_refi_first": backend_liquidity_strategy.refi_first,
+        "backend_liquidity_max_refi_pct_of_re_nav": backend_liquidity_strategy.max_refi_pct_of_re_nav,
+        "backend_liquidity_max_hf_liquidation_pct": backend_liquidity_strategy.max_hf_liquidation_pct,
+        "hurdle_trigger_executed": any(row.hurdle_trigger_executed for row in cashflows),
+        "hurdle_trigger_year": hurdle_trigger_year,
+        "total_trigger_cash_from_retained_cash": total_trigger_cash_from_retained_cash,
+        "total_trigger_cash_from_reserve": total_trigger_cash_from_reserve,
+        "total_trigger_cash_from_hf_liquidation": total_trigger_cash_from_hf_liquidation,
+        "total_trigger_cash_from_refi": total_trigger_cash_from_refi,
+        "total_trigger_cash_from_re_sale": total_trigger_cash_from_re_sale,
+        "lp_hurdle_shortfall_after_final_trigger": lp_hurdle_shortfall_after_final_trigger,
         **lp_experience,
         "primary_flag": primary_flag,
         "all_flags": "; ".join(flag.flag for flag in flags),
@@ -349,6 +518,149 @@ def calculate_re_fee(config: ModelConfig, re_opening_nav: float, re_noi: float, 
     else:
         raise ValueError(f"Unsupported real estate fee basis: {fee_config.basis}")
     return basis * fee_config.rate
+
+
+def route_cashflow(amount: float, route: CashflowRoute) -> dict[str, float]:
+    """Split a generated cashflow into LP, HF reinvestment, and reserve buckets."""
+    routed_amount = max(0.0, amount)
+    return {
+        "lp": routed_amount * route.lp_distribution_pct,
+        "hf": routed_amount * route.hf_reinvestment_pct,
+        "reserve": routed_amount * route.reserve_pct,
+    }
+
+
+def evaluate_hurdle_completion_trigger(
+    *,
+    trigger: HurdleCompletionTriggerSettings,
+    backend_strategy: BackendLiquidityStrategySettings | None = None,
+    year: int | None = None,
+    lp_remaining_hurdle: float,
+    lp_cumulative_distribution: float,
+    initial_lp_capital: float,
+    economic_hurdle_passed: bool,
+    retained_cash: float,
+    reserve_nav: float,
+    hf_nav: float,
+    re_nav: float,
+    refinance_liability: float,
+    reserve_liquidation_capacity_pct: float,
+) -> dict[str, float | bool]:
+    """Test and, if fully fundable, execute the active LP hurdle completion trigger.
+
+    This is separate from the passive liquidity test. It models a GP choosing to
+    monetize permitted sources now, but only if the configured sources can fully
+    extinguish the remaining LP cash hurdle.
+    """
+    result: dict[str, float | bool] = {
+        "eligible": False,
+        "attempted": False,
+        "executed": False,
+        "required_cash": max(0.0, lp_remaining_hurdle),
+        "lp_distribution": 0.0,
+        "from_retained_cash": 0.0,
+        "from_reserve": 0.0,
+        "from_hf_liquidation": 0.0,
+        "from_refi": 0.0,
+        "from_re_sale": 0.0,
+        "shortfall_after_trigger": max(0.0, lp_remaining_hurdle),
+        "retained_cash": retained_cash,
+        "reserve_nav": reserve_nav,
+        "hf_nav": hf_nav,
+        "re_nav": re_nav,
+    }
+    if not trigger.enabled or lp_remaining_hurdle <= 1e-9:
+        return result
+    if backend_strategy and backend_strategy.enabled:
+        if year is None or year not in backend_strategy.target_years:
+            return result
+    if trigger.trigger_when_economic_hurdle_passed and not economic_hurdle_passed:
+        return result
+
+    current_cash_moic = lp_cumulative_distribution / initial_lp_capital
+    if current_cash_moic + 1e-9 < trigger.minimum_lp_cash_moic_before_trigger:
+        return result
+
+    result["eligible"] = True
+    result["attempted"] = True
+    if backend_strategy and backend_strategy.enabled:
+        capacities = {
+            "from_retained_cash": retained_cash if trigger.allow_retained_cash_use and backend_strategy.use_retained_cash else 0.0,
+            "from_reserve": (
+                reserve_nav * reserve_liquidation_capacity_pct
+                if trigger.allow_reserve_use and backend_strategy.use_reserve
+                else 0.0
+            ),
+            "from_hf_liquidation": (
+                hf_nav * backend_strategy.max_hf_liquidation_pct if trigger.allow_hf_liquidation else 0.0
+            ),
+            "from_refi": (
+                max(0.0, re_nav * backend_strategy.max_refi_pct_of_re_nav - refinance_liability)
+                if trigger.allow_refi
+                else 0.0
+            ),
+            "from_re_sale": re_nav * trigger.max_partial_re_sale_pct_of_re_nav if trigger.allow_partial_re_sale else 0.0,
+        }
+        funding_order = (
+            ["from_retained_cash", "from_refi", "from_reserve", "from_hf_liquidation", "from_re_sale"]
+            if backend_strategy.refi_first
+            else ["from_retained_cash", "from_reserve", "from_hf_liquidation", "from_refi", "from_re_sale"]
+        )
+    else:
+        capacities = {
+            "from_retained_cash": retained_cash if trigger.allow_retained_cash_use else 0.0,
+            "from_reserve": reserve_nav * reserve_liquidation_capacity_pct if trigger.allow_reserve_use else 0.0,
+            "from_hf_liquidation": hf_nav * trigger.max_hf_liquidation_pct if trigger.allow_hf_liquidation else 0.0,
+            "from_refi": max(0.0, re_nav * trigger.max_refi_pct_of_re_nav - refinance_liability) if trigger.allow_refi else 0.0,
+            "from_re_sale": re_nav * trigger.max_partial_re_sale_pct_of_re_nav if trigger.allow_partial_re_sale else 0.0,
+        }
+        funding_order = ["from_retained_cash", "from_reserve", "from_hf_liquidation", "from_refi", "from_re_sale"]
+    total_capacity = sum(capacities.values())
+    if total_capacity + 1e-6 < lp_remaining_hurdle:
+        result["shortfall_after_trigger"] = lp_remaining_hurdle - total_capacity
+        return result
+
+    remaining = lp_remaining_hurdle
+    for key in funding_order:
+        use_amount = min(capacities[key], remaining)
+        result[key] = use_amount
+        remaining -= use_amount
+        if remaining <= 1e-9:
+            break
+
+    result["executed"] = True
+    result["lp_distribution"] = lp_remaining_hurdle
+    result["shortfall_after_trigger"] = 0.0
+    result["retained_cash"] = retained_cash - float(result["from_retained_cash"])
+    result["reserve_nav"] = reserve_nav - float(result["from_reserve"])
+    result["hf_nav"] = hf_nav - float(result["from_hf_liquidation"])
+    # Refinance proceeds are new liquidity and do not reduce RE NAV in this version.
+    result["re_nav"] = re_nav - float(result["from_re_sale"])
+    return result
+
+
+def year_until_cash_multiple(cashflows: list[YearlyResult], initial_lp_capital: float, multiple: float) -> int | None:
+    target = initial_lp_capital * multiple
+    for row in cashflows:
+        if row.lp_cumulative_distribution >= target:
+            return row.year
+    return None
+
+
+def classify_lp_cashflow_profile(cashflows: list[YearlyResult], initial_lp_capital: float) -> str:
+    if not cashflows:
+        return "MODERATE_YIELD"
+    total_distributions = sum(row.lp_distribution for row in cashflows)
+    if total_distributions <= 0:
+        return "BACKEND_HEAVY"
+    final_window_start = max(1, int(len(cashflows) * 0.75) + 1)
+    final_window_distributions = sum(row.lp_distribution for row in cashflows if row.year >= final_window_start)
+    average_annual_distribution = total_distributions / len(cashflows)
+    if final_window_distributions / total_distributions > 0.60:
+        return "BACKEND_HEAVY"
+    if average_annual_distribution / initial_lp_capital > 0.12:
+        return "AGGRESSIVE_DISTRIBUTION"
+    return "MODERATE_YIELD"
 
 
 def pay_lp_cash_yield(
@@ -520,6 +832,17 @@ def build_flags(
     if lp_cash_yield_shortfall > 0:
         add("LP_CASH_YIELD_SHORTFALL", "medium", "Available cash was insufficient to meet the configured LP cash yield target.")
 
+    if any(row.hurdle_trigger_executed for row in cashflows):
+        add("HURDLE_COMPLETION_TRIGGER_EXECUTED", "info", "Active hurdle completion trigger monetized permitted sources to extinguish LPs.")
+    if any(row.hurdle_trigger_attempted and not row.hurdle_trigger_executed for row in cashflows):
+        add("HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT", "high", "Active hurdle completion trigger was eligible, but permitted funding sources were insufficient.")
+    if any(row.trigger_cash_from_hf_liquidation > 0 for row in cashflows):
+        add("LP_REDEEMED_VIA_HF_LIQUIDATION", "medium", "LP hurdle completion used partial hedge fund liquidation.")
+    if any(row.trigger_cash_from_refi > 0 for row in cashflows):
+        add("LP_REDEEMED_VIA_REFI", "medium", "LP hurdle completion used refinance proceeds.")
+    if any(row.trigger_cash_from_re_sale > 0 for row in cashflows):
+        add("LP_REDEEMED_VIA_PARTIAL_RE_SALE", "medium", "LP hurdle completion used partial real estate sale proceeds.")
+
     if any(row.refinance_proceeds > 0 for row in cashflows):
         add("REFINANCE_EVENT_OCCURRED", "info", "One or more configured refinance events generated proceeds.")
 
@@ -564,8 +887,9 @@ def choose_primary_flag(flags: list[FlagResult], *, lp_hurdle_achieved: bool) ->
     if lp_hurdle_achieved:
         priority = {
             "FAST_GP_DYNASTY_OUTCOME": 1,
-            "LP_GOOD_IRR_GP_LARGE_RESIDUAL": 2,
-            "LP_HURDLE_ACHIEVED": 3,
+            "HURDLE_COMPLETION_TRIGGER_EXECUTED": 2,
+            "LP_GOOD_IRR_GP_LARGE_RESIDUAL": 3,
+            "LP_HURDLE_ACHIEVED": 4,
             "HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED": 50,
             "SLOW_TIME_HORIZON_DRIFT": 60,
         }

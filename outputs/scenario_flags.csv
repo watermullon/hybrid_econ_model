@@ -6,6 +6,7 @@ base_hit_everyone_happy,GP_SURVIVABILITY_RISK,medium,GP fee income in the early 
 base_hit_everyone_happy,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 base_hit_everyone_happy,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
 fast_success_crypto_bull,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+fast_success_crypto_bull,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 fast_success_crypto_bull,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 fast_success_crypto_bull,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 fast_success_crypto_bull,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
@@ -14,24 +15,28 @@ slow_grind,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC wit
 slow_grind,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 slow_grind,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 slow_grind,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+slow_grind,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
+slow_grind,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
 hedge_fund_failure_re_survival,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
 hedge_fund_failure_re_survival,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 hedge_fund_failure_re_survival,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 hedge_fund_failure_re_survival,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
-hedge_fund_failure_re_survival,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
 hedge_fund_failure_re_survival,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 hedge_fund_failure_re_survival,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
 real_estate_distress_crypto_success,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+real_estate_distress_crypto_success,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 real_estate_distress_crypto_success,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 real_estate_distress_crypto_success,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 real_estate_distress_crypto_success,RE_NAV_IMPAIRMENT,medium,Real estate NAV fell by more than the configured impairment threshold.
 real_estate_distress_crypto_success,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 real_estate_distress_crypto_success,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
-exceptional_dynasty_outcome,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
+exceptional_dynasty_outcome,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 10.
 exceptional_dynasty_outcome,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 exceptional_dynasty_outcome,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 exceptional_dynasty_outcome,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
-exceptional_dynasty_outcome,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+exceptional_dynasty_outcome,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+exceptional_dynasty_outcome,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+exceptional_dynasty_outcome,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
 liquidity_trap,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
 liquidity_trap,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 liquidity_trap,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
@@ -41,6 +46,5 @@ liquidity_trap,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positi
 failure_never_reaches_hurdle,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
 failure_never_reaches_hurdle,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 failure_never_reaches_hurdle,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
-failure_never_reaches_hurdle,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
 failure_never_reaches_hurdle,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 failure_never_reaches_hurdle,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.

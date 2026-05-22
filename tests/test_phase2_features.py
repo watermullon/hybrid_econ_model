@@ -168,8 +168,27 @@ def test_refinance_event_distributes_proceeds_to_lp() -> None:
     row = result.cashflows[0]
 
     assert row.refinance_proceeds == pytest.approx(2_000_000)
+    assert row.refinance_liability == pytest.approx(2_000_000)
+    assert row.re_closing_nav == pytest.approx(10_000_000)
+    assert row.fund_nav == pytest.approx(8_000_000)
     assert row.lp_cumulative_distribution == pytest.approx(2_000_000)
     assert "REFINANCE_EVENT_OCCURRED" in result.summary["all_flags"]
+    assert result.summary["final_refinance_liability"] == pytest.approx(2_000_000)
+
+
+def test_cash_yield_policy_cannot_ignore_cash_hurdle_reduction() -> None:
+    with pytest.raises(ValueError, match="cash yield distributions must reduce the LP hurdle"):
+        ModelConfig.model_validate(
+            {
+                **phase2_config(allocation=(0.0, 1.0, 0.0)).model_dump(),
+                "lp_cash_yield_policy": {
+                    "enabled": True,
+                    "target_annual_yield_on_unreturned_capital": 0.05,
+                    "source_priority": ["net_re_cashflow"],
+                    "reduce_lp_hurdle": False,
+                },
+            }
+        )
 
 
 def test_gp_survivability_risk_triggers_when_first_five_year_fees_are_low() -> None:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from src.chatgpt_export import build_chatgpt_context
 from src.config_loader import ConfigError, load_inputs
 from src.engine import run_all_scenarios
 from src.outputs import write_outputs
@@ -16,6 +17,7 @@ def main() -> None:
         frames = write_outputs(results=results, config=config, scenarios=scenarios, output_dir=root / "outputs")
         if config.reporting.output_markdown:
             write_markdown_report(results, frames["summary"], root / "outputs" / "scenario_report.md")
+        build_chatgpt_context(root)
     except PermissionError as exc:
         raise SystemExit(
             "Model failed: could not write one or more output files. "
@@ -26,6 +28,7 @@ def main() -> None:
 
     print(f"Ran {len(results)} scenarios.")
     print("Outputs written to outputs/")
+    print("ChatGPT context written to outputs/chatgpt_model_context.md")
 
 
 if __name__ == "__main__":

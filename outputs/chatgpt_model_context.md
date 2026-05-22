@@ -1,0 +1,274 @@
+# Hybrid Fund Model Context for ChatGPT Analysis
+
+Generated: 2026-05-13T16:03:26
+
+## How to read this file
+
+This is a compact analysis package generated from the model's YAML inputs and existing output CSVs. It is intended for ChatGPT review, not as a replacement for the full workbook or source code.
+
+Key interpretation rules:
+- The LP 2.0x hurdle means actual cash distributions received by LPs.
+- NAV growth and economic value are tracked separately from cash received.
+- GP residual asset value is recognized only after LP interests are extinguished through the cash hurdle.
+- Generated RE cashflow and harvested HF gains are routed to LP distributions, HF reinvestment, or reserve according to YAML assumptions.
+- The active hurdle completion trigger is separate from the passive liquidity test; it models the GP choosing to monetize permitted sources to finish the LP cash hurdle.
+
+## Selected global assumptions
+
+| Assumption | YAML path | Value |
+| --- | --- | --- |
+| Currency | model.currency | USD |
+| Maximum model years | model.max_years | 15 |
+| Initial LP capital | model.initial_lp_capital | 10,000,000 |
+| GP co-investment | model.gp_co_investment | 0 |
+| Allocation method | allocation.method | fixed |
+| Initial HF allocation | allocation.hedge_fund_allocation_pct | 10.0% |
+| Initial real estate allocation | allocation.real_estate_allocation_pct | 85.0% |
+| Initial reserve allocation | allocation.reserve_allocation_pct | 5.0% |
+| LP cash hurdle MOIC | waterfall.lp_hurdle_moic | 2.00 |
+| Economic NAV hurdle test enabled | waterfall.include_unrealized_nav_in_hurdle_test | true |
+| Liquidity required for LP redemption | waterfall.require_liquidity_for_lp_redemption | true |
+| HF annual liquidity capacity | liquidity.hf_liquidation_capacity_pct_per_year | 1.00 |
+| Reserve annual liquidity capacity | liquidity.reserve_liquidation_capacity_pct_per_year | 1.00 |
+| RE refinance/sale liquidity capacity | liquidity.max_refinance_or_sale_capacity_pct_of_re_nav | 25.0% |
+| RE asset management fee rate | fees.real_estate_asset_management_fee.rate | 3.0% |
+| RE asset management fee basis | fees.real_estate_asset_management_fee.basis | gross_rent |
+| HF positive return harvest rate | distribution_policy.hf_positive_return_harvest_rate | 0.00 |
+| RE cashflow routed to LP | cashflow_routing.re_cashflow.lp_distribution_pct | 10.0% |
+| RE cashflow reinvested into HF | cashflow_routing.re_cashflow.hf_reinvestment_pct | 75.0% |
+| RE cashflow routed to reserve | cashflow_routing.re_cashflow.reserve_pct | 15.0% |
+| HF harvest routed to LP | cashflow_routing.hf_harvest.lp_distribution_pct | 10.0% |
+| HF harvest reinvested into HF | cashflow_routing.hf_harvest.hf_reinvestment_pct | 80.0% |
+| HF harvest routed to reserve | cashflow_routing.hf_harvest.reserve_pct | 10.0% |
+| LP cash yield policy enabled | lp_cash_yield_policy.enabled | false |
+| GP survivability minimum cumulative fees | gp_survivability.minimum_cumulative_fees | 500,000 |
+| Active hurdle completion trigger enabled | hurdle_completion_trigger.enabled | true |
+| Minimum LP cash MOIC before trigger | hurdle_completion_trigger.minimum_lp_cash_moic_before_trigger | 10.0% |
+| Max HF liquidation for trigger | hurdle_completion_trigger.max_hf_liquidation_pct | 75.0% |
+| Max RE refi for trigger | hurdle_completion_trigger.max_refi_pct_of_re_nav | 25.0% |
+| Backend liquidity strategy enabled | backend_liquidity_strategy.enabled | true |
+| Backend liquidity target years | backend_liquidity_strategy.target_years | 5, 7, 10 |
+| Backend liquidity is refi-led | backend_liquidity_strategy.refi_first | true |
+| Backend max RE refi | backend_liquidity_strategy.max_refi_pct_of_re_nav | 35.0% |
+| Backend max HF liquidation | backend_liquidity_strategy.max_hf_liquidation_pct | 50.0% |
+
+## Scenario input assumptions
+
+| Scenario | Description | Years | Initial NOI yield | NOI growth | RE NAV appreciation | Gross rent yield | HF returns | Overrides |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base_hit_everyone_happy | Moderate real estate and hedge fund performance baseline; tests whether ordinary cash routing can reach the LP cash hurdle. | 8 | 7.5% | 2.5% | 4.0% | 12.0% | 30.0%, 15.0%, 35.0%, 12.0%, 24.0%, 8.0%, 40.0%, 6.0% |  |
+| fast_success_crypto_bull | Strong hedge fund sleeve over a shorter horizon; tests whether liquid alpha can accelerate LP cash returns. | 5 | 7.0% | 2.0% | 3.0% | 11.0% | 60.0%, 80.0%, 30.0%, 25.0%, 15.0% |  |
+| slow_grind | Slow real estate growth and uneven hedge fund returns; tests long-duration cash distribution drift. | 15 | 6.5% | 1.5% | 2.0% | 10.0% | 19.0%, -5.0%, 14.0%, 3.0%, 16.0%, 7.0%, 25.0%, 5.0%, 13.0%, -2.0%, 24.0%, 14.0%, 33.0%, 13.0%, 6.0% |  |
+| hedge_fund_failure_re_survival | Hedge fund sleeve suffers major impairment, while real estate survives and cash-flows. | 12 | 7.5% | 2.0% | 2.5% | 11.0% | -70.0%, -20.0%, 5.0%, 5.0%, 4.0%, 4.0%, 4.0%, 4.0%, 4.0%, 4.0%, 4.0%, 4.0% |  |
+| real_estate_distress_crypto_success | Real estate underperforms while hedge fund returns are strong; tests whether liquid gains can offset property stress. | 10 | 4.5% | -1.0% | -3.0% | 8.0% | 60.0%, 40.0%, 25.0%, 35.0%, 10.0%, 45.0%, 5.0%, 12.0%, 15.0%, 25.0% |  |
+| exceptional_dynasty_outcome | Both sleeves perform strongly; tests the upper-end residual asset outcome after LP cash extinguishment. | 10 | 8.5% | 4.0% | 8.0% | 13.0% | 60.0%, 50.0%, 30.0%, 20.0%, 15.0%, 20.0%, 10.0%, 28.0%, 8.0%, 19.0% |  |
+| liquidity_trap | High real estate NAV growth with low refinance capacity; tests the gap between paper value and LP cash liquidity. | 10 | 7.0% | 3.0% | 7.0% | 11.0% | 10.0%, 38.0%, 22.0%, 5.0%, 25.0%, 5.0%, 34.0%, 4.0%, 34.0%, 4.0% | liquidity |
+| failure_never_reaches_hurdle | Both sleeves disappoint; LP never reaches 2.0x. | 12 | 4.5% | 0.0% | -1.0% | 8.0% | -20.0%, 10.0%, 15.0%, 3.0%, 24.0%, 4.0%, 13.0%, 18.0%, -12.0%, 28.0%, 12.0%, 8.0% |  |
+
+## Most important terminal outputs
+
+| scenario | description | years_modelled | lp_cash_moic | lp_economic_moic | lp_cash_irr | lp_economic_irr | lp_hurdle_achieved | year_hurdle_achieved | liquidity_constrained | final_fund_nav | final_refinance_liability | total_distributed_to_lp | total_reinvested_into_hf | total_added_to_reserve | years_until_lp_2x_cash_return | backend_liquidity_strategy_enabled | backend_liquidity_target_years | backend_liquidity_refi_first | hurdle_trigger_executed | hurdle_trigger_year | total_trigger_cash_from_hf_liquidation | total_trigger_cash_from_refi | gp_residual_nav | gp_total_economics | primary_flag |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base_hit_everyone_happy | Moderate real estate and hedge fund performance baseline; tests whether ordinary cash routing can reach the LP cash hurdle. | 8 | 6.2% | 2.00 | -37.7% | 9.2% | false |  | true | 26,148,903.66 | 0.00 | 616,518.36 | 4,623,887.67 | 924,777.53 |  | true | 5, 7, 10 | true | false |  | 0.00 | 0.00 | 0.00 | 281,955.32 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| fast_success_crypto_bull | Strong hedge fund sleeve over a shorter horizon; tests whether liquid alpha can accelerate LP cash returns. | 5 | 3.1% | 2.00 | -59.3% | 15.0% | false |  | true | 20,237,793.07 | 0.00 | 314,277.22 | 2,357,079.16 | 471,415.83 |  | true | 5, 7, 10 | true | false |  | 0.00 | 0.00 | 0.00 | 148,921.26 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| slow_grind | Slow real estate growth and uneven hedge fund returns; tests long-duration cash distribution drift. | 15 | 10.2% | 2.00 | -19.6% | 4.9% | false |  | true | 38,223,662.58 | 0.00 | 1,024,351.88 | 7,682,639.13 | 1,536,527.83 |  | true | 5, 7, 10 | true | false |  | 0.00 | 0.00 | 0.00 | 440,982.13 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| hedge_fund_failure_re_survival | Hedge fund sleeve suffers major impairment, while real estate survives and cash-flows. | 12 | 9.5% | 2.00 | -24.3% | 6.1% | false |  | true | 22,322,125.94 | 0.00 | 949,980.81 | 7,124,856.07 | 1,424,971.21 |  | true | 5, 7, 10 | true | false |  | 0.00 | 0.00 | 0.00 | 386,965.26 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| real_estate_distress_crypto_success | Real estate underperforms while hedge fund returns are strong; tests whether liquid gains can offset property stress. | 10 | 3.0% | 2.00 | -39.4% | 7.2% | false |  | true | 23,893,803.12 | 0.00 | 303,066.04 | 2,272,995.29 | 454,599.06 |  | true | 5, 7, 10 | true | false |  | 0.00 | 0.00 | 0.00 | 178,551.59 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| exceptional_dynasty_outcome | Both sleeves perform strongly; tests the upper-end residual asset outcome after LP cash extinguishment. | 10 | 2.00 | 2.00 | 7.4% | 7.4% | true | 10.00 | true | 30,185,570.70 | 6,422,801.87 | 20,000,000.00 | 9,297,414.33 | 1,859,482.87 | 10.00 | true | 5, 7, 10 | true | true | 10.00 | 9,978,060.02 | 6,422,801.87 | 30,185,570.70 | 30,665,800.25 | HURDLE_COMPLETION_TRIGGER_EXECUTED |
+| liquidity_trap | High real estate NAV growth with low refinance capacity; tests the gap between paper value and LP cash liquidity. | 10 | 9.2% | 2.00 | -27.6% | 7.3% | false |  | true | 36,784,778.07 | 0.00 | 919,123.14 | 6,893,423.57 | 1,378,684.71 |  | true | 5, 7, 10 | true | false |  | 0.00 | 0.00 | 0.00 | 387,551.37 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| failure_never_reaches_hurdle | Both sleeves disappoint; LP never reaches 2.0x. | 12 | 4.1% | 1.73 | -31.7% | 4.7% | false |  | false | 16,842,869.90 | 0.00 | 411,400.38 | 3,085,502.85 | 617,100.57 |  | true | 5, 7, 10 | true | false |  | 0.00 | 0.00 | 0.00 | 231,774.86 | LP_HURDLE_NOT_ACHIEVED |
+
+### Largest economic-value versus cash gaps
+
+| Scenario | Cash MOIC | Economic MOIC | Economic minus cash |
+| --- | --- | --- | --- |
+| real_estate_distress_crypto_success | 0.03x | 2.00x | 1.97x |
+| fast_success_crypto_bull | 0.03x | 2.00x | 1.97x |
+| base_hit_everyone_happy | 0.06x | 2.00x | 1.94x |
+| liquidity_trap | 0.09x | 2.00x | 1.91x |
+| hedge_fund_failure_re_survival | 0.09x | 2.00x | 1.91x |
+
+## Compact annual cashflow and NAV trajectory
+
+The table below keeps only the annual columns most useful for tracing LP cash, cash routing, sleeve NAVs, liquidity, and hurdle events.
+
+| scenario | year | lp_distribution | lp_cumulative_distribution | lp_remaining_hurdle | re_cashflow_to_lp | re_cashflow_to_hf | re_cashflow_to_reserve | hf_harvest_to_lp | hf_harvest_to_hf | hf_harvest_to_reserve | refinance_proceeds | refinance_liability | re_closing_nav | hf_closing_nav | reserve_closing_nav | retained_cash | fund_nav | liquidity_available | hurdle_trigger_executed | trigger_cash_from_retained_cash | trigger_cash_from_reserve | trigger_cash_from_hf_liquidation | trigger_cash_from_refi | lp_hurdle_shortfall_after_trigger | event_flag |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| base_hit_everyone_happy | 1 | 60,690.00 | 60,690.00 | 19,939,310.00 | 60,690.00 | 455,175.00 | 91,035.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,840,000.00 | 1,755,175.00 | 591,035.00 | 0.00 | 11,186,210.00 | 4,556,210.00 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,939,310.00 |  |
+| base_hit_everyone_happy | 2 | 64,775.10 | 125,465.10 | 19,874,534.90 | 64,775.10 | 485,813.25 | 97,162.65 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,193,600.00 | 2,504,264.50 | 688,197.65 | 0.00 | 12,386,062.15 | 5,490,862.15 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,874,534.90 |  |
+| base_hit_everyone_happy | 3 | 69,133.00 | 194,598.10 | 19,805,401.90 | 69,133.00 | 518,497.49 | 103,699.50 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,561,344.00 | 3,899,254.57 | 791,897.15 | 0.00 | 14,252,495.72 | 7,081,487.72 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,805,401.90 |  |
+| base_hit_everyone_happy | 4 | 73,781.83 | 268,379.93 | 19,731,620.07 | 73,781.83 | 553,363.72 | 110,672.74 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,943,797.76 | 4,920,528.83 | 902,569.89 | 0.00 | 15,766,896.49 | 8,309,048.17 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,731,620.07 |  |
+| base_hit_everyone_happy | 5 | 78,740.92 | 347,120.85 | 19,652,879.15 | 78,740.92 | 590,556.93 | 118,111.39 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,341,549.67 | 6,692,012.68 | 1,020,681.28 | 0.00 | 18,054,243.63 | 10,298,081.38 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,652,879.15 |  |
+| base_hit_everyone_happy | 6 | 84,030.90 | 431,151.75 | 19,568,848.25 | 84,030.90 | 630,231.74 | 126,046.35 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,755,211.66 | 7,857,605.44 | 1,146,727.63 | 0.00 | 19,759,544.72 | 11,693,135.98 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,568,848.25 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| base_hit_everyone_happy | 7 | 89,673.74 | 520,825.49 | 19,479,174.51 | 89,673.74 | 672,553.01 | 134,510.60 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,185,420.12 | 11,673,200.63 | 1,281,238.23 | 0.00 | 24,139,858.98 | 15,750,793.89 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,479,174.51 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| base_hit_everyone_happy | 8 | 95,692.87 | 616,518.36 | 19,383,481.64 | 95,692.87 | 717,696.53 | 143,539.31 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,632,836.93 | 13,091,289.19 | 1,424,777.53 | 0.00 | 26,148,903.66 | 17,424,275.96 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,383,481.64 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| fast_success_crypto_bull | 1 | 56,695.00 | 56,695.00 | 19,943,305.00 | 56,695.00 | 425,212.50 | 85,042.50 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,755,000.00 | 2,025,212.50 | 585,042.50 | 0.00 | 11,365,255.00 | 4,799,005.00 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,943,305.00 |  |
+| fast_success_crypto_bull | 2 | 59,621.55 | 116,316.55 | 19,883,683.45 | 59,621.55 | 447,161.62 | 89,432.32 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,017,650.00 | 4,092,544.12 | 674,474.82 | 0.00 | 13,784,668.95 | 7,021,431.45 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,883,683.45 |  |
+| fast_success_crypto_bull | 3 | 62,697.92 | 179,014.47 | 19,820,985.53 | 62,697.92 | 470,234.38 | 94,046.88 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,288,179.50 | 5,790,541.74 | 768,521.70 | 0.00 | 15,847,242.94 | 8,881,108.31 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,820,985.53 |  |
+| fast_success_crypto_bull | 4 | 65,931.73 | 244,946.20 | 19,755,053.80 | 65,931.73 | 494,488.00 | 98,897.60 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,566,824.88 | 7,732,665.18 | 867,419.30 | 0.00 | 18,166,909.36 | 10,991,790.70 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,755,053.80 |  |
+| fast_success_crypto_bull | 5 | 69,331.02 | 314,277.22 | 19,685,722.78 | 69,331.02 | 519,982.65 | 103,996.53 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,853,829.63 | 9,412,547.60 | 971,415.83 | 0.00 | 20,237,793.07 | 12,847,420.84 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,685,722.78 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| slow_grind | 1 | 52,700.00 | 52,700.00 | 19,947,300.00 | 52,700.00 | 395,250.00 | 79,050.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,670,000.00 | 1,585,250.00 | 579,050.00 | 0.00 | 10,834,300.00 | 4,331,800.00 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,947,300.00 |  |
+| slow_grind | 2 | 54,599.32 | 107,299.32 | 19,892,700.68 | 54,599.32 | 409,494.94 | 81,898.99 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,843,400.00 | 1,915,482.44 | 660,948.99 | 0.00 | 11,419,831.43 | 4,787,281.42 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,892,700.68 |  |
+| slow_grind | 3 | 56,566.48 | 163,865.80 | 19,836,134.20 | 56,566.48 | 424,248.57 | 84,849.71 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,020,268.00 | 2,607,898.55 | 745,798.70 | 0.00 | 12,373,965.25 | 5,608,764.25 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,836,134.20 |  |
+| slow_grind | 4 | 58,603.86 | 222,469.67 | 19,777,530.33 | 58,603.86 | 439,528.98 | 87,905.80 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,200,673.36 | 3,125,664.49 | 833,704.50 | 0.00 | 13,160,042.35 | 6,259,537.33 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,777,530.33 |  |
+| slow_grind | 5 | 60,713.98 | 283,183.65 | 19,716,816.35 | 60,713.98 | 455,354.88 | 91,070.98 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,384,686.83 | 4,081,125.69 | 924,775.47 | 0.00 | 14,390,587.99 | 7,352,072.87 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,716,816.35 |  |
+| slow_grind | 6 | 62,899.42 | 346,083.07 | 19,653,916.93 | 62,899.42 | 471,745.64 | 94,349.13 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,572,380.56 | 4,838,550.12 | 1,019,124.60 | 0.00 | 15,430,055.29 | 8,250,769.87 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,653,916.93 |  |
+| slow_grind | 7 | 65,162.84 | 411,245.91 | 19,588,754.09 | 65,162.84 | 488,721.33 | 97,744.27 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,763,828.18 | 6,536,908.98 | 1,116,868.87 | 0.00 | 17,417,606.03 | 10,094,734.89 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,588,754.09 |  |
+| slow_grind | 8 | 67,507.03 | 478,752.94 | 19,521,247.06 | 67,507.03 | 506,302.72 | 101,260.54 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,959,104.74 | 7,370,057.15 | 1,218,129.41 | 0.00 | 18,547,291.30 | 11,077,962.75 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,521,247.06 |  |
+| slow_grind | 9 | 69,934.84 | 548,687.78 | 19,451,312.22 | 69,934.84 | 524,511.33 | 104,902.27 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,158,286.83 | 8,852,675.91 | 1,323,031.68 | 0.00 | 20,333,994.42 | 12,715,279.29 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,451,312.22 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| slow_grind | 10 | 72,449.26 | 621,137.04 | 19,378,862.96 | 72,449.26 | 543,369.42 | 108,673.88 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,361,452.57 | 9,218,991.80 | 1,431,705.56 | 0.00 | 21,012,149.93 | 13,241,060.51 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,378,862.96 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| slow_grind | 11 | 75,053.34 | 696,190.38 | 19,303,809.62 | 75,053.34 | 562,900.06 | 112,580.01 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,568,681.62 | 11,994,449.89 | 1,544,285.57 | 0.00 | 24,107,417.09 | 16,180,905.87 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,303,809.62 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| slow_grind | 12 | 77,750.28 | 773,940.66 | 19,226,059.34 | 77,750.28 | 583,127.12 | 116,625.42 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,780,055.25 | 14,256,800.00 | 1,660,911.00 | 0.00 | 26,697,766.25 | 18,612,724.81 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,226,059.34 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| slow_grind | 13 | 80,543.38 | 854,484.04 | 19,145,515.96 | 80,543.38 | 604,075.34 | 120,815.07 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,995,656.36 | 19,565,619.34 | 1,781,726.06 | 0.00 | 32,343,001.76 | 24,096,259.49 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,145,515.96 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| slow_grind | 14 | 83,436.04 | 937,920.08 | 19,062,079.92 | 83,436.04 | 625,770.30 | 125,154.06 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,215,569.49 | 22,734,920.15 | 1,906,880.12 | 0.00 | 35,857,369.76 | 27,445,692.64 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,062,079.92 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| slow_grind | 15 | 86,431.80 | 1,024,351.88 | 18,975,648.12 | 86,431.80 | 648,238.52 | 129,647.70 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,439,880.88 | 24,747,253.87 | 2,036,527.83 | 0.00 | 38,223,662.58 | 29,643,751.92 | false | 0.00 | 0.00 | 0.00 | 0.00 | 18,975,648.12 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| hedge_fund_failure_re_survival | 1 | 60,945.00 | 60,945.00 | 19,939,055.00 | 60,945.00 | 457,087.50 | 91,417.50 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,712,500.00 | 757,087.50 | 591,417.50 | 0.00 | 10,061,005.00 | 3,526,630.00 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,939,055.00 |  |
+| hedge_fund_failure_re_survival | 2 | 63,775.50 | 124,720.50 | 19,875,279.50 | 63,775.50 | 478,316.25 | 95,663.25 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,930,312.50 | 1,083,986.25 | 687,080.75 | 0.00 | 10,701,379.50 | 4,003,645.12 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,875,279.50 |  |
+| hedge_fund_failure_re_survival | 3 | 66,736.23 | 191,456.73 | 19,808,543.27 | 66,736.23 | 500,521.69 | 100,104.34 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,153,570.31 | 1,638,707.25 | 787,185.09 | 0.00 | 11,579,462.65 | 4,714,284.92 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,808,543.27 |  |
+| hedge_fund_failure_re_survival | 4 | 69,833.14 | 261,289.86 | 19,738,710.14 | 69,833.14 | 523,748.53 | 104,749.71 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,382,409.57 | 2,244,391.14 | 891,934.79 | 0.00 | 12,518,735.51 | 5,481,928.33 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,738,710.14 |  |
+| hedge_fund_failure_re_survival | 5 | 73,072.47 | 334,362.33 | 19,665,637.67 | 73,072.47 | 548,043.52 | 109,608.70 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,616,969.81 | 2,882,210.30 | 1,001,543.50 | 0.00 | 13,500,723.61 | 6,287,996.25 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,665,637.67 |  |
+| hedge_fund_failure_re_survival | 6 | 76,460.74 | 410,823.07 | 19,589,176.93 | 76,460.74 | 573,455.54 | 114,691.11 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,857,394.05 | 3,570,954.25 | 1,116,234.60 | 0.00 | 14,544,582.91 | 7,151,537.37 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,589,176.93 |  |
+| hedge_fund_failure_re_survival | 7 | 80,004.76 | 490,827.83 | 19,509,172.17 | 80,004.76 | 600,035.70 | 120,007.14 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,103,828.91 | 4,313,828.13 | 1,236,241.74 | 0.00 | 15,653,898.78 | 8,076,027.10 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,509,172.17 |  |
+| hedge_fund_failure_re_survival | 8 | 83,711.66 | 574,539.49 | 19,425,460.51 | 83,711.66 | 627,837.47 | 125,567.49 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,356,424.63 | 5,114,218.72 | 1,361,809.24 | 0.00 | 16,832,452.59 | 9,065,134.11 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,425,460.51 |  |
+| hedge_fund_failure_re_survival | 9 | 87,588.90 | 662,128.39 | 19,337,871.61 | 87,588.90 | 656,916.72 | 131,383.34 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,615,335.24 | 5,975,704.18 | 1,493,192.58 | 0.00 | 18,084,232.01 | 10,122,730.58 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,337,871.61 |  |
+| hedge_fund_failure_re_survival | 10 | 91,644.25 | 753,772.64 | 19,246,227.36 | 91,644.25 | 687,331.89 | 137,466.38 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,880,718.63 | 6,902,064.24 | 1,630,658.96 | 0.00 | 19,413,441.82 | 11,252,902.85 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,246,227.36 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| hedge_fund_failure_re_survival | 11 | 95,885.88 | 849,658.52 | 19,150,341.48 | 95,885.88 | 719,144.08 | 143,828.82 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,152,736.59 | 7,897,290.89 | 1,774,487.77 | 0.00 | 20,824,515.25 | 12,459,962.81 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,150,341.48 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| hedge_fund_failure_re_survival | 12 | 100,322.29 | 949,980.81 | 19,050,019.19 | 100,322.29 | 752,417.20 | 150,483.44 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,431,555.01 | 8,965,599.72 | 1,924,971.21 | 0.00 | 22,322,125.94 | 13,748,459.69 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,050,019.19 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| real_estate_distress_crypto_success | 1 | 36,210.00 | 36,210.00 | 19,963,790.00 | 36,210.00 | 271,575.00 | 54,315.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,245,000.00 | 1,871,575.00 | 554,315.00 | 0.00 | 10,670,890.00 | 4,487,140.00 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,963,790.00 |  |
+| real_estate_distress_crypto_success | 2 | 34,752.68 | 70,962.68 | 19,929,037.32 | 34,752.68 | 260,645.06 | 52,129.01 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,997,650.00 | 2,880,850.06 | 606,444.01 | 0.00 | 11,484,944.07 | 5,486,706.58 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,929,037.32 |  |
+| real_estate_distress_crypto_success | 3 | 33,353.80 | 104,316.47 | 19,895,683.53 | 33,353.80 | 250,153.50 | 50,030.70 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,757,720.50 | 3,851,216.07 | 656,474.71 | 0.00 | 12,265,411.29 | 6,447,120.91 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,895,683.53 |  |
+| real_estate_distress_crypto_success | 4 | 32,011.04 | 136,327.51 | 19,863,672.49 | 32,011.04 | 240,082.76 | 48,016.55 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,524,988.88 | 5,439,224.46 | 704,491.26 | 0.00 | 13,668,704.61 | 8,024,962.95 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,863,672.49 |  |
+| real_estate_distress_crypto_success | 5 | 30,722.14 | 167,049.65 | 19,832,950.35 | 30,722.14 | 230,416.03 | 46,083.21 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,299,239.22 | 6,213,562.94 | 750,574.47 | 0.00 | 14,263,376.62 | 8,788,947.21 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,832,950.35 |  |
+| real_estate_distress_crypto_success | 6 | 29,484.95 | 196,534.60 | 19,803,465.40 | 29,484.95 | 221,137.12 | 44,227.42 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,080,262.04 | 9,230,803.38 | 794,801.89 | 0.00 | 17,105,867.32 | 11,795,670.79 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,803,465.40 |  |
+| real_estate_distress_crypto_success | 7 | 28,297.40 | 224,832.00 | 19,775,168.00 | 28,297.40 | 212,230.54 | 42,446.11 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 6,867,854.18 | 9,904,574.09 | 837,248.00 | 0.00 | 17,609,676.27 | 12,458,785.64 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,775,168.00 |  |
+| real_estate_distress_crypto_success | 8 | 27,157.52 | 251,989.52 | 19,748,010.48 | 27,157.52 | 203,681.36 | 40,736.27 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 6,661,818.56 | 11,296,804.34 | 877,984.27 | 0.00 | 18,836,607.17 | 13,840,243.26 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,748,010.48 |  |
+| real_estate_distress_crypto_success | 9 | 26,063.37 | 278,052.89 | 19,721,947.11 | 26,063.37 | 195,475.30 | 39,095.06 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 6,461,964.00 | 13,186,800.29 | 917,079.33 | 0.00 | 20,565,843.63 | 15,719,370.63 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,721,947.11 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| real_estate_distress_crypto_success | 10 | 25,013.15 | 303,066.04 | 19,696,933.96 | 25,013.15 | 187,598.62 | 37,519.72 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 6,268,105.08 | 16,671,098.98 | 954,599.06 | 0.00 | 23,893,803.12 | 19,192,724.31 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,696,933.96 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| exceptional_dynasty_outcome | 1 | 68,935.00 | 68,935.00 | 19,931,065.00 | 68,935.00 | 517,012.50 | 103,402.50 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,180,000.00 | 2,117,012.50 | 603,402.50 | 0.00 | 11,900,415.00 | 5,015,415.00 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,931,065.00 |  |
+| exceptional_dynasty_outcome | 2 | 77,571.00 | 146,506.00 | 19,853,494.00 | 77,571.00 | 581,782.50 | 116,356.50 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,914,400.00 | 3,757,301.25 | 719,759.00 | 0.00 | 14,391,460.25 | 6,955,660.25 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,853,494.00 |  |
+| exceptional_dynasty_outcome | 3 | 87,282.41 | 233,788.41 | 19,766,211.59 | 87,282.41 | 654,618.09 | 130,923.62 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,707,552.00 | 5,539,109.71 | 850,682.62 | 0.00 | 17,097,344.33 | 9,066,680.33 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,766,211.59 |  |
+| exceptional_dynasty_outcome | 4 | 98,202.64 | 331,991.05 | 19,668,008.95 | 98,202.64 | 736,519.82 | 147,303.96 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,564,156.16 | 7,383,451.48 | 997,986.58 | 0.00 | 19,945,594.22 | 11,272,477.10 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,668,008.95 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| exceptional_dynasty_outcome | 5 | 110,481.61 | 442,472.66 | 19,557,527.34 | 110,481.61 | 828,612.07 | 165,722.41 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 12,489,288.65 | 9,319,581.27 | 1,163,709.00 | 0.00 | 22,972,578.92 | 13,605,612.43 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,557,527.34 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| exceptional_dynasty_outcome | 6 | 124,287.78 | 566,760.44 | 19,433,239.56 | 124,287.78 | 932,158.32 | 186,431.66 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 13,488,431.75 | 12,115,655.84 | 1,350,140.66 | 0.00 | 26,954,228.25 | 16,837,904.44 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,433,239.56 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| exceptional_dynasty_outcome | 7 | 139,810.45 | 706,570.89 | 19,293,429.11 | 139,810.45 | 1,048,578.37 | 209,715.67 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 14,567,506.28 | 14,375,799.80 | 1,559,856.34 | 0.00 | 30,503,162.42 | 19,577,532.71 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,293,429.11 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| exceptional_dynasty_outcome | 8 | 157,262.35 | 863,833.24 | 19,136,166.76 | 157,262.35 | 1,179,467.63 | 235,893.53 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 15,732,906.79 | 19,580,491.38 | 1,795,749.86 | 0.00 | 37,109,148.03 | 25,309,467.94 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,136,166.76 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| exceptional_dynasty_outcome | 9 | 176,882.51 | 1,040,715.75 | 18,959,284.25 | 176,882.51 | 1,326,618.79 | 265,323.76 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 16,991,539.33 | 22,473,549.48 | 2,061,073.62 | 0.00 | 41,526,162.43 | 28,782,507.93 | false | 0.00 | 0.00 | 0.00 | 0.00 | 18,959,284.25 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| exceptional_dynasty_outcome | 10 | 18,959,284.25 | 20,000,000.00 | 0.00 | 198,939.50 | 1,492,046.24 | 298,409.25 | 0.00 | 0.00 | 0.00 | 0.00 | 6,422,801.87 | 18,350,862.48 | 18,257,510.09 | 0.00 | 0.00 | 30,185,570.70 | 35,182,768.60 | true | 0.00 | 2,359,482.87 | 9,978,060.02 | 6,422,801.87 | 0.00 | HURDLE_COMPLETION_TRIGGER_EXECUTED |
+| liquidity_trap | 1 | 56,695.00 | 56,695.00 | 19,943,305.00 | 56,695.00 | 425,212.50 | 85,042.50 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,095,000.00 | 1,525,212.50 | 585,042.50 | 0.00 | 11,205,255.00 | 2,565,005.00 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,943,305.00 |  |
+| liquidity_trap | 2 | 62,573.60 | 119,268.60 | 19,880,731.40 | 62,573.60 | 469,302.00 | 93,860.40 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 9,731,650.00 | 2,574,095.25 | 678,902.90 | 0.00 | 12,984,648.15 | 3,739,580.65 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,880,731.40 |  |
+| liquidity_trap | 3 | 69,058.71 | 188,327.31 | 19,811,672.69 | 69,058.71 | 517,940.31 | 103,588.06 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 10,412,865.50 | 3,658,336.51 | 782,490.96 | 0.00 | 14,853,692.98 | 4,961,470.75 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,811,672.69 |  |
+| liquidity_trap | 4 | 76,212.69 | 264,540.00 | 19,735,460.00 | 76,212.69 | 571,595.17 | 114,319.03 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,141,766.09 | 4,412,848.51 | 896,810.00 | 0.00 | 16,451,424.59 | 5,866,746.81 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,735,460.00 |  |
+| liquidity_trap | 5 | 84,104.31 | 348,644.31 | 19,651,355.69 | 84,104.31 | 630,782.31 | 126,156.46 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 11,921,689.71 | 6,146,842.95 | 1,022,966.46 | 0.00 | 19,091,499.12 | 7,765,893.89 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,651,355.69 |  |
+| liquidity_trap | 6 | 92,809.38 | 441,453.69 | 19,558,546.31 | 92,809.38 | 696,070.37 | 139,214.07 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 12,756,207.99 | 7,150,255.47 | 1,162,180.53 | 0.00 | 21,068,643.99 | 8,950,246.40 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,558,546.31 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| liquidity_trap | 7 | 102,411.51 | 543,865.20 | 19,456,134.80 | 102,411.51 | 768,086.31 | 153,617.26 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 13,649,142.55 | 10,349,428.64 | 1,315,797.79 | 0.00 | 25,314,368.98 | 12,347,683.56 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,456,134.80 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| liquidity_trap | 8 | 113,002.85 | 656,868.05 | 19,343,131.95 | 113,002.85 | 847,521.37 | 169,504.27 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 14,604,582.53 | 11,610,927.15 | 1,485,302.07 | 0.00 | 27,700,811.75 | 13,826,458.34 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,343,131.95 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| liquidity_trap | 9 | 124,685.03 | 781,553.07 | 19,218,446.93 | 124,685.03 | 935,137.69 | 187,027.54 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 15,626,903.31 | 16,493,780.07 | 1,672,329.61 | 0.00 | 33,793,012.98 | 18,947,454.84 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,218,446.93 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| liquidity_trap | 10 | 137,570.07 | 919,123.14 | 19,080,876.86 | 137,570.07 | 1,031,775.54 | 206,355.11 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 16,720,786.54 | 18,185,306.82 | 1,878,684.71 | 0.00 | 36,784,778.07 | 20,900,030.86 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,080,876.86 | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED |
+| failure_never_reaches_hurdle | 1 | 36,210.00 | 36,210.00 | 19,963,790.00 | 36,210.00 | 271,575.00 | 54,315.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,415,000.00 | 1,071,575.00 | 554,315.00 | 0.00 | 10,040,890.00 | 3,729,640.00 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,963,790.00 |  |
+| failure_never_reaches_hurdle | 2 | 35,847.90 | 72,057.90 | 19,927,942.10 | 35,847.90 | 268,859.25 | 53,771.85 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,330,850.00 | 1,447,591.75 | 608,086.85 | 0.00 | 10,386,528.60 | 4,138,391.10 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,927,942.10 |  |
+| failure_never_reaches_hurdle | 3 | 35,489.42 | 107,547.32 | 19,892,452.68 | 35,489.42 | 266,170.66 | 53,234.13 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,247,541.50 | 1,930,901.17 | 661,320.98 | 0.00 | 10,839,763.65 | 4,654,107.53 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,892,452.68 |  |
+| failure_never_reaches_hurdle | 4 | 35,134.53 | 142,681.85 | 19,857,318.15 | 35,134.53 | 263,508.95 | 52,701.79 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,165,066.08 | 2,252,337.16 | 714,022.77 | 0.00 | 11,131,426.01 | 5,007,626.45 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,857,318.15 |  |
+| failure_never_reaches_hurdle | 5 | 34,783.18 | 177,465.03 | 19,822,534.97 | 34,783.18 | 260,873.86 | 52,174.77 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,083,415.42 | 3,053,771.93 | 766,197.54 | 0.00 | 11,903,384.90 | 5,840,823.33 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,822,534.97 |  |
+| failure_never_reaches_hurdle | 6 | 34,435.35 | 211,900.38 | 19,788,099.62 | 34,435.35 | 258,265.12 | 51,653.02 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 8,002,581.27 | 3,434,187.94 | 817,850.57 | 0.00 | 12,254,619.77 | 6,252,683.82 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,788,099.62 |  |
+| failure_never_reaches_hurdle | 7 | 34,091.00 | 245,991.38 | 19,754,008.62 | 34,091.00 | 255,682.47 | 51,136.49 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,922,555.46 | 4,136,314.84 | 868,987.06 | 0.00 | 12,927,857.36 | 6,985,940.77 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,754,008.62 |  |
+| failure_never_reaches_hurdle | 8 | 33,750.09 | 279,741.46 | 19,720,258.54 | 33,750.09 | 253,125.65 | 50,625.13 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,843,329.90 | 5,133,977.16 | 919,612.19 | 0.00 | 13,896,919.25 | 8,014,421.82 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,720,258.54 |  |
+| failure_never_reaches_hurdle | 9 | 33,412.59 | 313,154.05 | 19,686,845.95 | 33,412.59 | 250,594.39 | 50,118.88 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,764,896.60 | 4,768,494.29 | 969,731.07 | 0.00 | 13,503,121.96 | 7,679,449.51 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,686,845.95 |  |
+| failure_never_reaches_hurdle | 10 | 33,078.46 | 346,232.51 | 19,653,767.49 | 33,078.46 | 248,088.45 | 49,617.69 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,687,247.64 | 6,351,761.13 | 1,019,348.76 | 0.00 | 15,058,357.53 | 9,292,921.80 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,653,767.49 |  |
+| failure_never_reaches_hurdle | 11 | 32,747.67 | 378,980.18 | 19,621,019.82 | 32,747.67 | 245,607.56 | 49,121.51 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,610,375.16 | 7,359,580.03 | 1,068,470.27 | 0.00 | 16,038,425.47 | 10,330,644.10 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,621,019.82 |  |
+| failure_never_reaches_hurdle | 12 | 32,420.20 | 411,400.38 | 19,588,599.62 | 32,420.20 | 243,151.49 | 48,630.30 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | 7,534,271.41 | 8,191,497.92 | 1,117,100.57 | 0.00 | 16,842,869.90 | 11,192,166.34 | false | 0.00 | 0.00 | 0.00 | 0.00 | 19,588,599.62 |  |
+
+## Auto-generated scenario observations
+
+### base_hit_everyone_happy
+
+Over 8 years, LP cash distributions totalled $617k, or 0.06x cash MOIC. Economic MOIC was 2.00x, with final fund NAV of $26.1m. The LP cash hurdle was not achieved during the model period. At the final year, the largest remaining value bucket was hedge fund at $13.1m. Annual event flags observed: HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED.
+
+### fast_success_crypto_bull
+
+Over 5 years, LP cash distributions totalled $314k, or 0.03x cash MOIC. Economic MOIC was 2.00x, with final fund NAV of $20.2m. The LP cash hurdle was not achieved during the model period. At the final year, the largest remaining value bucket was real estate at $9.9m. Annual event flags observed: HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED.
+
+### slow_grind
+
+Over 15 years, LP cash distributions totalled $1.0m, or 0.10x cash MOIC. Economic MOIC was 2.00x, with final fund NAV of $38.2m. The LP cash hurdle was not achieved during the model period. At the final year, the largest remaining value bucket was hedge fund at $24.7m. Annual event flags observed: HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED.
+
+### hedge_fund_failure_re_survival
+
+Over 12 years, LP cash distributions totalled $950k, or 0.09x cash MOIC. Economic MOIC was 2.00x, with final fund NAV of $22.3m. The LP cash hurdle was not achieved during the model period. At the final year, the largest remaining value bucket was real estate at $11.4m. Annual event flags observed: HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED.
+
+### real_estate_distress_crypto_success
+
+Over 10 years, LP cash distributions totalled $303k, or 0.03x cash MOIC. Economic MOIC was 2.00x, with final fund NAV of $23.9m. The LP cash hurdle was not achieved during the model period. At the final year, the largest remaining value bucket was hedge fund at $16.7m. Annual event flags observed: HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED.
+
+### exceptional_dynasty_outcome
+
+Over 10 years, LP cash distributions totalled $20.0m, or 2.00x cash MOIC. Economic MOIC was 2.00x, with final fund NAV of $30.2m. The LP cash hurdle was achieved during the model period. At the final year, the largest remaining value bucket was real estate at $18.4m. Annual event flags observed: HURDLE_COMPLETION_TRIGGER_EXECUTED, HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED.
+
+### liquidity_trap
+
+Over 10 years, LP cash distributions totalled $919k, or 0.09x cash MOIC. Economic MOIC was 2.00x, with final fund NAV of $36.8m. The LP cash hurdle was not achieved during the model period. At the final year, the largest remaining value bucket was hedge fund at $18.2m. Annual event flags observed: HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED.
+
+### failure_never_reaches_hurdle
+
+Over 12 years, LP cash distributions totalled $411k, or 0.04x cash MOIC. Economic MOIC was 1.73x, with final fund NAV of $16.8m. The LP cash hurdle was not achieved during the model period. At the final year, the largest remaining value bucket was hedge fund at $8.2m. No annual event flags were observed.
+
+## Flags and diagnostics
+
+| scenario | flag | severity | explanation |
+| --- | --- | --- | --- |
+| base_hit_everyone_happy | LP_HURDLE_NOT_ACHIEVED | high | LP did not reach the target cash MOIC within the model horizon. |
+| base_hit_everyone_happy | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED | high | Economic hurdle passed before available liquidity could redeem LPs. |
+| base_hit_everyone_happy | SLOW_TIME_HORIZON_DRIFT | medium | LP outcome takes a long time or does not arrive within the horizon. |
+| base_hit_everyone_happy | GP_SURVIVABILITY_RISK | medium | GP fee income in the early years is below the configured threshold. |
+| base_hit_everyone_happy | LP_STILL_BELOW_1X_CASH_MOIC_AT_END | medium | LP cash distributions remain below 1.0x at model end. |
+| base_hit_everyone_happy | LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV | medium | Fund NAV is positive but LP cash recovery remains below 1.0x. |
+| fast_success_crypto_bull | LP_HURDLE_NOT_ACHIEVED | high | LP did not reach the target cash MOIC within the model horizon. |
+| fast_success_crypto_bull | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED | high | Economic hurdle passed before available liquidity could redeem LPs. |
+| fast_success_crypto_bull | SLOW_TIME_HORIZON_DRIFT | medium | LP outcome takes a long time or does not arrive within the horizon. |
+| fast_success_crypto_bull | GP_SURVIVABILITY_RISK | medium | GP fee income in the early years is below the configured threshold. |
+| fast_success_crypto_bull | LP_STILL_BELOW_1X_CASH_MOIC_AT_END | medium | LP cash distributions remain below 1.0x at model end. |
+| fast_success_crypto_bull | LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV | medium | Fund NAV is positive but LP cash recovery remains below 1.0x. |
+| slow_grind | LP_HURDLE_NOT_ACHIEVED | high | LP did not reach the target cash MOIC within the model horizon. |
+| slow_grind | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED | high | Economic hurdle passed before available liquidity could redeem LPs. |
+| slow_grind | SLOW_TIME_HORIZON_DRIFT | medium | LP outcome takes a long time or does not arrive within the horizon. |
+| slow_grind | GP_SURVIVABILITY_RISK | medium | GP fee income in the early years is below the configured threshold. |
+| slow_grind | LP_STILL_BELOW_1X_CASH_MOIC_AT_END | medium | LP cash distributions remain below 1.0x at model end. |
+| slow_grind | LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV | medium | Fund NAV is positive but LP cash recovery remains below 1.0x. |
+| hedge_fund_failure_re_survival | LP_HURDLE_NOT_ACHIEVED | high | LP did not reach the target cash MOIC within the model horizon. |
+| hedge_fund_failure_re_survival | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED | high | Economic hurdle passed before available liquidity could redeem LPs. |
+| hedge_fund_failure_re_survival | SLOW_TIME_HORIZON_DRIFT | medium | LP outcome takes a long time or does not arrive within the horizon. |
+| hedge_fund_failure_re_survival | GP_SURVIVABILITY_RISK | medium | GP fee income in the early years is below the configured threshold. |
+| hedge_fund_failure_re_survival | LP_STILL_BELOW_1X_CASH_MOIC_AT_END | medium | LP cash distributions remain below 1.0x at model end. |
+| hedge_fund_failure_re_survival | LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV | medium | Fund NAV is positive but LP cash recovery remains below 1.0x. |
+| real_estate_distress_crypto_success | LP_HURDLE_NOT_ACHIEVED | high | LP did not reach the target cash MOIC within the model horizon. |
+| real_estate_distress_crypto_success | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED | high | Economic hurdle passed before available liquidity could redeem LPs. |
+| real_estate_distress_crypto_success | SLOW_TIME_HORIZON_DRIFT | medium | LP outcome takes a long time or does not arrive within the horizon. |
+| real_estate_distress_crypto_success | GP_SURVIVABILITY_RISK | medium | GP fee income in the early years is below the configured threshold. |
+| real_estate_distress_crypto_success | RE_NAV_IMPAIRMENT | medium | Real estate NAV fell by more than the configured impairment threshold. |
+| real_estate_distress_crypto_success | LP_STILL_BELOW_1X_CASH_MOIC_AT_END | medium | LP cash distributions remain below 1.0x at model end. |
+| real_estate_distress_crypto_success | LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV | medium | Fund NAV is positive but LP cash recovery remains below 1.0x. |
+| exceptional_dynasty_outcome | LP_HURDLE_ACHIEVED | info | LP reached 2.00x in year 10. |
+| exceptional_dynasty_outcome | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED | high | Economic hurdle passed before available liquidity could redeem LPs. |
+| exceptional_dynasty_outcome | SLOW_TIME_HORIZON_DRIFT | medium | LP outcome takes a long time or does not arrive within the horizon. |
+| exceptional_dynasty_outcome | GP_SURVIVABILITY_RISK | medium | GP fee income in the early years is below the configured threshold. |
+| exceptional_dynasty_outcome | HURDLE_COMPLETION_TRIGGER_EXECUTED | info | Active hurdle completion trigger monetized permitted sources to extinguish LPs. |
+| exceptional_dynasty_outcome | LP_REDEEMED_VIA_HF_LIQUIDATION | medium | LP hurdle completion used partial hedge fund liquidation. |
+| exceptional_dynasty_outcome | LP_REDEEMED_VIA_REFI | medium | LP hurdle completion used refinance proceeds. |
+| liquidity_trap | LP_HURDLE_NOT_ACHIEVED | high | LP did not reach the target cash MOIC within the model horizon. |
+| liquidity_trap | HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED | high | Economic hurdle passed before available liquidity could redeem LPs. |
+| liquidity_trap | SLOW_TIME_HORIZON_DRIFT | medium | LP outcome takes a long time or does not arrive within the horizon. |
+| liquidity_trap | GP_SURVIVABILITY_RISK | medium | GP fee income in the early years is below the configured threshold. |
+| liquidity_trap | LP_STILL_BELOW_1X_CASH_MOIC_AT_END | medium | LP cash distributions remain below 1.0x at model end. |
+| liquidity_trap | LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV | medium | Fund NAV is positive but LP cash recovery remains below 1.0x. |
+| failure_never_reaches_hurdle | LP_HURDLE_NOT_ACHIEVED | high | LP did not reach the target cash MOIC within the model horizon. |
+| failure_never_reaches_hurdle | SLOW_TIME_HORIZON_DRIFT | medium | LP outcome takes a long time or does not arrive within the horizon. |
+| failure_never_reaches_hurdle | GP_SURVIVABILITY_RISK | medium | GP fee income in the early years is below the configured threshold. |
+| failure_never_reaches_hurdle | LP_STILL_BELOW_1X_CASH_MOIC_AT_END | medium | LP cash distributions remain below 1.0x at model end. |
+| failure_never_reaches_hurdle | LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV | medium | Fund NAV is positive but LP cash recovery remains below 1.0x. |
+
+## Source files used
+
+- `inputs/model_config.yaml`: present
+- `inputs/scenarios.yaml`: present
+- `outputs/scenario_summary.csv`: present
+- `outputs/scenario_cashflows.csv`: present
+- `outputs/scenario_flags.csv`: present

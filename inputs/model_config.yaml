@@ -41,6 +41,16 @@ distribution_policy:
   hf_positive_return_harvest_rate: 0.0
   retain_cash_until_hurdle_redemption: false
 
+cashflow_routing:
+  re_cashflow:
+    lp_distribution_pct: 0.10
+    hf_reinvestment_pct: 0.75
+    reserve_pct: 0.15
+  hf_harvest:
+    lp_distribution_pct: 0.10
+    hf_reinvestment_pct: 0.80
+    reserve_pct: 0.10
+
 lp_cash_yield_policy:
   enabled: false
   target_annual_yield_on_unreturned_capital: 0.0
@@ -75,3 +85,27 @@ gp_survivability:
   first_n_years: 5
   minimum_cumulative_fees: 500000
   minimum_average_annual_fees: 100000
+
+hurdle_completion_trigger:
+  enabled: true
+  trigger_when_economic_hurdle_passed: true
+  minimum_lp_cash_moic_before_trigger: 0.1
+  max_hf_liquidation_pct: 0.75
+  max_refi_pct_of_re_nav: 0.25
+  allow_retained_cash_use: true
+  allow_reserve_use: true
+  allow_hf_liquidation: true
+  allow_refi: true
+  allow_partial_re_sale: false
+  max_partial_re_sale_pct_of_re_nav: 0.0
+  execute_only_if_lp_fully_redeemed: true
+
+backend_liquidity_strategy:
+  enabled: true
+  target_years: [5, 7, 10]
+  refi_first: true
+  max_refi_pct_of_re_nav: 0.35
+  max_hf_liquidation_pct: 0.50
+  use_retained_cash: true
+  use_reserve: true
+  execute_only_if_lp_hurdle_completed: true

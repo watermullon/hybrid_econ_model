@@ -74,6 +74,34 @@ class DistributionPolicy(BaseModel):
     retain_cash_until_hurdle_redemption: bool = False
 
 
+class CashflowRoute(BaseModel):
+    lp_distribution_pct: float = Field(ge=0, le=1)
+    hf_reinvestment_pct: float = Field(ge=0, le=1)
+    reserve_pct: float = Field(ge=0, le=1)
+
+    @model_validator(mode="after")
+    def validate_total(self) -> "CashflowRoute":
+        total = self.lp_distribution_pct + self.hf_reinvestment_pct + self.reserve_pct
+        if abs(total - 1.0) > 1e-6:
+            raise ValueError("Cashflow routing percentages must sum to 1.0.")
+        return self
+
+
+class CashflowRoutingSettings(BaseModel):
+    enabled: bool = True
+    re_cashflow: CashflowRoute
+    hf_harvest: CashflowRoute
+
+
+def legacy_cashflow_routing() -> CashflowRoutingSettings:
+    """Disabled routing preserves pre-routing behavior for old tests/configs."""
+    return CashflowRoutingSettings(
+        enabled=False,
+        re_cashflow=CashflowRoute(lp_distribution_pct=1.0, hf_reinvestment_pct=0.0, reserve_pct=0.0),
+        hf_harvest=CashflowRoute(lp_distribution_pct=0.0, hf_reinvestment_pct=0.0, reserve_pct=1.0),
+    )
+
+
 class LPCashYieldPolicy(BaseModel):
     enabled: bool = False
     target_annual_yield_on_unreturned_capital: float = Field(default=0.0, ge=0)
@@ -88,6 +116,14 @@ class LPCashYieldPolicy(BaseModel):
         if not value:
             raise ValueError("LP cash yield source_priority must contain at least one source.")
         return value
+
+    @model_validator(mode="after")
+    def validate_hurdle_treatment(self) -> "LPCashYieldPolicy":
+        if self.enabled and not self.reduce_lp_hurdle:
+            raise ValueError(
+                "LP cash yield distributions must reduce the LP hurdle because the hurdle is based on actual cash received."
+            )
+        return self
 
 
 class ReserveSettings(BaseModel):
@@ -119,6 +155,45 @@ class GPSurvivabilitySettings(BaseModel):
     minimum_average_annual_fees: float = Field(default=100_000, ge=0)
 
 
+class HurdleCompletionTriggerSettings(BaseModel):
+    enabled: bool = True
+    trigger_when_economic_hurdle_passed: bool = True
+    minimum_lp_cash_moic_before_trigger: float = Field(default=1.25, ge=0)
+    max_hf_liquidation_pct: float = Field(default=0.75, ge=0, le=1)
+    max_refi_pct_of_re_nav: float = Field(default=0.20, ge=0, le=1)
+    allow_retained_cash_use: bool = True
+    allow_reserve_use: bool = True
+    allow_hf_liquidation: bool = True
+    allow_refi: bool = True
+    allow_partial_re_sale: bool = False
+    max_partial_re_sale_pct_of_re_nav: float = Field(default=0.0, ge=0, le=1)
+    execute_only_if_lp_fully_redeemed: bool = True
+
+
+class BackendLiquidityStrategySettings(BaseModel):
+    enabled: bool = False
+    target_years: list[int] = Field(default_factory=list)
+    refi_first: bool = True
+    max_refi_pct_of_re_nav: float = Field(default=0.25, ge=0, le=1)
+    max_hf_liquidation_pct: float = Field(default=0.50, ge=0, le=1)
+    use_retained_cash: bool = True
+    use_reserve: bool = True
+    execute_only_if_lp_hurdle_completed: bool = True
+
+    @field_validator("target_years")
+    @classmethod
+    def target_years_must_be_positive(cls, value: list[int]) -> list[int]:
+        if any(year <= 0 for year in value):
+            raise ValueError("Backend liquidity target years must be positive.")
+        return sorted(set(value))
+
+    @model_validator(mode="after")
+    def validate_enabled_strategy(self) -> "BackendLiquidityStrategySettings":
+        if self.enabled and not self.target_years:
+            raise ValueError("Backend liquidity strategy requires at least one target year when enabled.")
+        return self
+
+
 class ModelConfig(BaseModel):
     model: ModelSettings
     allocation: AllocationSettings
@@ -126,11 +201,14 @@ class ModelConfig(BaseModel):
     liquidity: LiquiditySettings
     fees: FeeSettings
     distribution_policy: DistributionPolicy
+    cashflow_routing: CashflowRoutingSettings = Field(default_factory=legacy_cashflow_routing)
     lp_cash_yield_policy: LPCashYieldPolicy = LPCashYieldPolicy()
     reserve: ReserveSettings = ReserveSettings()
     reporting: ReportingSettings
     flag_thresholds: FlagThresholds
     gp_survivability: GPSurvivabilitySettings = GPSurvivabilitySettings()
+    hurdle_completion_trigger: HurdleCompletionTriggerSettings = HurdleCompletionTriggerSettings()
+    backend_liquidity_strategy: BackendLiquidityStrategySettings = BackendLiquidityStrategySettings()
 
     @model_validator(mode="after")
     def validate_allocation(self) -> "ModelConfig":
@@ -142,6 +220,8 @@ class ModelConfig(BaseModel):
             )
             if abs(total - 1.0) > 1e-6:
                 raise ValueError("Fixed allocation percentages must sum to 1.0.")
+        if self.hurdle_completion_trigger.minimum_lp_cash_moic_before_trigger > self.waterfall.lp_hurdle_moic:
+            raise ValueError("Trigger minimum LP cash MOIC cannot exceed the LP hurdle MOIC.")
         return self
 
 
@@ -177,7 +257,9 @@ class Scenario(BaseModel):
     hedge_fund: HedgeFundScenario
     liquidity: dict[str, Any] | None = None
     distribution_policy: dict[str, Any] | None = None
+    cashflow_routing: dict[str, Any] | None = None
     lp_cash_yield_policy: dict[str, Any] | None = None
+    backend_liquidity_strategy: dict[str, Any] | None = None
     allocation: dict[str, Any] | None = None
     reserve: dict[str, Any] | None = None
     refinance_events: list[RefinanceEvent] = Field(default_factory=list)
@@ -216,15 +298,24 @@ class YearlyResult:
     gross_rent: float
     re_asset_mgmt_fee: float
     net_re_cashflow: float
+    re_cashflow_generated: float
+    re_cashflow_to_lp: float
+    re_cashflow_to_hf: float
+    re_cashflow_to_reserve: float
     re_appreciation_rate: float
     re_closing_nav: float
     hf_opening_nav: float
     hf_return: float
     hf_harvest: float
+    hf_harvest_generated: float
+    hf_harvest_to_lp: float
+    hf_harvest_to_hf: float
+    hf_harvest_to_reserve: float
     hf_closing_nav: float
     refinance_proceeds: float
     refinance_use_of_proceeds: str
     cumulative_refinance_proceeds: float
+    refinance_liability: float
     reserve_opening_nav: float
     reserve_closing_nav: float
     retained_cash: float
@@ -233,6 +324,14 @@ class YearlyResult:
     lp_cash_yield_shortfall: float
     cumulative_lp_cash_yield_shortfall: float
     lp_cash_yield_coverage_ratio: float | None
+    cumulative_reinvested_into_hf: float
+    cumulative_cash_distributed_to_lp: float
+    cumulative_cash_added_to_reserve: float
+    hf_reinvestment_source_re: float
+    hf_reinvestment_source_hf: float
+    total_cash_reinvested: float
+    total_cash_distributed: float
+    total_cash_reserved: float
     lp_distribution: float
     lp_cumulative_distribution: float
     lp_remaining_hurdle: float
@@ -243,6 +342,19 @@ class YearlyResult:
     gp_cumulative_fees: float
     gp_residual_nav: float
     fund_nav: float
+    hurdle_trigger_eligible: bool = False
+    hurdle_trigger_attempted: bool = False
+    hurdle_trigger_executed: bool = False
+    hurdle_trigger_required_cash: float = 0.0
+    trigger_cash_from_retained_cash: float = 0.0
+    trigger_cash_from_reserve: float = 0.0
+    trigger_cash_from_hf_liquidation: float = 0.0
+    trigger_cash_from_refi: float = 0.0
+    trigger_cash_from_re_sale: float = 0.0
+    lp_hurdle_shortfall_after_trigger: float = 0.0
+    hf_nav_liquidated_for_hurdle: float = 0.0
+    refi_proceeds_for_hurdle: float = 0.0
+    re_nav_sold_for_hurdle: float = 0.0
     event_flag: str = ""
 
 

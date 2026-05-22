@@ -69,4 +69,6 @@ Explicit columns used from `scenario_cashflows.csv`:
 
 ## Scope
 
-This is a presentation dashboard for the eight pre-baked scenarios. It does not edit assumptions, create new scenarios, or run live model calculations. Stage 2 will add live input editing and assumption transparency.
+This is a presentation dashboard for the eight pre-baked scenarios. The routing sliders rerun those same scenarios in memory only, using temporary routing assumptions. They do not edit YAML or overwrite CSV/Excel outputs.
+
+The sidebar also includes a custom scenario form. Pressing **Run custom scenario** creates a temporary in-memory scenario and adds it to the selector as `Custom dashboard scenario`. This custom scenario is not saved to YAML and is not written to the model output files.

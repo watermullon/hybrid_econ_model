@@ -1,4 +1,201 @@
 calibration_tests:
+  policy_set_comparison:
+    description: "Compares three high-level LP distribution and liquidity engineering policies: backend-heavy compounding, balanced yield plus compounding, and aggressive LP extinguishment."
+    base_scenarios:
+      - base_hit_everyone_happy
+      - fast_success_crypto_bull
+      - slow_grind
+      - hedge_fund_failure_re_survival
+      - real_estate_distress_crypto_success
+      - exceptional_dynasty_outcome
+      - liquidity_trap
+      - failure_never_reaches_hurdle
+    variants:
+      - label: backend_heavy_compounding
+        description: "Low interim LP distributions, high HF reinvestment, conservative active trigger, and a later planned refinance."
+        config_overrides:
+          distribution_policy:
+            hf_positive_return_harvest_rate: 0.25
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.20
+              hf_reinvestment_pct: 0.60
+              reserve_pct: 0.20
+            hf_harvest:
+              lp_distribution_pct: 0.20
+              hf_reinvestment_pct: 0.70
+              reserve_pct: 0.10
+          hurdle_completion_trigger:
+            enabled: true
+            minimum_lp_cash_moic_before_trigger: 1.25
+            max_hf_liquidation_pct: 0.50
+            max_refi_pct_of_re_nav: 0.15
+        scenario_overrides:
+          refinance_events:
+            - year: 5
+              pct_of_re_nav: 0.15
+              use_of_proceeds: "lp_distribution"
+              description: "Backend-heavy planned refinance."
+      - label: balanced_yield_compounding
+        description: "Moderate LP cash payout, some HF reinvestment, reserve build, active trigger, and planned refinance."
+        config_overrides:
+          distribution_policy:
+            hf_positive_return_harvest_rate: 0.50
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.50
+              hf_reinvestment_pct: 0.30
+              reserve_pct: 0.20
+            hf_harvest:
+              lp_distribution_pct: 0.50
+              hf_reinvestment_pct: 0.40
+              reserve_pct: 0.10
+          hurdle_completion_trigger:
+            enabled: true
+            minimum_lp_cash_moic_before_trigger: 1.10
+            max_hf_liquidation_pct: 0.65
+            max_refi_pct_of_re_nav: 0.20
+        scenario_overrides:
+          refinance_events:
+            - year: 5
+              pct_of_re_nav: 0.20
+              use_of_proceeds: "lp_distribution"
+              description: "Balanced policy planned refinance."
+      - label: aggressive_lp_extinguishment
+        description: "High LP cash routing, larger HF harvest, active trigger, and earlier recap/refi event."
+        config_overrides:
+          distribution_policy:
+            hf_positive_return_harvest_rate: 0.75
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.80
+              hf_reinvestment_pct: 0.15
+              reserve_pct: 0.05
+            hf_harvest:
+              lp_distribution_pct: 0.85
+              hf_reinvestment_pct: 0.10
+              reserve_pct: 0.05
+          hurdle_completion_trigger:
+            enabled: true
+            minimum_lp_cash_moic_before_trigger: 0.90
+            max_hf_liquidation_pct: 0.75
+            max_refi_pct_of_re_nav: 0.25
+        scenario_overrides:
+          refinance_events:
+            - year: 4
+              pct_of_re_nav: 0.25
+              use_of_proceeds: "lp_distribution"
+              description: "Aggressive policy recap/refi event."
+
+  lp_distribution_strategy_sweep:
+    description: "Compares eight cashflow routing strategies, varying the LP distribution share from 20% to 90% while preserving the current reinvestment/reserve split for the remaining cash."
+    base_scenarios:
+      - base_hit_everyone_happy
+      - fast_success_crypto_bull
+      - slow_grind
+      - hedge_fund_failure_re_survival
+      - real_estate_distress_crypto_success
+      - exceptional_dynasty_outcome
+      - liquidity_trap
+      - failure_never_reaches_hurdle
+    variants:
+      - label: lp_distribution_20
+        description: "20% of generated cash to LP, remaining cash mostly reinvested."
+        config_overrides:
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.20
+              hf_reinvestment_pct: 0.50
+              reserve_pct: 0.30
+            hf_harvest:
+              lp_distribution_pct: 0.20
+              hf_reinvestment_pct: 0.70
+              reserve_pct: 0.10
+      - label: lp_distribution_30
+        description: "30% of generated cash to LP."
+        config_overrides:
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.30
+              hf_reinvestment_pct: 0.4375
+              reserve_pct: 0.2625
+            hf_harvest:
+              lp_distribution_pct: 0.30
+              hf_reinvestment_pct: 0.6125
+              reserve_pct: 0.0875
+      - label: lp_distribution_40
+        description: "40% of generated cash to LP."
+        config_overrides:
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.40
+              hf_reinvestment_pct: 0.375
+              reserve_pct: 0.225
+            hf_harvest:
+              lp_distribution_pct: 0.40
+              hf_reinvestment_pct: 0.525
+              reserve_pct: 0.075
+      - label: lp_distribution_50
+        description: "50% of generated cash to LP."
+        config_overrides:
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.50
+              hf_reinvestment_pct: 0.3125
+              reserve_pct: 0.1875
+            hf_harvest:
+              lp_distribution_pct: 0.50
+              hf_reinvestment_pct: 0.4375
+              reserve_pct: 0.0625
+      - label: lp_distribution_60
+        description: "60% of generated cash to LP."
+        config_overrides:
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.60
+              hf_reinvestment_pct: 0.25
+              reserve_pct: 0.15
+            hf_harvest:
+              lp_distribution_pct: 0.60
+              hf_reinvestment_pct: 0.35
+              reserve_pct: 0.05
+      - label: lp_distribution_70
+        description: "70% of generated cash to LP."
+        config_overrides:
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.70
+              hf_reinvestment_pct: 0.1875
+              reserve_pct: 0.1125
+            hf_harvest:
+              lp_distribution_pct: 0.70
+              hf_reinvestment_pct: 0.2625
+              reserve_pct: 0.0375
+      - label: lp_distribution_80
+        description: "80% of generated cash to LP."
+        config_overrides:
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.80
+              hf_reinvestment_pct: 0.125
+              reserve_pct: 0.075
+            hf_harvest:
+              lp_distribution_pct: 0.80
+              hf_reinvestment_pct: 0.175
+              reserve_pct: 0.025
+      - label: lp_distribution_90
+        description: "90% of generated cash to LP, minimal reinvestment/reserve build."
+        config_overrides:
+          cashflow_routing:
+            re_cashflow:
+              lp_distribution_pct: 0.90
+              hf_reinvestment_pct: 0.0625
+              reserve_pct: 0.0375
+            hf_harvest:
+              lp_distribution_pct: 0.90
+              hf_reinvestment_pct: 0.0875
+              reserve_pct: 0.0125
+
   hf_allocation_sensitivity:
     description: "Tests whether larger hedge fund sleeve allocations make LP redemption more realistic."
     base_scenarios:

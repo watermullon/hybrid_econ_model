@@ -31,12 +31,14 @@ def available_liquidity(
     re_nav: float,
     retained_cash: float,
     liquidity: LiquiditySettings,
+    refinance_liability: float = 0.0,
 ) -> float:
     hf_capacity = liquidity.hf_liquidation_capacity_pct_per_year if liquidity.hf_liquidation_allowed else 0.0
+    re_capacity = max(0.0, re_nav * liquidity.max_refinance_or_sale_capacity_pct_of_re_nav - refinance_liability)
     return (
         reserve_nav * liquidity.reserve_liquidation_capacity_pct_per_year
         + hf_nav * hf_capacity
-        + re_nav * liquidity.max_refinance_or_sale_capacity_pct_of_re_nav
+        + re_capacity
         + retained_cash
     )
 
@@ -49,6 +51,7 @@ def redeem_lp(
     hf_nav: float,
     re_nav: float,
     liquidity: LiquiditySettings,
+    refinance_liability: float = 0.0,
 ) -> RedemptionResult:
     """Fund final LP redemption in the required order and assign residual NAV to GP."""
     remaining = max(0.0, lp_remaining_hurdle)
@@ -69,7 +72,7 @@ def redeem_lp(
     hf_nav -= use_hf
     remaining -= use_hf
 
-    re_capacity = re_nav * liquidity.max_refinance_or_sale_capacity_pct_of_re_nav
+    re_capacity = max(0.0, re_nav * liquidity.max_refinance_or_sale_capacity_pct_of_re_nav - refinance_liability)
     use_re = min(re_capacity, remaining)
     re_nav -= use_re
     remaining -= use_re
