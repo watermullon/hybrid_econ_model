@@ -1,4 +1,4 @@
-# Asher Economic Model
+# Hybrid Fund Economic Model
 
 Deterministic annual scenario model for a hybrid fund structure with real estate, hedge fund, reserve, and a non-standard LP/GP waterfall.
 
