@@ -695,6 +695,18 @@ They increase cash or reserve, but they also increase:
 refinance_liability
 ```
 
+### RE NAV Fee Basis Is Before Refi Liability
+
+If the real estate asset management fee is configured with:
+
+```yaml
+basis: "re_nav"
+```
+
+the fee is calculated on real estate equity NAV before fund-level refinance liabilities. Refinance liabilities are still subtracted when the model calculates fund NAV, LP hurdle economics, and GP residual value.
+
+This is a modelling convention, not a universal fund standard. In a real agreement, whether fees are charged on gross asset value, equity NAV, or equity NAV net of refinance debt would be a negotiation point.
+
 ### Future Deals Must Be Funded
 
 A future acquisition does not count unless the fund can fund the required equity.
@@ -782,4 +794,3 @@ The model still does not include:
 - Partial acquisition close mechanics
 
 Those should only be added if real underwriting requires them.
-

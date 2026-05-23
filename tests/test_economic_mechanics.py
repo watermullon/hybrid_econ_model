@@ -125,6 +125,96 @@ def test_retain_cash_policy_prevents_annual_lp_distributions() -> None:
     assert year_one.retained_cash == pytest.approx(year_one.net_re_cashflow)
 
 
+def test_reserve_return_compounds_only_inside_reserve_not_retained_cash() -> None:
+    config, scenario_set, _ = load_base_inputs()
+    config = config.model_copy(
+        update={
+            "allocation": config.allocation.model_copy(
+                update={
+                    "hedge_fund_allocation_pct": 0.0,
+                    "real_estate_allocation_pct": 0.0,
+                    "reserve_allocation_pct": 1.0,
+                }
+            ),
+            "fees": config.fees.model_copy(
+                update={
+                    "real_estate_asset_management_fee": config.fees.real_estate_asset_management_fee.model_copy(
+                        update={"enabled": False}
+                    )
+                }
+            ),
+            "reserve": config.reserve.model_copy(update={"annual_return": 0.10}),
+        }
+    )
+    base = scenario_set.scenarios["base_hit_everyone_happy"]
+    scenario = base.model_copy(
+        update={
+            "years": 1,
+            "real_estate": base.real_estate.model_copy(
+                update={
+                    "initial_noi_yield": 0.0,
+                    "annual_noi_growth": 0.0,
+                    "annual_nav_appreciation": 0.0,
+                    "gross_rent_yield": 0.0,
+                }
+            ),
+        }
+    )
+
+    result = run_scenario("reserve_return_check", scenario, config)
+    year_one = result.cashflows[0]
+
+    assert year_one.reserve_closing_nav == pytest.approx(11_000_000)
+    assert year_one.retained_cash == pytest.approx(0)
+    assert year_one.fund_nav == pytest.approx(11_000_000)
+
+
+def test_top_down_negative_re_cashflow_reduces_reserve_not_silently_disappears() -> None:
+    config, scenario_set, _ = load_base_inputs()
+    config = config.model_copy(
+        update={
+            "allocation": config.allocation.model_copy(
+                update={
+                    "hedge_fund_allocation_pct": 0.0,
+                    "real_estate_allocation_pct": 0.50,
+                    "reserve_allocation_pct": 0.50,
+                }
+            ),
+            "fees": config.fees.model_copy(
+                update={
+                    "real_estate_asset_management_fee": config.fees.real_estate_asset_management_fee.model_copy(
+                        update={"enabled": True, "rate": 0.10, "basis": "re_nav"}
+                    )
+                }
+            ),
+        }
+    )
+    base = scenario_set.scenarios["base_hit_everyone_happy"]
+    scenario = base.model_copy(
+        update={
+            "years": 1,
+            "real_estate": base.real_estate.model_copy(
+                update={
+                    "initial_noi_yield": 0.0,
+                    "annual_noi_growth": 0.0,
+                    "annual_nav_appreciation": 0.0,
+                    "gross_rent_yield": 0.0,
+                }
+            ),
+        }
+    )
+
+    result = run_scenario("top_down_re_shortfall_check", scenario, config)
+    year_one = result.cashflows[0]
+
+    assert year_one.net_re_cashflow == pytest.approx(-500_000)
+    assert year_one.re_cashflow_generated == pytest.approx(0)
+    assert year_one.lp_distribution == pytest.approx(0)
+    assert year_one.reserve_closing_nav == pytest.approx(4_500_000)
+    assert year_one.re_cashflow_shortfall == pytest.approx(0)
+    assert year_one.fund_nav == pytest.approx(9_500_000)
+
+
 def test_redemption_funding_order_uses_retained_cash_then_reserve_then_hf_then_re() -> None:
     config, _, _ = load_base_inputs()
 

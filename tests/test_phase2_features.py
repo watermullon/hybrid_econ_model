@@ -176,6 +176,33 @@ def test_refinance_event_distributes_proceeds_to_lp() -> None:
     assert result.summary["final_refinance_liability"] == pytest.approx(2_000_000)
 
 
+def test_refinance_event_to_reserve_updates_annual_and_summary_reserved_cash() -> None:
+    config = phase2_config(allocation=(0.0, 1.0, 0.0), lp_hurdle_moic=3.0)
+    result = run_scenario(
+        "refi_to_reserve",
+        scenario(
+            years=1,
+            refinance_events=[
+                {
+                    "year": 1,
+                    "pct_of_re_nav": 0.20,
+                    "use_of_proceeds": "reserve",
+                    "description": "Synthetic reserve refi event.",
+                }
+            ],
+        ),
+        config,
+    )
+    row = result.cashflows[0]
+
+    assert row.refinance_proceeds == pytest.approx(2_000_000)
+    assert row.reserve_closing_nav == pytest.approx(2_000_000)
+    assert row.total_cash_reserved == pytest.approx(2_000_000)
+    assert row.cumulative_cash_added_to_reserve == pytest.approx(2_000_000)
+    assert result.summary["total_added_to_reserve"] == pytest.approx(2_000_000)
+    assert result.summary["total_distributed_to_lp"] == pytest.approx(row.lp_cumulative_distribution)
+
+
 def test_cash_yield_policy_cannot_ignore_cash_hurdle_reduction() -> None:
     with pytest.raises(ValueError, match="cash yield distributions must reduce the LP hurdle"):
         ModelConfig.model_validate(

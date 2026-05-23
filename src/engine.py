@@ -293,9 +293,8 @@ def run_scenario(
         hf_nav = hf_nav_pre_harvest - hf_harvest
 
         reserve_nav = reserve_opening_nav * (1 + reserve_settings.annual_return)
-        reserve_return_cash = reserve_nav - reserve_opening_nav
         re_cashflow_shortfall = 0.0
-        if real_estate_mode == "bottom_up" and net_re_cashflow < 0:
+        if net_re_cashflow < 0:
             funding_need = -net_re_cashflow
             from_retained_cash = min(retained_cash, funding_need)
             retained_cash -= from_retained_cash
@@ -304,6 +303,9 @@ def run_scenario(
             reserve_nav -= from_reserve
             funding_need -= from_reserve
             re_cashflow_shortfall = funding_need
+            re_cashflow_generated = 0.0
+        else:
+            re_cashflow_generated = net_re_cashflow
 
         gp_fees = re_asset_mgmt_fee
         gp_cumulative_fees += gp_fees
@@ -316,7 +318,7 @@ def run_scenario(
         hf_harvest_to_reserve = 0.0
         lp_distribution = 0.0
 
-        net_re_cash_bucket = re_cashflow_generated if real_estate_mode == "bottom_up" else net_re_cashflow
+        net_re_cash_bucket = re_cashflow_generated
         hf_harvest_cash_bucket = hf_harvest
 
         if cashflow_routing.enabled:
@@ -381,8 +383,6 @@ def run_scenario(
                 distributable_cash += hf_harvest_cash_bucket
             else:
                 retained_cash += hf_harvest_cash_bucket
-        retained_cash += reserve_return_cash
-
         lp_remaining_hurdle = max(0.0, lp_hurdle_amount - lp_cumulative_distribution)
         legacy_lp_distribution, retained_excess = (
             (0.0, distributable_cash)
@@ -395,6 +395,7 @@ def run_scenario(
 
         refinance_proceeds = 0.0
         refinance_use_of_proceeds = ""
+        reserve_funding_from_refi = 0.0
         for refinance_event in refinance_events_by_year.get(year, []):
             event_proceeds = re_nav * refinance_event.pct_of_re_nav
             refinance_proceeds += event_proceeds
@@ -412,6 +413,8 @@ def run_scenario(
                 retained_cash += event_proceeds
             elif refinance_event.use_of_proceeds == "reserve":
                 reserve_nav += event_proceeds
+                reserve_funding_from_refi += event_proceeds
+                cumulative_cash_added_to_reserve += event_proceeds
             else:
                 raise ValueError(f"Unsupported refinance use_of_proceeds: {refinance_event.use_of_proceeds}")
 
@@ -429,6 +432,7 @@ def run_scenario(
                     retained_cash += event_proceeds
                 elif deal_row.refinance_proceeds_use == "reserve":
                     reserve_nav += event_proceeds
+                    reserve_funding_from_refi += event_proceeds
                     cumulative_cash_added_to_reserve += event_proceeds
                 else:
                     raise ValueError(
@@ -579,7 +583,7 @@ def run_scenario(
                 hf_reinvestment_source_hf=hf_harvest_to_hf,
                 total_cash_reinvested=re_cashflow_to_hf + hf_harvest_to_hf,
                 total_cash_distributed=lp_distribution,
-                total_cash_reserved=re_cashflow_to_reserve + hf_harvest_to_reserve,
+                total_cash_reserved=re_cashflow_to_reserve + hf_harvest_to_reserve + reserve_funding_from_refi,
                 lp_distribution=lp_distribution,
                 lp_cumulative_distribution=lp_cumulative_distribution,
                 lp_remaining_hurdle=lp_remaining_hurdle,
@@ -663,8 +667,8 @@ def run_scenario(
     total_hf_harvest_generated = sum(row.hf_harvest_generated for row in cashflows)
     total_cash_sources = total_re_cashflow_generated + total_hf_harvest_generated
     total_reinvested_into_hf = sum(row.total_cash_reinvested for row in cashflows)
-    total_distributed_to_lp = sum(row.total_cash_distributed for row in cashflows)
-    total_added_to_reserve = sum(row.total_cash_reserved for row in cashflows)
+    total_distributed_to_lp = cashflows[-1].cumulative_cash_distributed_to_lp if cashflows else lp_cumulative_distribution
+    total_added_to_reserve = cashflows[-1].cumulative_cash_added_to_reserve if cashflows else cumulative_cash_added_to_reserve
     final_re_gross_asset_value = cashflows[-1].re_gross_asset_value if cashflows else 0.0
     final_re_debt_balance = cashflows[-1].re_debt_balance if cashflows else 0.0
     final_re_assumed_liabilities = cashflows[-1].re_assumed_liabilities if cashflows else 0.0
@@ -793,6 +797,8 @@ def calculate_re_fee(config: ModelConfig, re_opening_nav: float, re_noi: float, 
     elif fee_config.basis == "noi":
         basis = re_noi
     elif fee_config.basis == "re_nav":
+        # The configured re_nav fee basis uses gross RE equity NAV before fund-level refinance liabilities.
+        # Refi liability is still subtracted from fund NAV and LP/GP economics elsewhere.
         basis = re_opening_nav
     else:
         raise ValueError(f"Unsupported real estate fee basis: {fee_config.basis}")
