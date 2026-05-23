@@ -36,12 +36,21 @@ def build_re_portfolio_years(
     effective_deals = apply_deal_overrides(deals, deal_overrides)
     portfolio_years: list[RealEstatePortfolioYearResult] = []
     deal_rows: list[DealYearResult] = []
+    cumulative_refi_liability_by_deal = {deal_name: 0.0 for deal_name in effective_deals.deals}
 
     for year in range(1, years + 1):
-        yearly_deals = [
-            run_deal_year(scenario_name=scenario_name, deal_name=deal_name, deal=deal, model_year=year)
-            for deal_name, deal in effective_deals.deals.items()
-        ]
+        yearly_deals = []
+        for deal_name, deal in effective_deals.deals.items():
+            row = run_deal_year(
+                scenario_name=scenario_name,
+                deal_name=deal_name,
+                deal=deal,
+                model_year=year,
+                prior_refi_liability=cumulative_refi_liability_by_deal[deal_name],
+            )
+            cumulative_refi_liability_by_deal[deal_name] = row.ending_refi_liability
+            yearly_deals.append(row)
+
         deal_rows.extend(yearly_deals)
         active_deals = [row for row in yearly_deals if row.active]
 
@@ -68,6 +77,11 @@ def build_re_portfolio_years(
                     row.free_cashflow_after_debt_and_capex for row in active_deals
                 ),
                 dscr=noi / debt_service if debt_service > 0 else None,
+                prior_refi_liability=sum(row.prior_refi_liability for row in active_deals),
+                ending_refi_liability=sum(row.ending_refi_liability for row in active_deals),
+                max_debt_supported=sum(row.max_debt_supported for row in active_deals),
+                cash_out_before_refi_costs=sum(row.cash_out_before_refi_costs for row in active_deals),
+                refi_costs=sum(row.refi_costs for row in active_deals),
                 refi_capacity=sum(row.refi_capacity for row in active_deals),
                 refi_proceeds=sum(row.refi_proceeds for row in active_deals),
                 refinance_liability_added=sum(row.refi_liability_added for row in active_deals),

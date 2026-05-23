@@ -167,7 +167,7 @@ def test_deal_helpers_cover_noi_interpolation_fixed_debt_cap_rate_and_refi_floor
     assert calculate_capex(fixed_debt_deal, 2, 1_500_000) == pytest.approx(295_000)
     assert calculate_asset_value(fixed_debt_deal, 2, 1_500_000) == pytest.approx(23_000_000 * 1.03)
     assert calculate_asset_value(cap_rate_deal, 2, 1_500_000) == pytest.approx(18_750_000)
-    assert calculate_refi_capacity(underwater_deal, 10_000_000, 16_000_000) == 0
+    assert calculate_refi_capacity(underwater_deal, 10_000_000, 16_000_000, 0).refi_capacity == 0
 
 
 def test_portfolio_aggregation_handles_inactive_active_multiple_deals_and_overrides() -> None:
@@ -187,6 +187,65 @@ def test_portfolio_aggregation_handles_inactive_active_multiple_deals_and_overri
     assert portfolio[1].active_deal_count == 2
     assert portfolio[0].noi == pytest.approx(1_300_000)
     assert portfolio[1].gross_asset_value == pytest.approx(23_000_000 * 1.03 + 5_000_000)
+
+
+def test_refi_capacity_uses_cash_out_cost_basis_and_prior_refi_liability() -> None:
+    deal = make_deal(
+        capital_stack={"assumed_debt": 10_000_000, "assumed_liabilities": 0},
+        valuation={"annual_value_growth": 0.0},
+        refinance={"refi_ltv": 0.70, "refi_costs_pct": 0.05},
+    )
+
+    result = calculate_refi_capacity(deal, 25_000_000, 10_000_000, 2_000_000)
+
+    assert result.max_debt_supported == pytest.approx(17_500_000)
+    assert result.cash_out_before_refi_costs == pytest.approx(5_500_000)
+    assert result.refi_costs == pytest.approx(275_000)
+    assert result.refi_capacity == pytest.approx(5_225_000)
+
+
+def test_repeated_refi_deducts_prior_liability_and_tracks_cumulative_deal_state() -> None:
+    deal = make_deal(
+        capital_stack={"assumed_debt": 10_000_000, "assumed_liabilities": 0},
+        valuation={"annual_value_growth": 0.10},
+        refinance={"target_years": [1, 2], "refi_ltv": 0.70, "refi_costs_pct": 0.0},
+    )
+
+    portfolio, deal_rows = build_re_portfolio_years(
+        scenario_name="s",
+        years=2,
+        deals=DealSet(deals={"deal": deal}),
+    )
+    year_one = next(row for row in deal_rows if row.deal_name == "deal" and row.year == 1)
+    year_two = next(row for row in deal_rows if row.deal_name == "deal" and row.year == 2)
+    stateless_year_two = calculate_refi_capacity(deal, year_two.asset_value, year_two.debt_balance, 0.0)
+
+    assert year_one.refi_proceeds == pytest.approx(23_000_000 * 0.70 - 10_000_000)
+    assert year_two.prior_refi_liability == pytest.approx(year_one.refi_proceeds)
+    assert year_two.refi_proceeds < stateless_year_two.refi_capacity
+    assert year_two.ending_refi_liability == pytest.approx(year_one.refi_proceeds + year_two.refi_proceeds)
+    assert portfolio[1].refinance_liability_added == pytest.approx(year_two.refi_proceeds)
+    assert portfolio[1].ending_refi_liability == pytest.approx(year_two.ending_refi_liability)
+
+
+def test_refi_capacity_floors_at_zero_after_prior_refi_without_value_growth() -> None:
+    deal = make_deal(
+        capital_stack={"assumed_debt": 10_000_000, "assumed_liabilities": 0},
+        valuation={"annual_value_growth": 0.0},
+        refinance={"target_years": [1, 2], "refi_ltv": 0.70, "refi_costs_pct": 0.0},
+    )
+
+    _, deal_rows = build_re_portfolio_years(
+        scenario_name="s",
+        years=2,
+        deals=DealSet(deals={"deal": deal}),
+    )
+    year_one = next(row for row in deal_rows if row.year == 1)
+    year_two = next(row for row in deal_rows if row.year == 2)
+
+    assert year_one.refi_proceeds > 0
+    assert year_two.prior_refi_liability == pytest.approx(year_one.refi_proceeds)
+    assert year_two.refi_proceeds == 0
 
 
 def test_engine_top_down_default_is_unchanged_when_deals_are_loaded() -> None:
@@ -226,6 +285,7 @@ def test_engine_bottom_up_uses_deal_nav_cashflow_and_refi_proceeds() -> None:
     assert row.lp_distribution >= 0
     assert row.re_refi_proceeds_from_deals > 0
     assert row.refinance_liability == pytest.approx(row.re_refi_proceeds_from_deals)
+    assert row.re_ending_refi_liability == pytest.approx(row.re_refi_proceeds_from_deals)
     assert row.reserve_closing_nav > 8_000_000
 
 
@@ -279,6 +339,10 @@ def test_outputs_include_bottom_up_columns_and_deal_cashflow_sheet(tmp_path: Pat
 
     assert "total_deal_refi_proceeds" in frames["summary"].columns
     assert "re_gross_asset_value" in frames["cashflows"].columns
+    assert "re_refi_costs" in frames["cashflows"].columns
+    assert "prior_refi_liability" in frames["deal_cashflows"].columns
+    assert "ending_refi_liability" in frames["deal_cashflows"].columns
+    assert "refi_costs" in frames["deal_cashflows"].columns
     assert (tmp_path / "deal_cashflows.csv").exists()
     assert not pd.read_csv(tmp_path / "deal_cashflows.csv").empty
     workbook = load_workbook(tmp_path / "scenario_summary.xlsx", read_only=True)

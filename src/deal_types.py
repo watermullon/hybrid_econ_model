@@ -142,6 +142,11 @@ class DealYearResult:
     capex: float
     free_cashflow_after_debt_and_capex: float
     dscr: float | None
+    prior_refi_liability: float
+    ending_refi_liability: float
+    max_debt_supported: float
+    cash_out_before_refi_costs: float
+    refi_costs: float
     refi_capacity: float
     refi_proceeds: float
     refi_liability_added: float
@@ -167,6 +172,11 @@ class RealEstatePortfolioYearResult:
     capex: float
     free_cashflow_after_debt_and_capex: float
     dscr: float | None
+    prior_refi_liability: float
+    ending_refi_liability: float
+    max_debt_supported: float
+    cash_out_before_refi_costs: float
+    refi_costs: float
     refi_capacity: float
     refi_proceeds: float
     refinance_liability_added: float

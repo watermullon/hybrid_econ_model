@@ -372,6 +372,11 @@ class YearlyResult:
     re_debt_service: float = 0.0
     re_capex: float = 0.0
     re_dscr: float | None = None
+    re_prior_refi_liability: float = 0.0
+    re_ending_refi_liability: float = 0.0
+    re_max_debt_supported: float = 0.0
+    re_cash_out_before_refi_costs: float = 0.0
+    re_refi_costs: float = 0.0
     re_refi_capacity: float = 0.0
     re_refi_proceeds_from_deals: float = 0.0
     re_free_cashflow_after_debt_and_capex: float = 0.0

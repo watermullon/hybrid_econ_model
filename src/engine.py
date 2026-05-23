@@ -172,6 +172,11 @@ def run_scenario(
             re_debt_service = 0.0
             re_capex = 0.0
             re_dscr = None
+            re_prior_refi_liability = 0.0
+            re_ending_refi_liability = 0.0
+            re_max_debt_supported = 0.0
+            re_cash_out_before_refi_costs = 0.0
+            re_refi_costs = 0.0
             re_refi_capacity = 0.0
             re_refi_proceeds_from_deals = 0.0
             re_free_cashflow_after_debt_and_capex = net_re_cashflow
@@ -194,6 +199,11 @@ def run_scenario(
             re_debt_service = portfolio_year.debt_service
             re_capex = portfolio_year.capex
             re_dscr = portfolio_year.dscr
+            re_prior_refi_liability = portfolio_year.prior_refi_liability
+            re_ending_refi_liability = portfolio_year.ending_refi_liability
+            re_max_debt_supported = portfolio_year.max_debt_supported
+            re_cash_out_before_refi_costs = portfolio_year.cash_out_before_refi_costs
+            re_refi_costs = portfolio_year.refi_costs
             re_refi_capacity = portfolio_year.refi_capacity
             re_refi_proceeds_from_deals = portfolio_year.refi_proceeds
             re_free_cashflow_after_debt_and_capex = portfolio_year.free_cashflow_after_debt_and_capex
@@ -510,6 +520,11 @@ def run_scenario(
                 re_debt_service=re_debt_service,
                 re_capex=re_capex,
                 re_dscr=re_dscr,
+                re_prior_refi_liability=re_prior_refi_liability,
+                re_ending_refi_liability=re_ending_refi_liability,
+                re_max_debt_supported=re_max_debt_supported,
+                re_cash_out_before_refi_costs=re_cash_out_before_refi_costs,
+                re_refi_costs=re_refi_costs,
                 re_refi_capacity=re_refi_capacity,
                 re_refi_proceeds_from_deals=re_refi_proceeds_from_deals,
                 re_free_cashflow_after_debt_and_capex=re_free_cashflow_after_debt_and_capex,

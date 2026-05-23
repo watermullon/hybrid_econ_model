@@ -1,6 +1,16 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from src.deal_types import DealConfig, DealYearResult
+
+
+@dataclass(frozen=True)
+class RefiCapacityResult:
+    max_debt_supported: float
+    cash_out_before_refi_costs: float
+    refi_costs: float
+    refi_capacity: float
 
 
 def is_deal_active(deal: DealConfig, model_year: int) -> bool:
@@ -73,15 +83,33 @@ def calculate_asset_value(deal: DealConfig, relative_year: int, noi: float) -> f
     raise ValueError(f"Unsupported valuation method: {deal.valuation.method}")
 
 
-def calculate_refi_capacity(deal: DealConfig, asset_value: float, debt_balance: float) -> float:
+def calculate_refi_capacity(
+    deal: DealConfig,
+    asset_value: float,
+    debt_balance: float,
+    prior_refi_liability: float,
+) -> RefiCapacityResult:
     if not deal.refinance.enabled:
-        return 0.0
-    gross_refi_capacity = asset_value * deal.refinance.refi_ltv
-    refi_costs = gross_refi_capacity * deal.refinance.refi_costs_pct
-    cash_out_capacity = gross_refi_capacity - debt_balance - refi_costs
+        return RefiCapacityResult(
+            max_debt_supported=0.0,
+            cash_out_before_refi_costs=0.0,
+            refi_costs=0.0,
+            refi_capacity=0.0,
+        )
+
+    max_debt_supported = asset_value * deal.refinance.refi_ltv
+    cash_out_before_costs = max_debt_supported - debt_balance - prior_refi_liability
+    refi_costs = max(cash_out_before_costs, 0.0) * deal.refinance.refi_costs_pct
+    refi_capacity = max(0.0, cash_out_before_costs - refi_costs)
     if deal.refinance.max_cash_out_pct_of_value is not None:
-        cash_out_capacity = min(cash_out_capacity, asset_value * deal.refinance.max_cash_out_pct_of_value)
-    return max(0.0, cash_out_capacity)
+        refi_capacity = min(refi_capacity, asset_value * deal.refinance.max_cash_out_pct_of_value)
+
+    return RefiCapacityResult(
+        max_debt_supported=max_debt_supported,
+        cash_out_before_refi_costs=cash_out_before_costs,
+        refi_costs=refi_costs,
+        refi_capacity=max(0.0, refi_capacity),
+    )
 
 
 def run_deal_year(
@@ -90,6 +118,7 @@ def run_deal_year(
     deal_name: str,
     deal: DealConfig,
     model_year: int,
+    prior_refi_liability: float = 0.0,
 ) -> DealYearResult:
     entry_equity_cushion = (
         deal.acquisition.asset_value
@@ -117,6 +146,11 @@ def run_deal_year(
             capex=0.0,
             free_cashflow_after_debt_and_capex=0.0,
             dscr=None,
+            prior_refi_liability=prior_refi_liability,
+            ending_refi_liability=prior_refi_liability,
+            max_debt_supported=0.0,
+            cash_out_before_refi_costs=0.0,
+            refi_costs=0.0,
             refi_capacity=0.0,
             refi_proceeds=0.0,
             refi_liability_added=0.0,
@@ -139,8 +173,10 @@ def run_deal_year(
     net_equity_value = asset_value - debt_balance - assumed_liabilities
     deal_nav = net_equity_value - deal.capital_stack.seller_note - deal.capital_stack.preferred_equity
     dscr = noi / debt_service if debt_service > 0 else None
-    refi_capacity = calculate_refi_capacity(deal, asset_value, debt_balance)
+    refi_result = calculate_refi_capacity(deal, asset_value, debt_balance, prior_refi_liability)
+    refi_capacity = refi_result.refi_capacity
     refi_proceeds = refi_capacity if deal.refinance.enabled and model_year in deal.refinance.target_years else 0.0
+    ending_refi_liability = prior_refi_liability + refi_proceeds
 
     return DealYearResult(
         scenario=scenario_name,
@@ -158,6 +194,11 @@ def run_deal_year(
         capex=capex,
         free_cashflow_after_debt_and_capex=free_cashflow,
         dscr=dscr,
+        prior_refi_liability=prior_refi_liability,
+        ending_refi_liability=ending_refi_liability,
+        max_debt_supported=refi_result.max_debt_supported,
+        cash_out_before_refi_costs=refi_result.cash_out_before_refi_costs,
+        refi_costs=refi_result.refi_costs,
         refi_capacity=refi_capacity,
         refi_proceeds=refi_proceeds,
         refi_liability_added=refi_proceeds,
