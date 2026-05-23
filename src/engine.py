@@ -17,7 +17,7 @@ from src.model_types import (
     ScenarioResult,
     YearlyResult,
 )
-from src.portfolio_aggregator import apply_deal_overrides, build_re_portfolio_years
+from src.portfolio_aggregator import apply_deal_overrides, build_re_portfolio_year
 from src.utils import merge_model, value_for_year
 from src.validation import validate_all_scenarios
 from src.waterfall import available_liquidity, pay_lp_distribution, redeem_lp
@@ -78,6 +78,8 @@ def run_scenario(
     portfolio_years: list[RealEstatePortfolioYearResult] = []
     deal_cashflows = []
     effective_deals: DealSet | None = None
+    funded_deal_names: set[str] = set()
+    cumulative_refi_liability_by_deal: dict[str, float] = {}
     initial_re_cash_deployed = 0.0
     initial_re_gross_asset_value = 0.0
     initial_re_debt_balance = 0.0
@@ -90,10 +92,18 @@ def run_scenario(
         if deals is None:
             raise ValueError(f"Scenario '{name}' uses bottom_up real estate mode but no deals were provided.")
         effective_deals = apply_deal_overrides(deals, scenario.deal_overrides)
-        portfolio_years, deal_cashflows = build_re_portfolio_years(
+        funded_deal_names = {
+            deal_name
+            for deal_name, deal in effective_deals.deals.items()
+            if deal.enabled and deal.acquisition_year == 1
+        }
+        cumulative_refi_liability_by_deal = {deal_name: 0.0 for deal_name in effective_deals.deals}
+        initial_portfolio_year, _ = build_re_portfolio_year(
             scenario_name=name,
-            years=scenario.years,
             deals=effective_deals,
+            year=1,
+            funded_deal_names=funded_deal_names,
+            cumulative_refi_liability_by_deal=cumulative_refi_liability_by_deal.copy(),
         )
         initial_re_cash_deployed = sum(
             deal.acquisition.new_equity_required
@@ -105,18 +115,17 @@ def run_scenario(
             raise ValueError(
                 f"Scenario '{name}' bottom-up deals require ${initial_re_cash_deployed:,.0f} of year-1 equity, "
                 f"which exceeds initial LP capital of ${initial_lp_capital:,.0f}."
-            )
+        )
         allocatable_remaining = max(0.0, remaining_capital)
         hf_nav = allocatable_remaining * config.bottom_up_allocation.remaining_capital_hf_pct
         reserve_nav = allocatable_remaining * config.bottom_up_allocation.remaining_capital_reserve_pct
-        re_nav = portfolio_years[0].deal_nav if portfolio_years else 0.0
-        if portfolio_years:
-            initial_re_gross_asset_value = portfolio_years[0].gross_asset_value
-            initial_re_debt_balance = portfolio_years[0].debt_balance
-            initial_re_assumed_liabilities = portfolio_years[0].assumed_liabilities
-            initial_re_net_equity_value = portfolio_years[0].net_equity_value
-            initial_re_entry_equity_cushion = portfolio_years[0].entry_equity_cushion
-            initial_re_value_to_new_equity_multiple = portfolio_years[0].value_to_new_equity_multiple
+        re_nav = initial_portfolio_year.deal_nav
+        initial_re_gross_asset_value = initial_portfolio_year.gross_asset_value
+        initial_re_debt_balance = initial_portfolio_year.debt_balance
+        initial_re_assumed_liabilities = initial_portfolio_year.assumed_liabilities
+        initial_re_net_equity_value = initial_portfolio_year.net_equity_value
+        initial_re_entry_equity_cushion = initial_portfolio_year.entry_equity_cushion
+        initial_re_value_to_new_equity_multiple = initial_portfolio_year.value_to_new_equity_multiple
     else:
         re_nav, hf_nav, reserve_nav = calculate_initial_allocation(config, scenario)
         initial_re_cash_deployed = re_nav
@@ -152,7 +161,55 @@ def run_scenario(
         hf_opening_nav = hf_nav
         reserve_opening_nav = reserve_nav
 
-        portfolio_year = portfolio_years[year - 1] if real_estate_mode == "bottom_up" else None
+        acquisition_starting_retained_cash = retained_cash
+        acquisition_starting_reserve = reserve_nav
+        acquisition_new_deal_equity_required = 0.0
+        acquisition_funded_from_initial_lp_capital = 0.0
+        acquisition_funded_from_retained_cash = 0.0
+        acquisition_funded_from_reserve = 0.0
+        acquisition_unfunded_shortfall = 0.0
+        acquisition_funding_source = ""
+
+        portfolio_year = None
+        if real_estate_mode == "bottom_up":
+            if effective_deals is None:
+                raise ValueError(f"Scenario '{name}' uses bottom_up real estate mode but no deals were provided.")
+            acquisition_deals = {
+                deal_name: deal
+                for deal_name, deal in effective_deals.deals.items()
+                if deal.enabled and deal.acquisition_year == year
+            }
+            acquisition_new_deal_equity_required = sum(
+                deal.acquisition.new_equity_required for deal in acquisition_deals.values()
+            )
+            if year == 1:
+                acquisition_funded_from_initial_lp_capital = acquisition_new_deal_equity_required
+                acquisition_funding_source = "initial_lp_capital" if acquisition_new_deal_equity_required > 0 else ""
+            elif acquisition_new_deal_equity_required > 0:
+                funding_need = acquisition_new_deal_equity_required
+                acquisition_funded_from_retained_cash = min(retained_cash, funding_need)
+                retained_cash -= acquisition_funded_from_retained_cash
+                funding_need -= acquisition_funded_from_retained_cash
+                acquisition_funded_from_reserve = min(reserve_nav, funding_need)
+                reserve_nav -= acquisition_funded_from_reserve
+                funding_need -= acquisition_funded_from_reserve
+                acquisition_unfunded_shortfall = funding_need
+                acquisition_funding_source = "retained_cash;reserve" if acquisition_funded_from_reserve > 0 else "retained_cash"
+                if acquisition_unfunded_shortfall <= 1e-9:
+                    funded_deal_names.update(acquisition_deals)
+
+            portfolio_year, deal_rows = build_re_portfolio_year(
+                scenario_name=name,
+                year=year,
+                deals=effective_deals,
+                funded_deal_names=funded_deal_names,
+                cumulative_refi_liability_by_deal=cumulative_refi_liability_by_deal,
+            )
+            deal_cashflows.extend(deal_rows)
+
+        acquisition_ending_retained_cash = retained_cash
+        acquisition_ending_reserve = reserve_nav
+
         if portfolio_year is None:
             re_noi_yield = scenario.real_estate.initial_noi_yield * (
                 (1 + scenario.real_estate.annual_noi_growth) ** (year - 1)
@@ -381,6 +438,8 @@ def run_scenario(
         )
 
         event_flag = ""
+        if acquisition_unfunded_shortfall > 0:
+            event_flag = append_event_text(event_flag, "ACQUISITION_FUNDING_SHORTFALL")
         if re_cashflow_shortfall > 0:
             event_flag = append_event_text(event_flag, "RE_CASHFLOW_SHORTFALL")
         trigger_result = evaluate_hurdle_completion_trigger(
@@ -530,6 +589,16 @@ def run_scenario(
                 re_free_cashflow_after_debt_and_capex=re_free_cashflow_after_debt_and_capex,
                 re_cashflow_shortfall=re_cashflow_shortfall,
                 active_deal_count=active_deal_count,
+                acquisition_starting_retained_cash=acquisition_starting_retained_cash,
+                acquisition_starting_reserve=acquisition_starting_reserve,
+                acquisition_new_deal_equity_required=acquisition_new_deal_equity_required,
+                acquisition_funded_from_initial_lp_capital=acquisition_funded_from_initial_lp_capital,
+                acquisition_funded_from_retained_cash=acquisition_funded_from_retained_cash,
+                acquisition_funded_from_reserve=acquisition_funded_from_reserve,
+                acquisition_unfunded_shortfall=acquisition_unfunded_shortfall,
+                acquisition_ending_retained_cash=acquisition_ending_retained_cash,
+                acquisition_ending_reserve=acquisition_ending_reserve,
+                acquisition_funding_source=acquisition_funding_source,
                 hurdle_trigger_eligible=trigger_result["eligible"],
                 hurdle_trigger_attempted=trigger_result["attempted"],
                 hurdle_trigger_executed=trigger_result["executed"],
@@ -585,6 +654,10 @@ def run_scenario(
     total_re_capex = sum(row.re_capex for row in cashflows)
     total_deal_refi_proceeds = sum(row.re_refi_proceeds_from_deals for row in cashflows)
     total_re_cashflow_shortfall = sum(row.re_cashflow_shortfall for row in cashflows)
+    total_acquisition_equity_required = sum(row.acquisition_new_deal_equity_required for row in cashflows)
+    total_acquisition_funded_from_retained_cash = sum(row.acquisition_funded_from_retained_cash for row in cashflows)
+    total_acquisition_funded_from_reserve = sum(row.acquisition_funded_from_reserve for row in cashflows)
+    total_acquisition_unfunded_shortfall = sum(row.acquisition_unfunded_shortfall for row in cashflows)
     flags = build_flags(
         name=name,
         config=config,
@@ -627,6 +700,10 @@ def run_scenario(
         "total_re_capex": total_re_capex,
         "total_deal_refi_proceeds": total_deal_refi_proceeds,
         "total_re_cashflow_shortfall": total_re_cashflow_shortfall,
+        "total_acquisition_equity_required": total_acquisition_equity_required,
+        "total_acquisition_funded_from_retained_cash": total_acquisition_funded_from_retained_cash,
+        "total_acquisition_funded_from_reserve": total_acquisition_funded_from_reserve,
+        "total_acquisition_unfunded_shortfall": total_acquisition_unfunded_shortfall,
         "years_modelled": len(cashflows),
         "lp_hurdle_moic": config.waterfall.lp_hurdle_moic,
         "lp_hurdle_amount": lp_hurdle_amount,

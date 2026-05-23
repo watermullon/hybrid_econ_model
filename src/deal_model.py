@@ -119,6 +119,7 @@ def run_deal_year(
     deal: DealConfig,
     model_year: int,
     prior_refi_liability: float = 0.0,
+    funded: bool = True,
 ) -> DealYearResult:
     entry_equity_cushion = (
         deal.acquisition.asset_value
@@ -129,7 +130,7 @@ def run_deal_year(
         - deal.acquisition.new_equity_required
     )
 
-    if not is_deal_active(deal, model_year):
+    if not funded or not is_deal_active(deal, model_year):
         return DealYearResult(
             scenario=scenario_name,
             deal_name=deal_name,
@@ -154,6 +155,8 @@ def run_deal_year(
             refi_capacity=0.0,
             refi_proceeds=0.0,
             refi_liability_added=0.0,
+            deal_nav_before_refi_liability=0.0,
+            deal_nav_after_refi_liability=0.0,
             deal_nav=0.0,
             entry_equity_cushion=entry_equity_cushion,
             value_to_new_equity_multiple=None,
@@ -171,12 +174,15 @@ def run_deal_year(
     asset_value = calculate_asset_value(deal, relative_year, noi)
     free_cashflow = noi - debt_service - capex
     net_equity_value = asset_value - debt_balance - assumed_liabilities
-    deal_nav = net_equity_value - deal.capital_stack.seller_note - deal.capital_stack.preferred_equity
+    deal_nav_before_refi_liability = (
+        net_equity_value - deal.capital_stack.seller_note - deal.capital_stack.preferred_equity
+    )
     dscr = noi / debt_service if debt_service > 0 else None
     refi_result = calculate_refi_capacity(deal, asset_value, debt_balance, prior_refi_liability)
     refi_capacity = refi_result.refi_capacity
     refi_proceeds = refi_capacity if deal.refinance.enabled and model_year in deal.refinance.target_years else 0.0
     ending_refi_liability = prior_refi_liability + refi_proceeds
+    deal_nav_after_refi_liability = deal_nav_before_refi_liability - ending_refi_liability
 
     return DealYearResult(
         scenario=scenario_name,
@@ -202,10 +208,15 @@ def run_deal_year(
         refi_capacity=refi_capacity,
         refi_proceeds=refi_proceeds,
         refi_liability_added=refi_proceeds,
-        deal_nav=deal_nav,
+        deal_nav_before_refi_liability=deal_nav_before_refi_liability,
+        deal_nav_after_refi_liability=deal_nav_after_refi_liability,
+        # Keep deal_nav as the existing pre-refi-liability convention for backward-compatible outputs.
+        deal_nav=deal_nav_before_refi_liability,
         entry_equity_cushion=entry_equity_cushion,
         value_to_new_equity_multiple=(
-            deal_nav / deal.acquisition.new_equity_required if deal.acquisition.new_equity_required > 0 else None
+            deal_nav_before_refi_liability / deal.acquisition.new_equity_required
+            if deal.acquisition.new_equity_required > 0
+            else None
         ),
         new_equity_required=deal.acquisition.new_equity_required,
         refinance_proceeds_use=deal.refinance.proceeds_use,

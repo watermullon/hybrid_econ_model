@@ -972,9 +972,49 @@ This pass intentionally does not add:
 - Full amortizing debt
 - Complex waterfall redesign
 
-Additional limitation:
+## Patch Update: Refinance State And Future Acquisition Funding
 
-- Future-year acquisitions become active economically in their acquisition year, but the fund engine does not yet explicitly reserve and deploy future acquisition equity in later years. Year-1 deployed equity is handled directly.
+A follow-on patch tightened two modelling areas.
+
+First, deal-level refinance capacity is now stateful. Each deal tracks cumulative prior refinance proceeds, and later refinance years deduct that prior deal-level refi liability before calculating additional capacity:
+
+```text
+max_debt_supported = asset_value * refi_ltv
+cash_out_before_refi_costs = max_debt_supported - debt_balance - prior_refi_liability
+refi_costs = max(cash_out_before_refi_costs, 0) * refi_costs_pct
+refi_capacity = max(0, cash_out_before_refi_costs - refi_costs)
+```
+
+Deal output rows now include:
+
+- `prior_refi_liability`
+- `ending_refi_liability`
+- `max_debt_supported`
+- `cash_out_before_refi_costs`
+- `refi_costs`
+- `deal_nav_before_refi_liability`
+- `deal_nav_after_refi_liability`
+
+The legacy `deal_nav` field remains as an alias for pre-refi-liability deal NAV so existing outputs do not break. The clearer before/after fields should be used for interpretation.
+
+Second, future-year acquisitions now require fund-level funding before they can become economically active. The fund engine records an acquisition funding ledger in annual cashflows:
+
+- `acquisition_starting_retained_cash`
+- `acquisition_starting_reserve`
+- `acquisition_new_deal_equity_required`
+- `acquisition_funded_from_initial_lp_capital`
+- `acquisition_funded_from_retained_cash`
+- `acquisition_funded_from_reserve`
+- `acquisition_unfunded_shortfall`
+- `acquisition_ending_retained_cash`
+- `acquisition_ending_reserve`
+- `acquisition_funding_source`
+
+Year-1 deal equity is recorded as funded from `initial_lp_capital`. For year 2 and later, the funding order is retained cash first, then reserve. If there is an unfunded acquisition shortfall, the future deal does not contribute asset value, NOI, NAV, refinance capacity, or cashflow.
+
+Additional current limitation:
+
+- If a future-year acquisition has a funding shortfall, the current ledger records available retained cash/reserve as used and suppresses the deal economics. There is not yet a retry queue, escrow account, partial acquisition close, or refund mechanic.
 
 ## Practical Workflow
 
@@ -997,4 +1037,3 @@ real_estate_model:
 6. Review `outputs/deal_cashflows.csv` first to validate asset economics.
 7. Review `outputs/scenario_cashflows.csv` to validate fund-level routing and liquidity.
 8. Review `outputs/scenario_summary.csv` for LP/GP outcome comparison.
-

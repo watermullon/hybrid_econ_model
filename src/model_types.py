@@ -382,6 +382,16 @@ class YearlyResult:
     re_free_cashflow_after_debt_and_capex: float = 0.0
     re_cashflow_shortfall: float = 0.0
     active_deal_count: int = 0
+    acquisition_starting_retained_cash: float = 0.0
+    acquisition_starting_reserve: float = 0.0
+    acquisition_new_deal_equity_required: float = 0.0
+    acquisition_funded_from_initial_lp_capital: float = 0.0
+    acquisition_funded_from_retained_cash: float = 0.0
+    acquisition_funded_from_reserve: float = 0.0
+    acquisition_unfunded_shortfall: float = 0.0
+    acquisition_ending_retained_cash: float = 0.0
+    acquisition_ending_reserve: float = 0.0
+    acquisition_funding_source: str = ""
     hurdle_trigger_eligible: bool = False
     hurdle_trigger_attempted: bool = False
     hurdle_trigger_executed: bool = False

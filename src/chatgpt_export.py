@@ -71,6 +71,7 @@ SUMMARY_COLUMNS = [
     "final_re_dscr",
     "total_deal_refi_proceeds",
     "total_re_cashflow_shortfall",
+    "total_acquisition_unfunded_shortfall",
     "total_distributed_to_lp",
     "total_reinvested_into_hf",
     "total_added_to_reserve",
@@ -111,6 +112,8 @@ CASHFLOW_COLUMNS = [
     "re_refi_costs",
     "re_free_cashflow_after_debt_and_capex",
     "re_refi_proceeds_from_deals",
+    "acquisition_new_deal_equity_required",
+    "acquisition_unfunded_shortfall",
     "re_closing_nav",
     "hf_closing_nav",
     "reserve_closing_nav",
@@ -145,6 +148,8 @@ DEAL_CASHFLOW_COLUMNS = [
     "refi_costs",
     "refi_capacity",
     "refi_proceeds",
+    "deal_nav_before_refi_liability",
+    "deal_nav_after_refi_liability",
     "deal_nav",
 ]
 

@@ -16,7 +16,7 @@ from src.deal_model import (
 )
 from src.deal_types import DealConfig, DealSet
 from src.engine import run_scenario
-from src.model_types import ModelConfig, Scenario, ScenarioSet
+from src.model_types import ModelConfig, Scenario, ScenarioSet, legacy_cashflow_routing
 from src.outputs import write_outputs
 from src.portfolio_aggregator import build_re_portfolio_years
 from src.utils import merge_model
@@ -305,6 +305,94 @@ def test_engine_bottom_up_negative_cashflow_uses_cash_sources_before_shortfall()
     assert "RE_CASHFLOW_SHORTFALL" in row.event_flag
 
 
+def test_engine_funds_future_acquisition_from_reserve_before_activation() -> None:
+    config = make_config(bottom_up=True)
+    first_deal = make_deal()
+    second_deal = make_deal(
+        acquisition_year=2,
+        acquisition={"asset_value": 5_000_000, "new_equity_required": 1_000_000},
+        capital_stack={"assumed_debt": 2_000_000, "assumed_liabilities": 0},
+    )
+    scenario = make_scenario(years=2)
+
+    result = run_scenario(
+        "bottom",
+        scenario,
+        config,
+        DealSet(deals={"first": first_deal, "second": second_deal}),
+    )
+    year_one, year_two = result.cashflows
+
+    assert year_one.acquisition_funded_from_initial_lp_capital == pytest.approx(2_000_000)
+    assert year_one.acquisition_funding_source == "initial_lp_capital"
+    assert year_two.acquisition_new_deal_equity_required == pytest.approx(1_000_000)
+    assert year_two.acquisition_funded_from_reserve == pytest.approx(1_000_000)
+    assert year_two.acquisition_unfunded_shortfall == 0
+    assert year_two.active_deal_count == 2
+
+
+def test_engine_suppresses_unfunded_future_deal_economics() -> None:
+    config = make_config(bottom_up=True)
+    first_deal = make_deal()
+    unfunded_deal = make_deal(
+        acquisition_year=2,
+        acquisition={"asset_value": 100_000_000, "new_equity_required": 50_000_000},
+        capital_stack={"assumed_debt": 1_000_000, "assumed_liabilities": 0},
+    )
+    scenario = make_scenario(years=2)
+
+    result = run_scenario(
+        "bottom",
+        scenario,
+        config,
+        DealSet(deals={"first": first_deal, "unfunded": unfunded_deal}),
+    )
+    year_two = result.cashflows[1]
+    unfunded_row = next(row for row in result.deal_cashflows if row.deal_name == "unfunded" and row.year == 2)
+
+    assert year_two.acquisition_unfunded_shortfall > 0
+    assert year_two.active_deal_count == 1
+    assert unfunded_row.active is False
+    assert unfunded_row.asset_value == 0
+    assert "ACQUISITION_FUNDING_SHORTFALL" in year_two.event_flag
+
+
+def test_engine_future_acquisition_funding_uses_retained_cash_before_reserve() -> None:
+    config = make_config(bottom_up=True).model_copy(
+        update={
+            "cashflow_routing": legacy_cashflow_routing(),
+            "distribution_policy": make_config().distribution_policy.model_copy(
+                update={"distribute_re_cashflow_annually": False}
+            ),
+        }
+    )
+    cashflow_deal = make_deal(
+        capital_stack={"assumed_debt": 0, "assumed_liabilities": 0},
+        operations={"current_noi": 1_000_000, "stabilized_noi": 1_000_000},
+        capex={"annual_capex": {}, "recurring_capex_pct_of_noi": 0.0},
+    )
+    second_deal = make_deal(
+        acquisition_year=2,
+        acquisition={"asset_value": 5_000_000, "new_equity_required": 1_500_000},
+        capital_stack={"assumed_debt": 2_000_000, "assumed_liabilities": 0},
+    )
+    scenario = make_scenario(years=2)
+
+    result = run_scenario(
+        "bottom",
+        scenario,
+        config,
+        DealSet(deals={"cashflow": cashflow_deal, "second": second_deal}),
+    )
+    year_two = result.cashflows[1]
+
+    assert year_two.acquisition_starting_retained_cash > 0
+    assert year_two.acquisition_funded_from_retained_cash == pytest.approx(
+        min(year_two.acquisition_starting_retained_cash, 1_500_000)
+    )
+    assert year_two.acquisition_unfunded_shortfall == 0
+
+
 def test_engine_bottom_up_hurdle_trigger_can_execute() -> None:
     config = make_config(bottom_up=True).model_copy(
         update={
@@ -338,11 +426,15 @@ def test_outputs_include_bottom_up_columns_and_deal_cashflow_sheet(tmp_path: Pat
     frames = write_outputs(results=[result], config=config, scenarios=scenario_set, output_dir=tmp_path)
 
     assert "total_deal_refi_proceeds" in frames["summary"].columns
+    assert "total_acquisition_unfunded_shortfall" in frames["summary"].columns
     assert "re_gross_asset_value" in frames["cashflows"].columns
     assert "re_refi_costs" in frames["cashflows"].columns
+    assert "acquisition_new_deal_equity_required" in frames["cashflows"].columns
     assert "prior_refi_liability" in frames["deal_cashflows"].columns
     assert "ending_refi_liability" in frames["deal_cashflows"].columns
     assert "refi_costs" in frames["deal_cashflows"].columns
+    assert "deal_nav_before_refi_liability" in frames["deal_cashflows"].columns
+    assert "deal_nav_after_refi_liability" in frames["deal_cashflows"].columns
     assert (tmp_path / "deal_cashflows.csv").exists()
     assert not pd.read_csv(tmp_path / "deal_cashflows.csv").empty
     workbook = load_workbook(tmp_path / "scenario_summary.xlsx", read_only=True)

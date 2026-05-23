@@ -150,6 +150,8 @@ class DealYearResult:
     refi_capacity: float
     refi_proceeds: float
     refi_liability_added: float
+    deal_nav_before_refi_liability: float
+    deal_nav_after_refi_liability: float
     deal_nav: float
     entry_equity_cushion: float
     value_to_new_equity_multiple: float | None
@@ -180,6 +182,8 @@ class RealEstatePortfolioYearResult:
     refi_capacity: float
     refi_proceeds: float
     refinance_liability_added: float
+    deal_nav_before_refi_liability: float
+    deal_nav_after_refi_liability: float
     deal_nav: float
     entry_equity_cushion: float
     value_to_new_equity_multiple: float | None
