@@ -1,0 +1,59 @@
+deals:
+  jon_deal_1:
+    enabled: true
+    acquisition_year: 1
+    description: "Specific distressed real estate package under review. Placeholder assumptions pending underwriting."
+
+    acquisition:
+      asset_value: 23000000
+      value_type: "unknown"
+      purchase_price: null
+      new_equity_required: 2000000
+      closing_costs: 0
+      initial_capex_reserve: 0
+
+    capital_stack:
+      assumed_debt: 16000000
+      assumed_liabilities: 0
+      liabilities_written_down: 0
+      seller_note: 0
+      preferred_equity: 0
+
+    operations:
+      current_noi: 1200000
+      stabilized_noi: 1800000
+      years_to_stabilization: 3
+      annual_noi_growth_after_stabilization: 0.02
+      gross_rent: null
+      gross_rent_growth: 0.02
+      vacancy_rate: null
+
+    debt:
+      interest_rate: 0.065
+      maturity_year: 5
+      amortization_type: "interest_only"
+      annual_debt_service: null
+      amortization_years: null
+      dscr_minimum: 1.25
+      recourse: "unknown"
+
+    capex:
+      annual_capex:
+        1: 300000
+        2: 250000
+        3: 150000
+      recurring_capex_pct_of_noi: 0.03
+
+    valuation:
+      method: "growth"
+      exit_cap_rate: null
+      annual_value_growth: 0.03
+      stabilized_value: null
+
+    refinance:
+      enabled: true
+      target_years: [5, 7, 10]
+      refi_ltv: 0.65
+      refi_costs_pct: 0.02
+      max_cash_out_pct_of_value: null
+      proceeds_use: "fund_liquidity"

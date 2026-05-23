@@ -14,7 +14,24 @@ from src.model_types import ModelConfig, ScenarioResult, ScenarioSet
 SUMMARY_COLUMNS = [
     "scenario",
     "description",
+    "real_estate_mode",
     "lp_initial_capital",
+    "initial_re_cash_deployed",
+    "initial_re_gross_asset_value",
+    "initial_re_debt_balance",
+    "initial_re_assumed_liabilities",
+    "initial_re_net_equity_value",
+    "initial_re_entry_equity_cushion",
+    "initial_re_value_to_new_equity_multiple",
+    "final_re_gross_asset_value",
+    "final_re_debt_balance",
+    "final_re_assumed_liabilities",
+    "final_re_net_equity_value",
+    "final_re_dscr",
+    "total_re_debt_service",
+    "total_re_capex",
+    "total_deal_refi_proceeds",
+    "total_re_cashflow_shortfall",
     "years_modelled",
     "lp_hurdle_moic",
     "lp_hurdle_amount",
@@ -80,10 +97,23 @@ SUMMARY_COLUMNS = [
 CASHFLOW_COLUMNS = [
     "scenario",
     "year",
+    "real_estate_mode",
     "re_opening_nav",
+    "re_gross_asset_value",
+    "re_debt_balance",
+    "re_assumed_liabilities",
+    "re_net_equity_value",
     "re_noi_yield",
     "re_noi",
     "gross_rent",
+    "re_debt_service",
+    "re_capex",
+    "re_dscr",
+    "re_refi_capacity",
+    "re_refi_proceeds_from_deals",
+    "re_free_cashflow_after_debt_and_capex",
+    "re_cashflow_shortfall",
+    "active_deal_count",
     "re_asset_mgmt_fee",
     "net_re_cashflow",
     "re_cashflow_generated",
@@ -146,6 +176,32 @@ CASHFLOW_COLUMNS = [
     "event_flag",
 ]
 
+DEAL_CASHFLOW_COLUMNS = [
+    "scenario",
+    "deal_name",
+    "year",
+    "relative_year",
+    "active",
+    "asset_value",
+    "debt_balance",
+    "assumed_liabilities",
+    "net_equity_value",
+    "noi",
+    "gross_rent",
+    "debt_service",
+    "capex",
+    "free_cashflow_after_debt_and_capex",
+    "dscr",
+    "refi_capacity",
+    "refi_proceeds",
+    "refi_liability_added",
+    "deal_nav",
+    "entry_equity_cushion",
+    "value_to_new_equity_multiple",
+    "new_equity_required",
+    "refinance_proceeds_use",
+]
+
 
 def write_outputs(
     *,
@@ -155,20 +211,30 @@ def write_outputs(
     output_dir: Path,
 ) -> dict[str, pd.DataFrame]:
     output_dir.mkdir(parents=True, exist_ok=True)
-    summaries, cashflows, flags = result_dicts(results)
+    summaries, cashflows, flags, deal_cashflows = result_dicts(results)
     summary_df = pd.DataFrame(summaries).reindex(columns=SUMMARY_COLUMNS)
     cashflow_df = pd.DataFrame(cashflows).reindex(columns=CASHFLOW_COLUMNS)
     flags_df = pd.DataFrame(flags).reindex(columns=["scenario", "flag", "severity", "explanation"])
+    deal_cashflow_df = pd.DataFrame(deal_cashflows).reindex(columns=DEAL_CASHFLOW_COLUMNS)
 
     if config.reporting.output_csv:
         summary_df.to_csv(output_dir / "scenario_summary.csv", index=False)
         cashflow_df.to_csv(output_dir / "scenario_cashflows.csv", index=False)
         flags_df.to_csv(output_dir / "scenario_flags.csv", index=False)
+        deal_cashflow_df.to_csv(output_dir / "deal_cashflows.csv", index=False)
 
     if config.reporting.output_excel:
-        write_excel(output_dir / "scenario_summary.xlsx", summary_df, cashflow_df, flags_df, config, scenarios)
+        write_excel(
+            output_dir / "scenario_summary.xlsx",
+            summary_df,
+            cashflow_df,
+            flags_df,
+            deal_cashflow_df,
+            config,
+            scenarios,
+        )
 
-    return {"summary": summary_df, "cashflows": cashflow_df, "flags": flags_df}
+    return {"summary": summary_df, "cashflows": cashflow_df, "flags": flags_df, "deal_cashflows": deal_cashflow_df}
 
 
 def write_excel(
@@ -176,6 +242,7 @@ def write_excel(
     summary_df: pd.DataFrame,
     cashflow_df: pd.DataFrame,
     flags_df: pd.DataFrame,
+    deal_cashflow_df: pd.DataFrame,
     config: ModelConfig,
     scenarios: ScenarioSet,
 ) -> None:
@@ -186,6 +253,7 @@ def write_excel(
     with pd.ExcelWriter(path, engine="openpyxl") as writer:
         summary_df.to_excel(writer, sheet_name="Summary", index=False)
         cashflow_df.to_excel(writer, sheet_name="Cashflows", index=False)
+        deal_cashflow_df.to_excel(writer, sheet_name="Deal Cashflows", index=False)
         flags_df.to_excel(writer, sheet_name="Flags", index=False)
         assumptions_df.to_excel(writer, sheet_name="Assumptions", index=False)
         notes_df.to_excel(writer, sheet_name="Scenario Notes", index=False)

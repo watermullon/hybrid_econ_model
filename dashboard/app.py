@@ -343,7 +343,7 @@ def run_model_with_routing_override(
     from src.config_loader import load_inputs
     from src.engine import result_dicts, run_all_scenarios
 
-    config, scenario_set = load_inputs(ROOT / "inputs")
+    config, scenario_set, deals = load_inputs(ROOT / "inputs")
     config_data = config.model_dump()
     config_data["cashflow_routing"] = {
         "re_cashflow": routing["re_cashflow"],
@@ -351,8 +351,8 @@ def run_model_with_routing_override(
     }
     config_data["hurdle_completion_trigger"] = trigger
     rerun_config = config.__class__.model_validate(config_data)
-    results = run_all_scenarios(rerun_config, scenario_set.scenarios)
-    summaries, cashflows, _ = result_dicts(results)
+    results = run_all_scenarios(rerun_config, scenario_set.scenarios, deals)
+    summaries, cashflows, _, _ = result_dicts(results)
     summary = normalize_numeric_columns(pd.DataFrame(summaries))
     cashflow_df = normalize_numeric_columns(pd.DataFrame(cashflows))
     summary["scenario_display"] = summary["scenario"].map(display_name)
@@ -370,7 +370,7 @@ def run_custom_scenario_in_memory(
     from src.engine import result_dicts, run_scenario
     from src.model_types import ModelConfig, Scenario
 
-    config, _ = load_inputs(ROOT / "inputs")
+    config, _, deals = load_inputs(ROOT / "inputs")
     config_data = config.model_dump()
     config_data["cashflow_routing"] = {
         "re_cashflow": routing["re_cashflow"],
@@ -401,8 +401,8 @@ def run_custom_scenario_in_memory(
             "hedge_fund": {"annual_returns": custom_inputs["hf_returns"]},
         }
     )
-    result = run_scenario("custom_dashboard_scenario", scenario, rerun_config)
-    summaries, cashflows, _ = result_dicts([result])
+    result = run_scenario("custom_dashboard_scenario", scenario, rerun_config, deals)
+    summaries, cashflows, _, _ = result_dicts([result])
     summary = normalize_numeric_columns(pd.DataFrame(summaries))
     cashflow_df = normalize_numeric_columns(pd.DataFrame(cashflows))
     summary["scenario_display"] = summary["scenario"].map(display_name)

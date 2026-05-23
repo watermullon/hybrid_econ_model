@@ -9,7 +9,7 @@ from src.config_loader import ConfigError, load_inputs
 def main() -> None:
     root = Path(__file__).resolve().parent
     try:
-        config, scenarios = load_inputs(root / "inputs")
+        config, scenarios, _ = load_inputs(root / "inputs")
         suite = load_calibration_suite(root / "inputs" / "calibration_tests.yaml")
         results = run_calibration_suite(config=config, scenarios=scenarios, suite=suite)
         write_calibration_outputs(results=results, config=config, scenarios=scenarios, output_dir=root / "outputs")

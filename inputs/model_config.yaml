@@ -11,6 +11,14 @@ allocation:
   real_estate_allocation_pct: 0.85
   reserve_allocation_pct: 0.05
 
+real_estate:
+  mode: "top_down"
+
+bottom_up_allocation:
+  remaining_capital_hf_pct: 0.0
+  remaining_capital_reserve_pct: 1.0
+  allow_overallocated_deals: false
+
 waterfall:
   lp_hurdle_moic: 2.0
   lp_receives_100_percent_until_hurdle: true

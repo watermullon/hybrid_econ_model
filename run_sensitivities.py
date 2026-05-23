@@ -13,7 +13,7 @@ from src.model_types import CashflowRoute, CashflowRoutingSettings
 def main() -> None:
     root = Path(__file__).resolve().parent
     try:
-        config, scenarios = load_inputs(root / "inputs")
+        config, scenarios, deals = load_inputs(root / "inputs")
     except Exception as exc:
         print(f"Failed to load inputs: {exc}")
         return
@@ -106,7 +106,7 @@ def main() -> None:
         )
         
         try:
-            res = run_scenario(variant_label, base_scenario, variant_config)
+            res = run_scenario(variant_label, base_scenario, variant_config, deals)
             
             # 3. Collect Data
             summary = res.summary

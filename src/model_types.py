@@ -10,6 +10,11 @@ AllocationMethod = Literal["fixed", "cap_rate_sized"]
 FeeBasis = Literal["gross_rent", "noi", "re_nav"]
 CashYieldSource = Literal["net_re_cashflow", "hf_harvest", "retained_cash", "reserve"]
 RefinanceUseOfProceeds = Literal["lp_distribution", "retained_cash", "reserve"]
+RealEstateMode = Literal["top_down", "bottom_up"]
+
+
+class RealEstateModelSettings(BaseModel):
+    mode: RealEstateMode = "top_down"
 
 
 class ModelSettings(BaseModel):
@@ -32,6 +37,19 @@ class AllocationSettings(BaseModel):
     hedge_fund_allocation_pct: float = Field(ge=0)
     real_estate_allocation_pct: float = Field(ge=0)
     reserve_allocation_pct: float = Field(ge=0)
+
+
+class BottomUpAllocationSettings(BaseModel):
+    remaining_capital_hf_pct: float = Field(default=0.0, ge=0, le=1)
+    remaining_capital_reserve_pct: float = Field(default=1.0, ge=0, le=1)
+    allow_overallocated_deals: bool = False
+
+    @model_validator(mode="after")
+    def validate_remaining_allocation(self) -> "BottomUpAllocationSettings":
+        total = self.remaining_capital_hf_pct + self.remaining_capital_reserve_pct
+        if abs(total - 1.0) > 1e-6:
+            raise ValueError("Bottom-up remaining capital allocation must sum to 1.0.")
+        return self
 
 
 class WaterfallSettings(BaseModel):
@@ -197,6 +215,8 @@ class BackendLiquidityStrategySettings(BaseModel):
 class ModelConfig(BaseModel):
     model: ModelSettings
     allocation: AllocationSettings
+    real_estate: RealEstateModelSettings = RealEstateModelSettings()
+    bottom_up_allocation: BottomUpAllocationSettings = BottomUpAllocationSettings()
     waterfall: WaterfallSettings
     liquidity: LiquiditySettings
     fees: FeeSettings
@@ -262,6 +282,8 @@ class Scenario(BaseModel):
     backend_liquidity_strategy: dict[str, Any] | None = None
     allocation: dict[str, Any] | None = None
     reserve: dict[str, Any] | None = None
+    real_estate_model: dict[str, Any] | None = None
+    deal_overrides: dict[str, Any] | None = None
     refinance_events: list[RefinanceEvent] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -342,6 +364,19 @@ class YearlyResult:
     gp_cumulative_fees: float
     gp_residual_nav: float
     fund_nav: float
+    real_estate_mode: str = "top_down"
+    re_gross_asset_value: float = 0.0
+    re_debt_balance: float = 0.0
+    re_assumed_liabilities: float = 0.0
+    re_net_equity_value: float = 0.0
+    re_debt_service: float = 0.0
+    re_capex: float = 0.0
+    re_dscr: float | None = None
+    re_refi_capacity: float = 0.0
+    re_refi_proceeds_from_deals: float = 0.0
+    re_free_cashflow_after_debt_and_capex: float = 0.0
+    re_cashflow_shortfall: float = 0.0
+    active_deal_count: int = 0
     hurdle_trigger_eligible: bool = False
     hurdle_trigger_attempted: bool = False
     hurdle_trigger_executed: bool = False
@@ -373,6 +408,7 @@ class ScenarioResult:
     summary: dict[str, Any]
     cashflows: list[YearlyResult] = field(default_factory=list)
     flags: list[FlagResult] = field(default_factory=list)
+    deal_cashflows: list[Any] = field(default_factory=list)
 
 
 def pydantic_error_message(path: str, exc: ValidationError) -> str:

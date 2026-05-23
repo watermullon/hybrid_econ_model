@@ -16,7 +16,7 @@ def load_base_inputs():
 
 
 def test_default_fixed_allocation_matches_yaml_percentages() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     scenario = scenario_set.scenarios["base_hit_everyone_happy"]
 
     re_nav, hf_nav, reserve_nav = calculate_initial_allocation(config, scenario)
@@ -27,7 +27,7 @@ def test_default_fixed_allocation_matches_yaml_percentages() -> None:
 
 
 def test_cap_rate_sized_allocation_matches_documented_formula() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     config = config.model_copy(
         update={
             "allocation": config.allocation.model_copy(
@@ -50,7 +50,7 @@ def test_cap_rate_sized_allocation_matches_documented_formula() -> None:
 
 
 def test_real_estate_year_one_noi_fee_and_nav_math() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     scenario = scenario_set.scenarios["base_hit_everyone_happy"]
 
     result = run_scenario("base_hit_everyone_happy", scenario, config)
@@ -65,7 +65,7 @@ def test_real_estate_year_one_noi_fee_and_nav_math() -> None:
 
 
 def test_noi_yield_compounds_by_annual_noi_growth() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     scenario = scenario_set.scenarios["base_hit_everyone_happy"]
 
     result = run_scenario("base_hit_everyone_happy", scenario, config)
@@ -75,7 +75,7 @@ def test_noi_yield_compounds_by_annual_noi_growth() -> None:
 
 
 def test_hf_returns_are_compounded_without_harvest_by_default() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     config = config.model_copy(update={"cashflow_routing": legacy_cashflow_routing()})
     scenario = scenario_set.scenarios["base_hit_everyone_happy"]
 
@@ -89,7 +89,7 @@ def test_hf_returns_are_compounded_without_harvest_by_default() -> None:
 
 
 def test_hf_positive_return_harvest_moves_gain_to_retained_cash_when_not_distributed() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     config = config.model_copy(update={"cashflow_routing": legacy_cashflow_routing()})
     base = scenario_set.scenarios["base_hit_everyone_happy"]
     scenario = base.model_copy(
@@ -113,7 +113,7 @@ def test_hf_positive_return_harvest_moves_gain_to_retained_cash_when_not_distrib
 
 
 def test_retain_cash_policy_prevents_annual_lp_distributions() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     config = config.model_copy(update={"cashflow_routing": legacy_cashflow_routing()})
     base = scenario_set.scenarios["base_hit_everyone_happy"]
     scenario = base.model_copy(update={"years": 1, "distribution_policy": {"retain_cash_until_hurdle_redemption": True}})
@@ -126,7 +126,7 @@ def test_retain_cash_policy_prevents_annual_lp_distributions() -> None:
 
 
 def test_redemption_funding_order_uses_retained_cash_then_reserve_then_hf_then_re() -> None:
-    config, _ = load_base_inputs()
+    config, _, _ = load_base_inputs()
 
     redemption = redeem_lp(
         lp_remaining_hurdle=1_100_000,
@@ -145,7 +145,7 @@ def test_redemption_funding_order_uses_retained_cash_then_reserve_then_hf_then_r
 
 
 def test_economic_hurdle_can_be_reached_before_liquidity_redemption() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     # Disable the active trigger to test passive liquidity constraints
     config = config.model_copy(
         update={"hurdle_completion_trigger": config.hurdle_completion_trigger.model_copy(update={"enabled": False})}
@@ -161,7 +161,7 @@ def test_economic_hurdle_can_be_reached_before_liquidity_redemption() -> None:
 
 
 def test_successful_redemption_stops_model_at_hurdle_year() -> None:
-    config, scenario_set = load_base_inputs()
+    config, scenario_set, _ = load_base_inputs()
     # Disable the active trigger to test standard passive redemption
     config = config.model_copy(
         update={

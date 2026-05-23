@@ -12,8 +12,8 @@ from src.reporting import write_markdown_report
 def main() -> None:
     root = Path(__file__).resolve().parent
     try:
-        config, scenarios = load_inputs(root / "inputs")
-        results = run_all_scenarios(config, scenarios.scenarios)
+        config, scenarios, deals = load_inputs(root / "inputs")
+        results = run_all_scenarios(config, scenarios.scenarios, deals)
         frames = write_outputs(results=results, config=config, scenarios=scenarios, output_dir=root / "outputs")
         if config.reporting.output_markdown:
             write_markdown_report(results, frames["summary"], root / "outputs" / "scenario_report.md")

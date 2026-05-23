@@ -19,6 +19,9 @@ GLOBAL_ASSUMPTION_KEYS = [
     ("allocation.hedge_fund_allocation_pct", "Initial HF allocation"),
     ("allocation.real_estate_allocation_pct", "Initial real estate allocation"),
     ("allocation.reserve_allocation_pct", "Initial reserve allocation"),
+    ("real_estate.mode", "Real estate model mode"),
+    ("bottom_up_allocation.remaining_capital_hf_pct", "Bottom-up remaining capital to HF"),
+    ("bottom_up_allocation.remaining_capital_reserve_pct", "Bottom-up remaining capital to reserve"),
     ("waterfall.lp_hurdle_moic", "LP cash hurdle MOIC"),
     ("waterfall.include_unrealized_nav_in_hurdle_test", "Economic NAV hurdle test enabled"),
     ("waterfall.require_liquidity_for_lp_redemption", "Liquidity required for LP redemption"),
@@ -50,6 +53,7 @@ GLOBAL_ASSUMPTION_KEYS = [
 SUMMARY_COLUMNS = [
     "scenario",
     "description",
+    "real_estate_mode",
     "years_modelled",
     "lp_cash_moic",
     "lp_economic_moic",
@@ -60,6 +64,13 @@ SUMMARY_COLUMNS = [
     "liquidity_constrained",
     "final_fund_nav",
     "final_refinance_liability",
+    "final_re_gross_asset_value",
+    "final_re_debt_balance",
+    "final_re_assumed_liabilities",
+    "final_re_net_equity_value",
+    "final_re_dscr",
+    "total_deal_refi_proceeds",
+    "total_re_cashflow_shortfall",
     "total_distributed_to_lp",
     "total_reinvested_into_hf",
     "total_added_to_reserve",
@@ -79,6 +90,7 @@ SUMMARY_COLUMNS = [
 CASHFLOW_COLUMNS = [
     "scenario",
     "year",
+    "real_estate_mode",
     "lp_distribution",
     "lp_cumulative_distribution",
     "lp_remaining_hurdle",
@@ -90,6 +102,13 @@ CASHFLOW_COLUMNS = [
     "hf_harvest_to_reserve",
     "refinance_proceeds",
     "refinance_liability",
+    "re_gross_asset_value",
+    "re_debt_balance",
+    "re_assumed_liabilities",
+    "re_noi",
+    "re_dscr",
+    "re_free_cashflow_after_debt_and_capex",
+    "re_refi_proceeds_from_deals",
     "re_closing_nav",
     "hf_closing_nav",
     "reserve_closing_nav",
@@ -106,6 +125,23 @@ CASHFLOW_COLUMNS = [
 ]
 
 FLAG_COLUMNS = ["scenario", "flag", "severity", "explanation"]
+
+DEAL_CASHFLOW_COLUMNS = [
+    "scenario",
+    "deal_name",
+    "year",
+    "asset_value",
+    "debt_balance",
+    "assumed_liabilities",
+    "new_equity_required",
+    "entry_equity_cushion",
+    "noi",
+    "dscr",
+    "free_cashflow_after_debt_and_capex",
+    "refi_capacity",
+    "refi_proceeds",
+    "deal_nav",
+]
 
 
 def build_chatgpt_context(root: Path, output_path: Path | None = None) -> Path:
@@ -124,6 +160,7 @@ def build_chatgpt_context(root: Path, output_path: Path | None = None) -> Path:
     summary = _read_csv(root / "outputs" / "scenario_summary.csv")
     cashflows = _read_csv(root / "outputs" / "scenario_cashflows.csv")
     flags = _read_csv(root / "outputs" / "scenario_flags.csv")
+    deal_cashflows = _read_optional_csv(root / "outputs" / "deal_cashflows.csv")
 
     lines: list[str] = []
     lines.append("# Hybrid Fund Model Context for ChatGPT Analysis")
@@ -150,6 +187,7 @@ def build_chatgpt_context(root: Path, output_path: Path | None = None) -> Path:
     _append_scenario_inputs(lines, scenarios)
     _append_summary_outputs(lines, summary)
     _append_cashflow_outputs(lines, cashflows, summary)
+    _append_bottom_up_outputs(lines, deal_cashflows)
     _append_flags(lines, flags)
     _append_source_manifest(lines, root)
 
@@ -175,6 +213,12 @@ def _read_csv(path: Path) -> pd.DataFrame:
         raise FileNotFoundError(
             f"Required output file not found: {path}. Run python run_model.py before building the ChatGPT context file."
         )
+    return pd.read_csv(path)
+
+
+def _read_optional_csv(path: Path) -> pd.DataFrame:
+    if not path.exists():
+        return pd.DataFrame()
     return pd.read_csv(path)
 
 
@@ -281,6 +325,22 @@ def _append_flags(lines: list[str], flags: pd.DataFrame) -> None:
 
     lines.append("## Flags and diagnostics")
     lines.append("")
+
+
+def _append_bottom_up_outputs(lines: list[str], deal_cashflows: pd.DataFrame) -> None:
+    if deal_cashflows.empty:
+        return
+    compact = _select_columns(deal_cashflows, DEAL_CASHFLOW_COLUMNS).copy()
+    for column in compact.columns:
+        compact[column] = compact[column].map(_format_cell)
+    lines.append("## Bottom-up real estate deal cashflows")
+    lines.append("")
+    lines.append(
+        "Deal rows are asset economics only: NAV, debt, liabilities, NOI, DSCR, free cashflow, and refinance proceeds."
+    )
+    lines.append("")
+    lines.append(_markdown_table(compact.to_dict("records"), list(compact.columns)))
+    lines.append("")
     if compact.empty:
         lines.append("No flags were emitted.")
     else:
@@ -292,8 +352,10 @@ def _append_source_manifest(lines: list[str], root: Path) -> None:
     files = [
         "inputs/model_config.yaml",
         "inputs/scenarios.yaml",
+        "inputs/deals.yaml",
         "outputs/scenario_summary.csv",
         "outputs/scenario_cashflows.csv",
+        "outputs/deal_cashflows.csv",
         "outputs/scenario_flags.csv",
     ]
     lines.append("## Source files used")
@@ -346,7 +408,17 @@ def _dominant_sleeve_sentence(group: pd.DataFrame) -> str:
 
 
 def _scenario_overrides(scenario: dict[str, Any]) -> str:
-    override_keys = ["liquidity", "distribution_policy", "cashflow_routing", "lp_cash_yield_policy", "allocation", "reserve", "refinance_events"]
+    override_keys = [
+        "liquidity",
+        "distribution_policy",
+        "cashflow_routing",
+        "lp_cash_yield_policy",
+        "allocation",
+        "reserve",
+        "real_estate_model",
+        "deal_overrides",
+        "refinance_events",
+    ]
     present = [key for key in override_keys if scenario.get(key)]
     return ", ".join(present) if present else ""
 

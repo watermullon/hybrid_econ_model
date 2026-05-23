@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
+from src.deal_types import DealSet, RealEstatePortfolioYearResult
 from src.metrics import annual_irr, economic_moic, moic
 from src.model_types import (
     BackendLiquidityStrategySettings,
@@ -16,6 +17,7 @@ from src.model_types import (
     ScenarioResult,
     YearlyResult,
 )
+from src.portfolio_aggregator import apply_deal_overrides, build_re_portfolio_years
 from src.utils import merge_model, value_for_year
 from src.validation import validate_all_scenarios
 from src.waterfall import available_liquidity, pay_lp_distribution, redeem_lp
@@ -40,12 +42,21 @@ def calculate_initial_allocation(config: ModelConfig, scenario: Scenario) -> tup
     return re_nav, hf_nav, reserve_nav
 
 
-def run_all_scenarios(config: ModelConfig, scenarios: dict[str, Scenario]) -> list[ScenarioResult]:
-    validate_all_scenarios(config, scenarios)
-    return [run_scenario(name, scenario, config) for name, scenario in scenarios.items()]
+def run_all_scenarios(
+    config: ModelConfig,
+    scenarios: dict[str, Scenario],
+    deals: DealSet | None = None,
+) -> list[ScenarioResult]:
+    validate_all_scenarios(config, scenarios, deals)
+    return [run_scenario(name, scenario, config, deals) for name, scenario in scenarios.items()]
 
 
-def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> ScenarioResult:
+def run_scenario(
+    name: str,
+    scenario: Scenario,
+    config: ModelConfig,
+    deals: DealSet | None = None,
+) -> ScenarioResult:
     liquidity = merge_model(config.liquidity, scenario.liquidity)
     distribution_policy = merge_model(config.distribution_policy, scenario.distribution_policy)
     cashflow_routing = merge_model(config.cashflow_routing, scenario.cashflow_routing)
@@ -58,11 +69,59 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
             "LP cash yield policy is invalid: actual LP cash yield payments must reduce the LP cash hurdle."
         )
     reserve_settings = merge_model(config.reserve, scenario.reserve)
+    real_estate_settings = merge_model(config.real_estate, scenario.real_estate_model)
+    real_estate_mode = real_estate_settings.mode
     refinance_events_by_year = events_by_year(scenario.refinance_events)
 
     initial_lp_capital = config.model.initial_lp_capital
     lp_hurdle_amount = initial_lp_capital * config.waterfall.lp_hurdle_moic
-    re_nav, hf_nav, reserve_nav = calculate_initial_allocation(config, scenario)
+    portfolio_years: list[RealEstatePortfolioYearResult] = []
+    deal_cashflows = []
+    effective_deals: DealSet | None = None
+    initial_re_cash_deployed = 0.0
+    initial_re_gross_asset_value = 0.0
+    initial_re_debt_balance = 0.0
+    initial_re_assumed_liabilities = 0.0
+    initial_re_net_equity_value = 0.0
+    initial_re_entry_equity_cushion = 0.0
+    initial_re_value_to_new_equity_multiple = None
+
+    if real_estate_mode == "bottom_up":
+        if deals is None:
+            raise ValueError(f"Scenario '{name}' uses bottom_up real estate mode but no deals were provided.")
+        effective_deals = apply_deal_overrides(deals, scenario.deal_overrides)
+        portfolio_years, deal_cashflows = build_re_portfolio_years(
+            scenario_name=name,
+            years=scenario.years,
+            deals=effective_deals,
+        )
+        initial_re_cash_deployed = sum(
+            deal.acquisition.new_equity_required
+            for deal in effective_deals.deals.values()
+            if deal.enabled and deal.acquisition_year == 1
+        )
+        remaining_capital = initial_lp_capital - initial_re_cash_deployed
+        if remaining_capital < -1e-6 and not config.bottom_up_allocation.allow_overallocated_deals:
+            raise ValueError(
+                f"Scenario '{name}' bottom-up deals require ${initial_re_cash_deployed:,.0f} of year-1 equity, "
+                f"which exceeds initial LP capital of ${initial_lp_capital:,.0f}."
+            )
+        allocatable_remaining = max(0.0, remaining_capital)
+        hf_nav = allocatable_remaining * config.bottom_up_allocation.remaining_capital_hf_pct
+        reserve_nav = allocatable_remaining * config.bottom_up_allocation.remaining_capital_reserve_pct
+        re_nav = portfolio_years[0].deal_nav if portfolio_years else 0.0
+        if portfolio_years:
+            initial_re_gross_asset_value = portfolio_years[0].gross_asset_value
+            initial_re_debt_balance = portfolio_years[0].debt_balance
+            initial_re_assumed_liabilities = portfolio_years[0].assumed_liabilities
+            initial_re_net_equity_value = portfolio_years[0].net_equity_value
+            initial_re_entry_equity_cushion = portfolio_years[0].entry_equity_cushion
+            initial_re_value_to_new_equity_multiple = portfolio_years[0].value_to_new_equity_multiple
+    else:
+        re_nav, hf_nav, reserve_nav = calculate_initial_allocation(config, scenario)
+        initial_re_cash_deployed = re_nav
+        initial_re_gross_asset_value = re_nav
+        initial_re_net_equity_value = re_nav
     initial_re_nav = re_nav
     initial_hf_nav = hf_nav
 
@@ -93,17 +152,52 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         hf_opening_nav = hf_nav
         reserve_opening_nav = reserve_nav
 
-        re_noi_yield = scenario.real_estate.initial_noi_yield * (
-            (1 + scenario.real_estate.annual_noi_growth) ** (year - 1)
-        )
-        gross_rent_yield = value_for_year(scenario.real_estate.gross_rent_yield, year)
-        re_appreciation_rate = value_for_year(scenario.real_estate.annual_nav_appreciation, year)
-        re_noi = re_opening_nav * re_noi_yield
-        gross_rent = re_opening_nav * gross_rent_yield
-        re_asset_mgmt_fee = calculate_re_fee(config, re_opening_nav, re_noi, gross_rent)
-        net_re_cashflow = re_noi - re_asset_mgmt_fee
-        re_cashflow_generated = net_re_cashflow
-        re_nav = re_opening_nav * (1 + re_appreciation_rate)
+        portfolio_year = portfolio_years[year - 1] if real_estate_mode == "bottom_up" else None
+        if portfolio_year is None:
+            re_noi_yield = scenario.real_estate.initial_noi_yield * (
+                (1 + scenario.real_estate.annual_noi_growth) ** (year - 1)
+            )
+            gross_rent_yield = value_for_year(scenario.real_estate.gross_rent_yield, year)
+            re_appreciation_rate = value_for_year(scenario.real_estate.annual_nav_appreciation, year)
+            re_noi = re_opening_nav * re_noi_yield
+            gross_rent = re_opening_nav * gross_rent_yield
+            re_asset_mgmt_fee = calculate_re_fee(config, re_opening_nav, re_noi, gross_rent)
+            net_re_cashflow = re_noi - re_asset_mgmt_fee
+            re_cashflow_generated = net_re_cashflow
+            re_nav = re_opening_nav * (1 + re_appreciation_rate)
+            re_gross_asset_value = re_nav
+            re_debt_balance = 0.0
+            re_assumed_liabilities = 0.0
+            re_net_equity_value = re_nav
+            re_debt_service = 0.0
+            re_capex = 0.0
+            re_dscr = None
+            re_refi_capacity = 0.0
+            re_refi_proceeds_from_deals = 0.0
+            re_free_cashflow_after_debt_and_capex = net_re_cashflow
+            active_deal_count = 0
+        else:
+            re_noi_yield = portfolio_year.noi / re_opening_nav if re_opening_nav > 0 else 0.0
+            re_appreciation_rate = (
+                portfolio_year.deal_nav / re_opening_nav - 1 if re_opening_nav > 0 else 0.0
+            )
+            re_noi = portfolio_year.noi
+            gross_rent = portfolio_year.gross_rent
+            re_asset_mgmt_fee = calculate_re_fee(config, re_opening_nav, re_noi, gross_rent)
+            net_re_cashflow = portfolio_year.free_cashflow_after_debt_and_capex - re_asset_mgmt_fee
+            re_cashflow_generated = max(0.0, net_re_cashflow)
+            re_nav = portfolio_year.deal_nav
+            re_gross_asset_value = portfolio_year.gross_asset_value
+            re_debt_balance = portfolio_year.debt_balance
+            re_assumed_liabilities = portfolio_year.assumed_liabilities
+            re_net_equity_value = portfolio_year.net_equity_value
+            re_debt_service = portfolio_year.debt_service
+            re_capex = portfolio_year.capex
+            re_dscr = portfolio_year.dscr
+            re_refi_capacity = portfolio_year.refi_capacity
+            re_refi_proceeds_from_deals = portfolio_year.refi_proceeds
+            re_free_cashflow_after_debt_and_capex = portfolio_year.free_cashflow_after_debt_and_capex
+            active_deal_count = portfolio_year.active_deal_count
 
         hf_return = scenario.hedge_fund.annual_returns[year - 1]
         hf_nav_pre_harvest = hf_opening_nav * (1 + hf_return)
@@ -114,6 +208,16 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
 
         reserve_nav = reserve_opening_nav * (1 + reserve_settings.annual_return)
         reserve_return_cash = reserve_nav - reserve_opening_nav
+        re_cashflow_shortfall = 0.0
+        if real_estate_mode == "bottom_up" and net_re_cashflow < 0:
+            funding_need = -net_re_cashflow
+            from_retained_cash = min(retained_cash, funding_need)
+            retained_cash -= from_retained_cash
+            funding_need -= from_retained_cash
+            from_reserve = min(reserve_nav, funding_need)
+            reserve_nav -= from_reserve
+            funding_need -= from_reserve
+            re_cashflow_shortfall = funding_need
 
         gp_fees = re_asset_mgmt_fee
         gp_cumulative_fees += gp_fees
@@ -126,7 +230,7 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         hf_harvest_to_reserve = 0.0
         lp_distribution = 0.0
 
-        net_re_cash_bucket = net_re_cashflow
+        net_re_cash_bucket = re_cashflow_generated if real_estate_mode == "bottom_up" else net_re_cashflow
         hf_harvest_cash_bucket = hf_harvest
 
         if cashflow_routing.enabled:
@@ -225,6 +329,26 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
             else:
                 raise ValueError(f"Unsupported refinance use_of_proceeds: {refinance_event.use_of_proceeds}")
 
+        if real_estate_mode == "bottom_up":
+            for deal_row in (row for row in deal_cashflows if row.year == year and row.refi_proceeds > 0):
+                event_proceeds = deal_row.refi_proceeds
+                refinance_proceeds += event_proceeds
+                cumulative_refinance_proceeds += event_proceeds
+                refinance_liability += deal_row.refi_liability_added
+                refinance_use_of_proceeds = append_event_text(
+                    refinance_use_of_proceeds,
+                    f"deal:{deal_row.deal_name}:{deal_row.refinance_proceeds_use}",
+                )
+                if deal_row.refinance_proceeds_use in {"fund_liquidity", "retained_cash"}:
+                    retained_cash += event_proceeds
+                elif deal_row.refinance_proceeds_use == "reserve":
+                    reserve_nav += event_proceeds
+                    cumulative_cash_added_to_reserve += event_proceeds
+                else:
+                    raise ValueError(
+                        f"Unsupported deal refinance proceeds_use: {deal_row.refinance_proceeds_use}"
+                    )
+
         lp_remaining_hurdle = max(0.0, lp_hurdle_amount - lp_cumulative_distribution)
         fund_nav_before_redemption = re_nav + hf_nav + reserve_nav + retained_cash - refinance_liability
         economic_hurdle_passed = (
@@ -247,6 +371,8 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         )
 
         event_flag = ""
+        if re_cashflow_shortfall > 0:
+            event_flag = append_event_text(event_flag, "RE_CASHFLOW_SHORTFALL")
         trigger_result = evaluate_hurdle_completion_trigger(
             trigger=config.hurdle_completion_trigger,
             backend_strategy=backend_liquidity_strategy,
@@ -376,6 +502,19 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
                 gp_cumulative_fees=gp_cumulative_fees,
                 gp_residual_nav=gp_residual_nav,
                 fund_nav=fund_nav,
+                real_estate_mode=real_estate_mode,
+                re_gross_asset_value=re_gross_asset_value,
+                re_debt_balance=re_debt_balance,
+                re_assumed_liabilities=re_assumed_liabilities,
+                re_net_equity_value=re_net_equity_value,
+                re_debt_service=re_debt_service,
+                re_capex=re_capex,
+                re_dscr=re_dscr,
+                re_refi_capacity=re_refi_capacity,
+                re_refi_proceeds_from_deals=re_refi_proceeds_from_deals,
+                re_free_cashflow_after_debt_and_capex=re_free_cashflow_after_debt_and_capex,
+                re_cashflow_shortfall=re_cashflow_shortfall,
+                active_deal_count=active_deal_count,
                 hurdle_trigger_eligible=trigger_result["eligible"],
                 hurdle_trigger_attempted=trigger_result["attempted"],
                 hurdle_trigger_executed=trigger_result["executed"],
@@ -422,6 +561,15 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
     total_reinvested_into_hf = sum(row.total_cash_reinvested for row in cashflows)
     total_distributed_to_lp = sum(row.total_cash_distributed for row in cashflows)
     total_added_to_reserve = sum(row.total_cash_reserved for row in cashflows)
+    final_re_gross_asset_value = cashflows[-1].re_gross_asset_value if cashflows else 0.0
+    final_re_debt_balance = cashflows[-1].re_debt_balance if cashflows else 0.0
+    final_re_assumed_liabilities = cashflows[-1].re_assumed_liabilities if cashflows else 0.0
+    final_re_net_equity_value = cashflows[-1].re_net_equity_value if cashflows else 0.0
+    final_re_dscr = cashflows[-1].re_dscr if cashflows else None
+    total_re_debt_service = sum(row.re_debt_service for row in cashflows)
+    total_re_capex = sum(row.re_capex for row in cashflows)
+    total_deal_refi_proceeds = sum(row.re_refi_proceeds_from_deals for row in cashflows)
+    total_re_cashflow_shortfall = sum(row.re_cashflow_shortfall for row in cashflows)
     flags = build_flags(
         name=name,
         config=config,
@@ -446,7 +594,24 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
     summary = {
         "scenario": name,
         "description": scenario.description,
+        "real_estate_mode": real_estate_mode,
         "lp_initial_capital": initial_lp_capital,
+        "initial_re_cash_deployed": initial_re_cash_deployed,
+        "initial_re_gross_asset_value": initial_re_gross_asset_value,
+        "initial_re_debt_balance": initial_re_debt_balance,
+        "initial_re_assumed_liabilities": initial_re_assumed_liabilities,
+        "initial_re_net_equity_value": initial_re_net_equity_value,
+        "initial_re_entry_equity_cushion": initial_re_entry_equity_cushion,
+        "initial_re_value_to_new_equity_multiple": initial_re_value_to_new_equity_multiple,
+        "final_re_gross_asset_value": final_re_gross_asset_value,
+        "final_re_debt_balance": final_re_debt_balance,
+        "final_re_assumed_liabilities": final_re_assumed_liabilities,
+        "final_re_net_equity_value": final_re_net_equity_value,
+        "final_re_dscr": final_re_dscr,
+        "total_re_debt_service": total_re_debt_service,
+        "total_re_capex": total_re_capex,
+        "total_deal_refi_proceeds": total_deal_refi_proceeds,
+        "total_re_cashflow_shortfall": total_re_cashflow_shortfall,
         "years_modelled": len(cashflows),
         "lp_hurdle_moic": config.waterfall.lp_hurdle_moic,
         "lp_hurdle_amount": lp_hurdle_amount,
@@ -502,7 +667,7 @@ def run_scenario(name: str, scenario: Scenario, config: ModelConfig) -> Scenario
         "primary_flag": primary_flag,
         "all_flags": "; ".join(flag.flag for flag in flags),
     }
-    return ScenarioResult(name, scenario.description, summary, cashflows, flags)
+    return ScenarioResult(name, scenario.description, summary, cashflows, flags, deal_cashflows)
 
 
 def calculate_re_fee(config: ModelConfig, re_opening_nav: float, re_noi: float, gross_rent: float) -> float:
@@ -903,8 +1068,9 @@ def choose_primary_flag(flags: list[FlagResult], *, lp_hurdle_achieved: bool) ->
     return sorted((flag.flag for flag in flags), key=lambda flag: priority.get(flag, 50))[0]
 
 
-def result_dicts(results: list[ScenarioResult]) -> tuple[list[dict], list[dict], list[dict]]:
+def result_dicts(results: list[ScenarioResult]) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
     summaries = [result.summary for result in results]
     cashflows = [asdict(row) for result in results for row in result.cashflows]
     flags = [asdict(flag) for result in results for flag in result.flags]
-    return summaries, cashflows, flags
+    deal_cashflows = [asdict(row) for result in results for row in result.deal_cashflows]
+    return summaries, cashflows, flags, deal_cashflows

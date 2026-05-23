@@ -15,7 +15,7 @@ def test_calibration_suite_loads() -> None:
 
 
 def test_twenty_year_variant_extends_hf_returns() -> None:
-    _, scenario_set = load_inputs(ROOT / "inputs")
+    _, scenario_set, _ = load_inputs(ROOT / "inputs")
     suite = load_calibration_suite(ROOT / "inputs" / "calibration_tests.yaml")
     variant = suite.calibration_tests["twenty_year_horizon"].variants[0]
 
@@ -27,7 +27,7 @@ def test_twenty_year_variant_extends_hf_returns() -> None:
 
 
 def test_calibration_suite_runs_expected_number_of_variants() -> None:
-    config, scenario_set = load_inputs(ROOT / "inputs")
+    config, scenario_set, _ = load_inputs(ROOT / "inputs")
     suite = load_calibration_suite(ROOT / "inputs" / "calibration_tests.yaml")
     expected_count = sum(
         len(test.base_scenarios) * len(test.variants)

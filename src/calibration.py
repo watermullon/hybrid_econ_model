@@ -117,17 +117,19 @@ def write_calibration_outputs(
     output_dir: Path,
 ) -> dict[str, pd.DataFrame]:
     from src.engine import result_dicts
-    from src.outputs import CASHFLOW_COLUMNS, SUMMARY_COLUMNS
+    from src.outputs import CASHFLOW_COLUMNS, DEAL_CASHFLOW_COLUMNS, SUMMARY_COLUMNS
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    summaries, cashflows, flags = result_dicts(results)
+    summaries, cashflows, flags, deal_cashflows = result_dicts(results)
     summary_df = pd.DataFrame(summaries).reindex(columns=SUMMARY_COLUMNS)
     cashflow_df = pd.DataFrame(cashflows).reindex(columns=CASHFLOW_COLUMNS)
     flags_df = pd.DataFrame(flags).reindex(columns=["scenario", "flag", "severity", "explanation"])
+    deal_cashflow_df = pd.DataFrame(deal_cashflows).reindex(columns=DEAL_CASHFLOW_COLUMNS)
 
     summary_df.to_csv(output_dir / "calibration_summary.csv", index=False)
     cashflow_df.to_csv(output_dir / "calibration_cashflows.csv", index=False)
     flags_df.to_csv(output_dir / "calibration_flags.csv", index=False)
-    write_excel(output_dir / "calibration_summary.xlsx", summary_df, cashflow_df, flags_df, config, scenarios)
+    deal_cashflow_df.to_csv(output_dir / "calibration_deal_cashflows.csv", index=False)
+    write_excel(output_dir / "calibration_summary.xlsx", summary_df, cashflow_df, flags_df, deal_cashflow_df, config, scenarios)
     write_markdown_report(results, summary_df, output_dir / "calibration_report.md")
     return {"summary": summary_df, "cashflows": cashflow_df, "flags": flags_df}

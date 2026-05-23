@@ -6,6 +6,7 @@ from typing import Any
 import yaml
 from pydantic import ValidationError
 
+from src.deal_types import DealSet
 from src.model_types import ModelConfig, ScenarioSet, pydantic_error_message
 
 
@@ -40,8 +41,18 @@ def load_scenarios(path: Path) -> ScenarioSet:
         raise ConfigError(pydantic_error_message(str(path), exc)) from exc
 
 
-def load_inputs(input_dir: Path) -> tuple[ModelConfig, ScenarioSet]:
+def load_deals(path: Path) -> DealSet | None:
+    if not path.exists():
+        return None
+    try:
+        return DealSet.model_validate(load_yaml(path))
+    except ValidationError as exc:
+        raise ConfigError(pydantic_error_message(str(path), exc)) from exc
+
+
+def load_inputs(input_dir: Path) -> tuple[ModelConfig, ScenarioSet, DealSet | None]:
     return (
         load_model_config(input_dir / "model_config.yaml"),
         load_scenarios(input_dir / "scenarios.yaml"),
+        load_deals(input_dir / "deals.yaml"),
     )
