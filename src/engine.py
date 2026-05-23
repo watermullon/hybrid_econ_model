@@ -167,6 +167,7 @@ def run_scenario(
         acquisition_funded_from_initial_lp_capital = 0.0
         acquisition_funded_from_retained_cash = 0.0
         acquisition_funded_from_reserve = 0.0
+        acquisition_failed_loss = 0.0
         acquisition_unfunded_shortfall = 0.0
         acquisition_funding_source = ""
 
@@ -187,16 +188,34 @@ def run_scenario(
                 acquisition_funding_source = "initial_lp_capital" if acquisition_new_deal_equity_required > 0 else ""
             elif acquisition_new_deal_equity_required > 0:
                 funding_need = acquisition_new_deal_equity_required
-                acquisition_funded_from_retained_cash = min(retained_cash, funding_need)
-                retained_cash -= acquisition_funded_from_retained_cash
-                funding_need -= acquisition_funded_from_retained_cash
-                acquisition_funded_from_reserve = min(reserve_nav, funding_need)
-                reserve_nav -= acquisition_funded_from_reserve
-                funding_need -= acquisition_funded_from_reserve
-                acquisition_unfunded_shortfall = funding_need
-                acquisition_funding_source = "retained_cash;reserve" if acquisition_funded_from_reserve > 0 else "retained_cash"
+                available_for_acquisition = retained_cash + reserve_nav
+                acquisition_unfunded_shortfall = max(0.0, funding_need - available_for_acquisition)
                 if acquisition_unfunded_shortfall <= 1e-9:
+                    acquisition_funded_from_retained_cash = min(retained_cash, funding_need)
+                    retained_cash -= acquisition_funded_from_retained_cash
+                    funding_need -= acquisition_funded_from_retained_cash
+                    acquisition_funded_from_reserve = min(reserve_nav, funding_need)
+                    reserve_nav -= acquisition_funded_from_reserve
+                    funding_need -= acquisition_funded_from_reserve
+                    acquisition_funding_source = (
+                        "retained_cash;reserve" if acquisition_funded_from_reserve > 0 else "retained_cash"
+                    )
                     funded_deal_names.update(acquisition_deals)
+                elif config.bottom_up_allocation.failed_acquisition_funding_treatment == "partial_loss":
+                    potential_retained_cash = min(retained_cash, funding_need)
+                    remaining_after_retained = funding_need - potential_retained_cash
+                    potential_reserve = min(reserve_nav, remaining_after_retained)
+                    available_partial_funding = potential_retained_cash + potential_reserve
+                    acquisition_failed_loss = (
+                        available_partial_funding * config.bottom_up_allocation.failed_acquisition_loss_pct
+                    )
+                    loss_from_retained_cash = min(retained_cash, acquisition_failed_loss)
+                    retained_cash -= loss_from_retained_cash
+                    remaining_loss = acquisition_failed_loss - loss_from_retained_cash
+                    reserve_nav -= min(reserve_nav, remaining_loss)
+                    acquisition_funding_source = "partial_loss"
+                else:
+                    acquisition_funding_source = "do_not_fund"
 
             portfolio_year, deal_rows = build_re_portfolio_year(
                 scenario_name=name,
@@ -595,6 +614,7 @@ def run_scenario(
                 acquisition_funded_from_initial_lp_capital=acquisition_funded_from_initial_lp_capital,
                 acquisition_funded_from_retained_cash=acquisition_funded_from_retained_cash,
                 acquisition_funded_from_reserve=acquisition_funded_from_reserve,
+                acquisition_failed_loss=acquisition_failed_loss,
                 acquisition_unfunded_shortfall=acquisition_unfunded_shortfall,
                 acquisition_ending_retained_cash=acquisition_ending_retained_cash,
                 acquisition_ending_reserve=acquisition_ending_reserve,
@@ -657,6 +677,7 @@ def run_scenario(
     total_acquisition_equity_required = sum(row.acquisition_new_deal_equity_required for row in cashflows)
     total_acquisition_funded_from_retained_cash = sum(row.acquisition_funded_from_retained_cash for row in cashflows)
     total_acquisition_funded_from_reserve = sum(row.acquisition_funded_from_reserve for row in cashflows)
+    total_acquisition_failed_loss = sum(row.acquisition_failed_loss for row in cashflows)
     total_acquisition_unfunded_shortfall = sum(row.acquisition_unfunded_shortfall for row in cashflows)
     flags = build_flags(
         name=name,
@@ -703,6 +724,7 @@ def run_scenario(
         "total_acquisition_equity_required": total_acquisition_equity_required,
         "total_acquisition_funded_from_retained_cash": total_acquisition_funded_from_retained_cash,
         "total_acquisition_funded_from_reserve": total_acquisition_funded_from_reserve,
+        "total_acquisition_failed_loss": total_acquisition_failed_loss,
         "total_acquisition_unfunded_shortfall": total_acquisition_unfunded_shortfall,
         "years_modelled": len(cashflows),
         "lp_hurdle_moic": config.waterfall.lp_hurdle_moic,

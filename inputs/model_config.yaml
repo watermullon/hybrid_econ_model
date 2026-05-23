@@ -18,6 +18,8 @@ bottom_up_allocation:
   remaining_capital_hf_pct: 0.0
   remaining_capital_reserve_pct: 1.0
   allow_overallocated_deals: false
+  failed_acquisition_funding_treatment: "do_not_fund"
+  failed_acquisition_loss_pct: 0.0
 
 waterfall:
   lp_hurdle_moic: 2.0

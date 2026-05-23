@@ -351,10 +351,55 @@ def test_engine_suppresses_unfunded_future_deal_economics() -> None:
     unfunded_row = next(row for row in result.deal_cashflows if row.deal_name == "unfunded" and row.year == 2)
 
     assert year_two.acquisition_unfunded_shortfall > 0
+    assert year_two.acquisition_funded_from_retained_cash == 0
+    assert year_two.acquisition_funded_from_reserve == 0
+    assert year_two.acquisition_failed_loss == 0
+    assert year_two.acquisition_ending_retained_cash == pytest.approx(year_two.acquisition_starting_retained_cash)
+    assert year_two.acquisition_ending_reserve == pytest.approx(year_two.acquisition_starting_reserve)
+    assert year_two.acquisition_funding_source == "do_not_fund"
     assert year_two.active_deal_count == 1
     assert unfunded_row.active is False
     assert unfunded_row.asset_value == 0
     assert "ACQUISITION_FUNDING_SHORTFALL" in year_two.event_flag
+
+
+def test_engine_partial_loss_failed_acquisition_treatment() -> None:
+    base_config = make_config(bottom_up=True)
+    config = base_config.model_copy(
+        update={
+            "bottom_up_allocation": base_config.bottom_up_allocation.model_copy(
+                update={
+                    "failed_acquisition_funding_treatment": "partial_loss",
+                    "failed_acquisition_loss_pct": 0.10,
+                }
+            )
+        }
+    )
+    first_deal = make_deal()
+    unfunded_deal = make_deal(
+        acquisition_year=2,
+        acquisition={"asset_value": 100_000_000, "new_equity_required": 50_000_000},
+        capital_stack={"assumed_debt": 1_000_000, "assumed_liabilities": 0},
+    )
+    scenario = make_scenario(years=2)
+
+    result = run_scenario(
+        "bottom",
+        scenario,
+        config,
+        DealSet(deals={"first": first_deal, "unfunded": unfunded_deal}),
+    )
+    year_two = result.cashflows[1]
+
+    assert year_two.acquisition_unfunded_shortfall > 0
+    assert year_two.acquisition_failed_loss == pytest.approx(year_two.acquisition_starting_reserve * 0.10)
+    assert year_two.acquisition_funded_from_retained_cash == 0
+    assert year_two.acquisition_funded_from_reserve == 0
+    assert year_two.acquisition_ending_reserve == pytest.approx(
+        year_two.acquisition_starting_reserve - year_two.acquisition_failed_loss
+    )
+    assert year_two.acquisition_funding_source == "partial_loss"
+    assert year_two.active_deal_count == 1
 
 
 def test_engine_future_acquisition_funding_uses_retained_cash_before_reserve() -> None:
@@ -427,9 +472,11 @@ def test_outputs_include_bottom_up_columns_and_deal_cashflow_sheet(tmp_path: Pat
 
     assert "total_deal_refi_proceeds" in frames["summary"].columns
     assert "total_acquisition_unfunded_shortfall" in frames["summary"].columns
+    assert "total_acquisition_failed_loss" in frames["summary"].columns
     assert "re_gross_asset_value" in frames["cashflows"].columns
     assert "re_refi_costs" in frames["cashflows"].columns
     assert "acquisition_new_deal_equity_required" in frames["cashflows"].columns
+    assert "acquisition_failed_loss" in frames["cashflows"].columns
     assert "prior_refi_liability" in frames["deal_cashflows"].columns
     assert "ending_refi_liability" in frames["deal_cashflows"].columns
     assert "refi_costs" in frames["deal_cashflows"].columns

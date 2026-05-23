@@ -413,7 +413,10 @@ If additional liabilities are added, the cushion falls accordingly.
 Refi capacity is:
 
 ```text
-max(0, asset_value * refi_ltv - debt_balance - refi costs)
+max_debt_supported = asset_value * refi_ltv
+cash_out_before_refi_costs = max_debt_supported - debt_balance - prior_refi_liability
+refi_costs = max(cash_out_before_refi_costs, 0) * refi_costs_pct
+refi_capacity = max(0, cash_out_before_refi_costs - refi_costs)
 ```
 
 Refi proceeds occur only in configured target years.
@@ -1010,11 +1013,11 @@ Second, future-year acquisitions now require fund-level funding before they can 
 - `acquisition_ending_reserve`
 - `acquisition_funding_source`
 
-Year-1 deal equity is recorded as funded from `initial_lp_capital`. For year 2 and later, the funding order is retained cash first, then reserve. If there is an unfunded acquisition shortfall, the future deal does not contribute asset value, NOI, NAV, refinance capacity, or cashflow.
+Year-1 deal equity is recorded as funded from `initial_lp_capital`. For year 2 and later, the funding order is retained cash first, then reserve. If there is an unfunded acquisition shortfall, the future deal does not contribute asset value, NOI, NAV, refinance capacity, or cashflow. The default failed acquisition treatment is `do_not_fund`, so retained cash and reserve are not consumed when the acquisition cannot be fully funded. A `partial_loss` treatment is also available for stress testing sunk failed-deal costs.
 
 Additional current limitation:
 
-- If a future-year acquisition has a funding shortfall, the current ledger records available retained cash/reserve as used and suppresses the deal economics. There is not yet a retry queue, escrow account, partial acquisition close, or refund mechanic.
+- If a future-year acquisition has a funding shortfall, there is not yet a retry queue, escrow account, partial acquisition close, or refund mechanic.
 
 ## Practical Workflow
 

@@ -71,6 +71,7 @@ SUMMARY_COLUMNS = [
     "final_re_dscr",
     "total_deal_refi_proceeds",
     "total_re_cashflow_shortfall",
+    "total_acquisition_failed_loss",
     "total_acquisition_unfunded_shortfall",
     "total_distributed_to_lp",
     "total_reinvested_into_hf",

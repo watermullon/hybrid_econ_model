@@ -11,6 +11,7 @@ FeeBasis = Literal["gross_rent", "noi", "re_nav"]
 CashYieldSource = Literal["net_re_cashflow", "hf_harvest", "retained_cash", "reserve"]
 RefinanceUseOfProceeds = Literal["lp_distribution", "retained_cash", "reserve"]
 RealEstateMode = Literal["top_down", "bottom_up"]
+FailedAcquisitionFundingTreatment = Literal["do_not_fund", "partial_loss"]
 
 
 class RealEstateModelSettings(BaseModel):
@@ -43,6 +44,8 @@ class BottomUpAllocationSettings(BaseModel):
     remaining_capital_hf_pct: float = Field(default=0.0, ge=0, le=1)
     remaining_capital_reserve_pct: float = Field(default=1.0, ge=0, le=1)
     allow_overallocated_deals: bool = False
+    failed_acquisition_funding_treatment: FailedAcquisitionFundingTreatment = "do_not_fund"
+    failed_acquisition_loss_pct: float = Field(default=0.0, ge=0, le=1)
 
     @model_validator(mode="after")
     def validate_remaining_allocation(self) -> "BottomUpAllocationSettings":
@@ -388,6 +391,7 @@ class YearlyResult:
     acquisition_funded_from_initial_lp_capital: float = 0.0
     acquisition_funded_from_retained_cash: float = 0.0
     acquisition_funded_from_reserve: float = 0.0
+    acquisition_failed_loss: float = 0.0
     acquisition_unfunded_shortfall: float = 0.0
     acquisition_ending_retained_cash: float = 0.0
     acquisition_ending_reserve: float = 0.0
