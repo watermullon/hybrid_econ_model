@@ -98,8 +98,22 @@ def test_generate_caption_uses_data_not_hardcoded_text() -> None:
 def test_dashboard_reads_current_outputs() -> None:
     cashflows, summary, _ = read_dashboard_data()
 
-    assert len(summary["scenario"].unique()) == 8
-    assert len(cashflows["scenario"].unique()) == 8
+    expected_scenarios = {
+        "base_hit_everyone_happy",
+        "fast_success_crypto_bull",
+        "slow_grind",
+        "hedge_fund_failure_re_survival",
+        "real_estate_distress_crypto_success",
+        "exceptional_dynasty_outcome",
+        "liquidity_trap",
+        "failure_never_reaches_hurdle",
+        "jon_base_case",
+        "jon_downside_case",
+        "jon_upside_case",
+    }
+
+    assert set(summary["scenario"].unique()) == expected_scenarios
+    assert set(cashflows["scenario"].unique()) == expected_scenarios
 
 
 def test_streamlit_app_exposes_routing_controls(monkeypatch) -> None:

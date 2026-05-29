@@ -1,7 +1,7 @@
 model:
   currency: "USD"
   periods_per_year: 1
-  max_years: 15
+  max_years: 20
   initial_lp_capital: 10000000
   gp_co_investment: 0
 
@@ -15,8 +15,8 @@ real_estate:
   mode: "top_down"
 
 bottom_up_allocation:
-  remaining_capital_hf_pct: 0.0
-  remaining_capital_reserve_pct: 1.0
+  remaining_capital_hf_pct: 0.80
+  remaining_capital_reserve_pct: 0.20
   allow_overallocated_deals: false
   failed_acquisition_funding_treatment: "do_not_fund"
   failed_acquisition_loss_pct: 0.0

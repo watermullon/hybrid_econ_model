@@ -1,0 +1,49 @@
+# Tax Configuration — Hybrid Fund Economic Model
+# Based on Investment Thesis Section 6 (Tax Considerations) + OBBBA 2025
+#
+# This file configures the post-processing tax module (src/tax.py).
+# The tax module is SEPARATE from the engine — it runs after the model
+# produces ScenarioResult objects and does not affect LP cash calculations.
+
+# Marginal federal tax rate (no state)
+marginal_federal_rate: 0.37
+
+# LP type for tax treatment
+# "ideal"     = real estate professional (§469(c)(7)) — passive losses offset portfolio income
+# "typical"   = passive investor — passive losses only offset passive income (NOT YET IMPLEMENTED)
+# "no_benefit" = no tax benefit (baseline comparison)
+lp_type: "ideal"
+
+# Depreciation assumptions
+depreciation:
+  # Land value as % of purchase price (not depreciable)
+  # Phoenix multifamily typical: 20%
+  land_ratio: 0.20
+
+  # Residential straight-line depreciation period (IRS)
+  residential_years: 27.5
+
+  # Commercial straight-line depreciation period (IRS)
+  commercial_years: 39.0
+
+  # Cost segregation: % of building basis reclassified to short-life property
+  # Thesis says 20-35% — we use 25% as the base case
+  cost_segregation_pct: 0.25
+
+  # Bonus depreciation rate on the cost-seg reclassified portion
+  # OBBBA 2025 reinstated 100% bonus depreciation
+  bonus_depreciation_rate: 1.00
+
+  # Depreciation method for the remaining (non-cost-seg) building basis
+  # "straight_line" only for now
+  method: "straight_line"
+
+# Interest expense deduction
+interest:
+  # Whether to deduct mortgage interest as a tax benefit
+  deductible: true
+
+# Output settings
+output:
+  write_csv: true
+  write_excel_sheet: true

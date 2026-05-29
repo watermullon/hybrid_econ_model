@@ -7,6 +7,8 @@ from typing import Any
 import pandas as pd
 import yaml
 
+from src.reporting import REPORT_COLUMN_LABELS
+
 
 DEFAULT_OUTPUT_NAME = "chatgpt_model_context.md"
 
@@ -154,6 +156,62 @@ DEAL_CASHFLOW_COLUMNS = [
     "deal_nav",
 ]
 
+CHATGPT_COLUMN_LABELS = {
+    **REPORT_COLUMN_LABELS,
+    "year": "Year",
+    "lp_distribution": "LP distribution",
+    "lp_cumulative_distribution": "Cumulative LP distributions",
+    "lp_remaining_hurdle": "Remaining LP hurdle",
+    "re_cashflow_to_lp": "RE cashflow to LP",
+    "re_cashflow_to_hf": "RE cashflow to HF",
+    "re_cashflow_to_reserve": "RE cashflow to reserve",
+    "hf_harvest_to_lp": "HF harvest to LP",
+    "hf_harvest_to_hf": "HF harvest to HF",
+    "hf_harvest_to_reserve": "HF harvest to reserve",
+    "refinance_proceeds": "Refi proceeds",
+    "refinance_liability": "Refi liability",
+    "re_gross_asset_value": "RE gross asset value",
+    "re_debt_balance": "RE debt balance",
+    "re_assumed_liabilities": "RE assumed liabilities",
+    "re_noi": "RE NOI",
+    "re_dscr": "RE DSCR",
+    "re_ending_refi_liability": "RE ending refi liability",
+    "re_refi_costs": "RE refi costs",
+    "re_free_cashflow_after_debt_and_capex": "RE free cashflow after debt and capex",
+    "re_refi_proceeds_from_deals": "Deal refi proceeds",
+    "acquisition_new_deal_equity_required": "New acquisition equity required",
+    "acquisition_unfunded_shortfall": "Acquisition funding shortfall",
+    "re_closing_nav": "RE closing NAV",
+    "hf_closing_nav": "HF closing NAV",
+    "reserve_closing_nav": "Reserve closing NAV",
+    "retained_cash": "Retained cash",
+    "fund_nav": "Fund NAV",
+    "liquidity_available": "Available liquidity",
+    "trigger_cash_from_retained_cash": "Trigger cash from retained cash",
+    "trigger_cash_from_reserve": "Trigger cash from reserve",
+    "trigger_cash_from_hf_liquidation": "Trigger cash from HF liquidation",
+    "trigger_cash_from_refi": "Trigger cash from refi",
+    "lp_hurdle_shortfall_after_trigger": "LP hurdle shortfall after trigger",
+    "event_flag": "Event flag",
+    "deal_name": "Deal",
+    "asset_value": "Asset value",
+    "debt_balance": "Debt balance",
+    "assumed_liabilities": "Assumed liabilities",
+    "new_equity_required": "New equity required",
+    "entry_equity_cushion": "Entry equity cushion",
+    "noi": "NOI",
+    "dscr": "DSCR",
+    "free_cashflow_after_debt_and_capex": "Free cashflow after debt and capex",
+    "prior_refi_liability": "Prior refi liability",
+    "ending_refi_liability": "Ending refi liability",
+    "refi_costs": "Refi costs",
+    "refi_capacity": "Refi capacity",
+    "refi_proceeds": "Refi proceeds",
+    "deal_nav_before_refi_liability": "Deal NAV before refi liability",
+    "deal_nav_after_refi_liability": "Deal NAV after refi liability",
+    "deal_nav": "Deal NAV",
+}
+
 
 def build_chatgpt_context(root: Path, output_path: Path | None = None) -> Path:
     """Build a compact, upload-friendly Markdown context file from existing inputs and outputs.
@@ -188,6 +246,7 @@ def build_chatgpt_context(root: Path, output_path: Path | None = None) -> Path:
     lines.append("")
     lines.append("Key interpretation rules:")
     lines.append("- The LP 2.0x hurdle means actual cash distributions received by LPs.")
+    lines.append("- The configured scenario horizon is a diagnostic cutoff; the engine stops early once the LP cash hurdle is achieved.")
     lines.append("- NAV growth and economic value are tracked separately from cash received.")
     lines.append("- GP residual asset value is recognized only after LP interests are extinguished through the cash hurdle.")
     lines.append("- Generated RE cashflow and harvested HF gains are routed to LP distributions, HF reinvestment, or reserve according to YAML assumptions.")
@@ -277,6 +336,7 @@ def _append_summary_outputs(lines: list[str], summary: pd.DataFrame) -> None:
 
     lines.append("## Most important terminal outputs")
     lines.append("")
+    compact = _rename_for_display(compact)
     lines.append(_markdown_table(compact.to_dict("records"), list(compact.columns)))
     lines.append("")
 
@@ -312,6 +372,7 @@ def _append_cashflow_outputs(lines: list[str], cashflows: pd.DataFrame, summary:
         "cash routing, sleeve NAVs, liquidity, and hurdle events."
     )
     lines.append("")
+    compact = _rename_for_display(compact)
     lines.append(_markdown_table(compact.to_dict("records"), list(compact.columns)))
     lines.append("")
 
@@ -350,11 +411,13 @@ def _append_bottom_up_outputs(lines: list[str], deal_cashflows: pd.DataFrame) ->
         "Deal rows are asset economics only: NAV, debt, liabilities, NOI, DSCR, free cashflow, and refinance proceeds."
     )
     lines.append("")
+    compact = _rename_for_display(compact)
     lines.append(_markdown_table(compact.to_dict("records"), list(compact.columns)))
     lines.append("")
     if compact.empty:
         lines.append("No flags were emitted.")
     else:
+        compact = _rename_for_display(compact)
         lines.append(_markdown_table(compact.to_dict("records"), list(compact.columns)))
     lines.append("")
 
@@ -437,6 +500,10 @@ def _scenario_overrides(scenario: dict[str, Any]) -> str:
 def _select_columns(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     present = [column for column in columns if column in df.columns]
     return df[present]
+
+
+def _rename_for_display(df: pd.DataFrame) -> pd.DataFrame:
+    return df.rename(columns=CHATGPT_COLUMN_LABELS)
 
 
 def _get_nested(data: dict[str, Any], dotted_key: str) -> Any:

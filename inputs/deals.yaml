@@ -2,34 +2,34 @@ deals:
   jon_deal_1:
     enabled: true
     acquisition_year: 1
-    description: "Specific distressed real estate package under review. Placeholder assumptions pending underwriting."
+    description: "Equinox on Indian School — 116-unit Class C value-add, Phoenix AZ. Based on Sandpainter underwriting Apr 2026. Purchaser basis $23M. Existing $21.9M senior @ 8.47% SOFR+4.15% IO. NOI $1.28M T12, occupancy 85%. J-curve: heavy capex early, stabilization Y3-Y5."
 
     acquisition:
       asset_value: 23000000
-      value_type: "unknown"
-      purchase_price: null
-      new_equity_required: 2000000
+      value_type: "purchase_price"
+      purchase_price: 23000000
+      new_equity_required: 3500000
       closing_costs: 0
       initial_capex_reserve: 0
 
     capital_stack:
       assumed_debt: 16000000
-      assumed_liabilities: 0
+      assumed_liabilities: 2500000
       liabilities_written_down: 0
       seller_note: 0
       preferred_equity: 0
 
     operations:
-      current_noi: 1200000
-      stabilized_noi: 1800000
-      years_to_stabilization: 3
-      annual_noi_growth_after_stabilization: 0.02
+      current_noi: 1278000
+      stabilized_noi: 2150000
+      years_to_stabilization: 4
+      annual_noi_growth_after_stabilization: 0.03
       gross_rent: null
-      gross_rent_growth: 0.02
+      gross_rent_growth: 0.03
       vacancy_rate: null
 
     debt:
-      interest_rate: 0.065
+      interest_rate: 0.075
       maturity_year: 5
       amortization_type: "interest_only"
       annual_debt_service: null
@@ -39,10 +39,11 @@ deals:
 
     capex:
       annual_capex:
-        1: 300000
-        2: 250000
-        3: 150000
-      recurring_capex_pct_of_noi: 0.03
+        1: 500000
+        2: 400000
+        3: 250000
+        4: 150000
+      recurring_capex_pct_of_noi: 0.04
 
     valuation:
       method: "growth"
@@ -52,8 +53,8 @@ deals:
 
     refinance:
       enabled: true
-      target_years: [5, 7, 10]
-      refi_ltv: 0.65
-      refi_costs_pct: 0.02
+      target_years: [4, 7]
+      refi_ltv: 0.70
+      refi_costs_pct: 0.025
       max_cash_out_pct_of_value: null
       proceeds_use: "fund_liquidity"

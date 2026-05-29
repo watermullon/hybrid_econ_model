@@ -188,7 +188,6 @@ class HurdleCompletionTriggerSettings(BaseModel):
     allow_refi: bool = True
     allow_partial_re_sale: bool = False
     max_partial_re_sale_pct_of_re_nav: float = Field(default=0.0, ge=0, le=1)
-    execute_only_if_lp_fully_redeemed: bool = True
 
 
 class BackendLiquidityStrategySettings(BaseModel):
@@ -199,7 +198,6 @@ class BackendLiquidityStrategySettings(BaseModel):
     max_hf_liquidation_pct: float = Field(default=0.50, ge=0, le=1)
     use_retained_cash: bool = True
     use_reserve: bool = True
-    execute_only_if_lp_hurdle_completed: bool = True
 
     @field_validator("target_years")
     @classmethod

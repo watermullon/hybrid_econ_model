@@ -465,9 +465,14 @@ def run_scenario(
             event_flag = append_event_text(event_flag, "ACQUISITION_FUNDING_SHORTFALL")
         if re_cashflow_shortfall > 0:
             event_flag = append_event_text(event_flag, "RE_CASHFLOW_SHORTFALL")
+        active_backend_strategy = (
+            backend_liquidity_strategy
+            if backend_liquidity_strategy.enabled and year in backend_liquidity_strategy.target_years
+            else None
+        )
         trigger_result = evaluate_hurdle_completion_trigger(
             trigger=config.hurdle_completion_trigger,
-            backend_strategy=backend_liquidity_strategy,
+            backend_strategy=active_backend_strategy,
             year=year,
             lp_remaining_hurdle=lp_remaining_hurdle,
             lp_cumulative_distribution=lp_cumulative_distribution,
@@ -856,9 +861,6 @@ def evaluate_hurdle_completion_trigger(
     }
     if not trigger.enabled or lp_remaining_hurdle <= 1e-9:
         return result
-    if backend_strategy and backend_strategy.enabled:
-        if year is None or year not in backend_strategy.target_years:
-            return result
     if trigger.trigger_when_economic_hurdle_passed and not economic_hurdle_passed:
         return result
 
