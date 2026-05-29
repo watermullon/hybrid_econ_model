@@ -1605,6 +1605,340 @@ def download_cashflows_button(cashflows: pd.DataFrame) -> None:
     )
 
 
+def build_nav_composition_pie(row: pd.Series):
+    """Render a pie chart of the fund's NAV composition for a specific year."""
+    import plotly.graph_objects as go
+
+    components = [
+        ("re_closing_nav", "Real Estate"),
+        ("hf_closing_nav", "Hedge Fund"),
+        ("reserve_closing_nav", "Reserve"),
+        ("retained_cash", "Retained Cash"),
+    ]
+    labels = []
+    values = []
+    for col, label in components:
+        val = float(row.get(col, 0) or 0)
+        if val > 0:
+            labels.append(label)
+            values.append(val)
+
+    if not values:
+        return None
+
+    fig = go.Figure(data=[go.Pie(
+        labels=labels,
+        values=values,
+        hole=0.4,
+        marker=dict(colors=["#4c78a8", "#72b7b2", "#54a24b", "#f58518"]),
+        text=[format_money(v) for v in values],
+        textinfo="percent+text+label",
+        texttemplate="%{label}<br>%{text} (%{percent})",
+        hovertemplate="%{label}: %{value:$,.0f}<extra></extra>"
+    )])
+    fig.update_layout(
+        margin=dict(l=20, r=20, t=20, b=20),
+        height=300,
+        showlegend=False
+    )
+    return fig
+
+
+def build_cashflow_sankey(row: pd.Series):
+    """Render a Sankey diagram showing the flow of cash for a specific year."""
+    import plotly.graph_objects as go
+
+    # 1. Sources of Cash
+    re_cash = float(row.get('re_cashflow_generated', 0) or 0)
+    hf_cash = float(row.get('hf_harvest_generated', 0) or 0)
+    refi_cash = float(row.get('refinance_proceeds', 0) or 0)
+    
+    # 2. Destinations of Cash
+    lp_dist = float(row.get('total_cash_distributed', 0) or 0)
+    hf_reinv = float(row.get('total_cash_reinvested', 0) or 0)
+    rs_added = float(row.get('total_cash_reserved', 0) or 0)
+
+    # Threshold for display
+    if (re_cash + hf_cash + refi_cash) <= 0:
+        return None
+
+    # Node Indices
+    # 0: Real Estate, 1: Hedge Fund, 2: Refinance, 3: FUND POOL, 4: LP, 5: HF (Reinvest), 6: Reserve
+    
+    sources = []
+    targets = []
+    values = []
+    labels = ["Real Estate", "Hedge Fund", "Refinance", "FUND POOL", "LP Distributions", "HF Reinvestment", "Reserve Allocation"]
+    colors = ["#4c78a8", "#72b7b2", "#f58518", "#34495e", "#2f6f95", "#4c78a8", "#f58518"]
+
+    # Source -> Pool
+    if re_cash > 0:
+        sources.append(0); targets.append(3); values.append(re_cash)
+    if hf_cash > 0:
+        sources.append(1); targets.append(3); values.append(hf_cash)
+    if refi_cash > 0:
+        sources.append(2); targets.append(3); values.append(refi_cash)
+
+    # Pool -> Destination
+    if lp_dist > 0:
+        sources.append(3); targets.append(4); values.append(lp_dist)
+    if hf_reinv > 0:
+        sources.append(3); targets.append(5); values.append(hf_reinv)
+    if rs_added > 0:
+        sources.append(3); targets.append(6); values.append(rs_added)
+
+    fig = go.Figure(data=[go.Sankey(
+        textfont = dict(family="Arial, sans-serif", size=12, color="black"),
+        node = dict(
+          pad = 20,
+          thickness = 30,
+          line = dict(color = "black", width = 0.5),
+          label = labels,
+          color = colors
+        ),
+        link = dict(
+          source = sources,
+          target = targets,
+          value = values,
+          hovertemplate = "Flow: %{value:$,.0f}<extra></extra>",
+          color = "rgba(180, 180, 180, 0.4)" # Light grey links for better contrast
+        ))])
+
+    fig.update_layout(
+        title_text="Yearly Cashflow Routing", 
+        font=dict(family="Arial, sans-serif", size=12, color="black"),
+        height=400,
+        margin=dict(l=20, r=20, t=50, b=20)
+    )
+    return fig
+
+
+def render_bridge_item(label: str, value: float, rate: float | None = None, cumulative: float | None = None):
+    """Render a styled bridge item with yellow background and color-coded text."""
+    import streamlit as st
+    color = "#1b5e20" if value >= 0 else "#8a1c1c"
+    bg = "#fff7e0" # matches st.warning/amber tone
+    
+    val_str = format_money(value)
+    if value >= 0: val_str = f"+{val_str}"
+    
+    rate_str = ""
+    if rate is not None:
+        rate_str = f" ({rate:.1%})"
+    
+    st.markdown(
+        f"<div style='background:{bg}; padding:10px; border-radius:6px; margin-bottom:8px; border:1px solid #f9e79f;'>"
+        f"<div style='color:#7a4b00; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;'>{label}</div>"
+        f"<div style='color:{color}; font-weight:700; font-size:18px; line-height:1.2;'>{val_str}{rate_str}</div>"
+        + (f"<div style='color:#7a4b00; font-size:11px; margin-top:4px;'>Cumulative: <b>{format_money(cumulative)}</b></div>" if cumulative is not None else "") +
+        f"</div>",
+        unsafe_allow_html=True
+    )
+
+
+def render_simulator_tab(cashflows: pd.DataFrame, summary: pd.DataFrame):
+    """Render the Interactive Scenario Simulator walkthrough."""
+    import streamlit as st
+
+    st.header("Scenario Walkthrough Simulator")
+    st.write("Step through the timeline to see how the fund evolves year-by-year.")
+
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        options = [display_name(s) for s in scenario_order(summary)]
+        label_to_scenario = {display_name(s): s for s in summary["scenario"]}
+        selected_label = st.selectbox("Select scenario to simulate", options=options, key="sim_selector")
+        selected_scenario = label_to_scenario[selected_label]
+
+    scenario_df = cashflows[cashflows["scenario"] == selected_scenario].sort_values("year")
+    max_year = int(scenario_df["year"].max())
+
+    # Handle scenario change - reset year to 0
+    if "last_sim_scenario" not in st.session_state or st.session_state.last_sim_scenario != selected_scenario:
+        st.session_state.year_slider = 0
+        st.session_state.last_sim_scenario = selected_scenario
+
+    if "year_slider" not in st.session_state:
+        st.session_state.year_slider = 0
+
+    st.write("---")
+    
+    # Timeline Navigation Row
+    btn_col1, slider_col, btn_col2 = st.columns([1, 4, 1])
+    
+    # Check click intents before drawing slider to avoid state mutation error
+    nav_change = 0
+    with btn_col1:
+        if st.button("⬅️ Previous Year", width="stretch") and st.session_state.year_slider > 0:
+            nav_change = -1
+    with btn_col2:
+        if st.button("Next Year ➡️", width="stretch") and st.session_state.year_slider < max_year:
+            nav_change = 1
+
+    if nav_change != 0:
+        st.session_state.year_slider += nav_change
+        st.rerun()
+
+    with slider_col:
+        selected_year = st.select_slider(
+            "Fund Timeline",
+            options=list(range(0, max_year + 1)),
+            key="year_slider",
+            help="Move the slider or use buttons to step through the fund history."
+        )
+
+    st.divider()
+
+    # Get data for the selected year
+    if selected_year == 0:
+        first = scenario_df.iloc[0]
+        current_row = pd.Series({
+            "year": 0,
+            "re_closing_nav": first.get("re_opening_nav", 0.0),
+            "hf_closing_nav": first.get("hf_opening_nav", 0.0),
+            "reserve_closing_nav": first.get("reserve_opening_nav", 0.0),
+            "retained_cash": 0.0,
+            "fund_nav": first.get("re_opening_nav", 0.0) + first.get("hf_opening_nav", 0.0) + first.get("reserve_opening_nav", 0.0),
+            "event_flag": "Initial Capital Allocation",
+            "lp_cumulative_distribution": 0.0,
+            "lp_remaining_hurdle": first.get("lp_hurdle_amount", 20000000.0),
+        })
+    else:
+        current_row = scenario_df[scenario_df["year"] == selected_year].iloc[0]
+
+    # Headline Metrics
+    m0, m1, m2, m3, m4 = st.columns(5)
+    with m0:
+        if selected_year == 0:
+            st.metric("Opening NAV", "$0.0")
+        else:
+            # Sum openings
+            opening_nav = float(current_row.get('re_opening_nav', 0)) + \
+                          float(current_row.get('hf_opening_nav', 0)) + \
+                          float(current_row.get('reserve_opening_nav', 0))
+            st.metric("Opening NAV", format_money(opening_nav))
+        st.caption("Value at start of year.")
+    with m1:
+        st.metric("Closing NAV", format_money(current_row.get("fund_nav")))
+        st.caption("Value at end of year.")
+    with m2:
+        # Calculate change
+        if selected_year == 0:
+            change = current_row.get("fund_nav", 0)
+        else:
+            change = float(current_row.get("fund_nav", 0)) - opening_nav
+        st.metric("Net Change", format_money(change), delta=format_money(change))
+        st.caption("Growth minus Payouts.")
+    with m3:
+        st.metric("LP Cash Returned", format_money(current_row.get("lp_cumulative_distribution")))
+        st.caption("Cumulative distributions.")
+    with m4:
+        st.metric("Remaining Hurdle", format_money(current_row.get("lp_remaining_hurdle")))
+        st.caption("Target to 2.0x.")
+
+    st.write("---")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.subheader("🏦 Fund Balance Sheet (Year End)")
+        st.caption("Distribution of value across the fund sleeves.")
+        pie = build_nav_composition_pie(current_row)
+        if pie:
+            st.plotly_chart(pie, width="stretch")
+        else:
+            st.info("No assets held in this year.")
+
+    with c2:
+        st.subheader("📊 The NAV Bridge")
+        st.caption("How we got from Opening to Closing NAV.")
+        
+        if selected_year == 0:
+            st.write("**Initial Inception:**")
+            render_bridge_item("LP Capital Invested", float(current_row.get('lp_initial_capital', 0)))
+            render_bridge_item("Initial Equity Cushion", float(current_row.get('fund_nav', 0)) - float(current_row.get('lp_initial_capital', 0)))
+            st.markdown(f"🏁 **Starting Fund NAV: {format_money(current_row.get('fund_nav'))}**")
+        else:
+            # Prepare cumulative data
+            past_df = scenario_df[scenario_df['year'] <= selected_year]
+            
+            # 1. Real Estate Appreciation
+            re_apprec = float(current_row.get('re_closing_nav', 0)) - float(current_row.get('re_opening_nav', 0))
+            re_rate = float(current_row.get('re_appreciation_rate', 0))
+            cum_re = (past_df['re_closing_nav'] - past_df['re_opening_nav']).sum()
+            render_bridge_item("Real Estate Appreciation", re_apprec, rate=re_rate, cumulative=cum_re)
+            
+            # 2. Hedge Fund Growth
+            hf_growth = float(current_row.get('hf_closing_nav', 0)) - float(current_row.get('hf_opening_nav', 0))
+            hf_rate = float(current_row.get('hf_return', 0))
+            cum_hf = (past_df['hf_closing_nav'] - past_df['hf_opening_nav']).sum()
+            render_bridge_item("Hedge Fund Net Growth", hf_growth, rate=hf_rate, cumulative=cum_hf)
+            
+            # 3. Reserve Interest
+            rs_growth = float(current_row.get('reserve_closing_nav', 0)) - float(current_row.get('reserve_opening_nav', 0))
+            cum_rs = (past_df['reserve_closing_nav'] - past_df['reserve_opening_nav']).sum()
+            render_bridge_item("Reserve Interest/Alloc", rs_growth, cumulative=cum_rs)
+            
+            # 4. Outflows
+            dist = -float(current_row.get('lp_distribution', 0))
+            cum_dist = -float(current_row.get('lp_cumulative_distribution', 0))
+            render_bridge_item("LP Distributions Paid", dist, cumulative=cum_dist)
+            
+            fees = -float(current_row.get('re_asset_mgmt_fee', 0))
+            cum_fees = -past_df['re_asset_mgmt_fee'].sum()
+            render_bridge_item("GP Asset Mgmt Fees", fees, cumulative=cum_fees)
+
+            # 5. Refi Liability
+            refi_liab_change = -(float(current_row.get('refinance_liability', 0)) - float(scenario_df[scenario_df['year'] == (selected_year - 1)].iloc[0].get('refinance_liability', 0))) if selected_year > 1 else -float(current_row.get('refinance_liability', 0))
+            if refi_liab_change != 0:
+                render_bridge_item("Change in Refi Liability", refi_liab_change)
+
+            st.markdown("---")
+            st.markdown(f"🏁 **Closing Fund NAV: {format_money(current_row.get('fund_nav'))}**")
+
+    st.write("---")
+
+    e1, e2 = st.columns([1, 1])
+    with e1:
+        st.subheader("🔀 Cashflow Routing")
+        if selected_year == 0:
+            st.info("Initial allocation. No cashflow routing yet.")
+        else:
+            total_routed = float(current_row.get('total_cash_distributed', 0)) + \
+                           float(current_row.get('total_cash_reinvested', 0)) + \
+                           float(current_row.get('total_cash_reserved', 0))
+            
+            st.markdown(f"**Total Cash Routed: {format_money(total_routed)}**")
+            st.caption("Flow of generated property and HF cash through the fund.")
+            sankey = build_cashflow_sankey(current_row)
+            if sankey:
+                st.plotly_chart(sankey, width="stretch")
+            else:
+                st.info("No cash generated or routed this year.")
+
+    with e2:
+        st.subheader("📢 Events & Flags")
+    event = current_row.get("event_flag")
+    if event and str(event).strip():
+        for part in str(event).split(";"):
+            if part.strip():
+                st.success(f"**Event:** {part.strip().replace('_', ' ').title()}")
+    
+    # Check for trigger flags
+    flags = parse_flags(current_row.get("all_flags", ""))
+    if flags:
+        for flag in flags:
+            item = FLAG_TRANSLATIONS.get(flag, {"tone": "amber", "text": flag.replace("_", " ").title()})
+            bg, fg = TONE_STYLES[item["tone"]]
+            st.markdown(
+                f"<div style='background:{bg}; color:{fg}; padding:8px 10px; margin:4px 0; border-radius:6px; font-size:12px;'>{item['text']}</div>",
+                unsafe_allow_html=True,
+            )
+    elif selected_year == 0:
+        st.info("Initial setup complete.")
+    else:
+        st.caption("No significant events recorded this year.")
+
+
 def main() -> None:
     import streamlit as st
 
@@ -1639,97 +1973,105 @@ def main() -> None:
     render_custom_scenario_controls(routing_override, trigger_override, routing_valid)
     cashflows, summary = append_custom_scenario_if_available(cashflows, summary)
 
-    outcome_fig = build_outcome_chart(summary, notes)
-    if outcome_fig is not None:
-        st.plotly_chart(outcome_fig, width="stretch")
+    # Use tabs for a cleaner interface
+    tab_explorer, tab_simulator = st.tabs(["Scenario Explorer", "Interactive Simulator"])
 
-    options = ["All scenarios (small multiples)"] + [display_name(s) for s in scenario_order(summary)]
-    label_to_scenario = {display_name(s): s for s in summary["scenario"]}
-    selected_label = st.selectbox(
-        "Scenario selector",
-        options=options,
-        index=0,
-        help="Select a specific scenario to view detailed charts and diagnostic cards, or choose 'All scenarios' for a high-level comparison."
-    )
-    selected = None if selected_label == "All scenarios (small multiples)" else label_to_scenario[selected_label]
+    with tab_explorer:
+        outcome_fig = build_outcome_chart(summary, notes)
+        if outcome_fig is not None:
+            st.plotly_chart(outcome_fig, width="stretch")
 
-    if selected:
-        render_metric_cards(summary[summary["scenario"] == selected].iloc[0])
-        render_routing_summary_cards(summary[summary["scenario"] == selected].iloc[0])
-        render_trigger_summary_cards(summary[summary["scenario"] == selected].iloc[0])
-        render_selected_assumptions(selected, model_config, scenario_assumptions, assumption_notes)
+        options = ["All scenarios (small multiples)"] + [display_name(s) for s in scenario_order(summary)]
+        label_to_scenario = {display_name(s): s for s in summary["scenario"]}
+        selected_label = st.selectbox(
+            "Scenario selector",
+            options=options,
+            index=0,
+            help="Select a specific scenario to view detailed charts and diagnostic cards, or choose 'All scenarios' for a high-level comparison."
+        )
+        selected = None if selected_label == "All scenarios (small multiples)" else label_to_scenario[selected_label]
 
-    render_scenario_comparison(summary)
+        if selected:
+            render_metric_cards(summary[summary["scenario"] == selected].iloc[0])
+            render_routing_summary_cards(summary[summary["scenario"] == selected].iloc[0])
+            render_trigger_summary_cards(summary[summary["scenario"] == selected].iloc[0])
+            render_selected_assumptions(selected, model_config, scenario_assumptions, assumption_notes)
 
-    lp_value_fig = build_lp_value_chart(cashflows, summary, selected, notes)
-    if lp_value_fig is not None:
-        st.plotly_chart(lp_value_fig, width="stretch")
-        st.caption("Dashed line shows LP economic position: cumulative LP cash plus remaining LP claim value, capped by fund NAV.")
-    render_captions(cashflows, summary, selected)
+        render_scenario_comparison(summary)
 
-    cashflow_fig = build_cashflow_chart(cashflows, summary, selected, notes)
-    if cashflow_fig is not None:
-        st.plotly_chart(cashflow_fig, width="stretch")
-        st.caption("Reserve drawdown is inferred from reserve opening NAV less reserve closing NAV when no explicit drawdown column exists.")
-    render_captions(cashflows, summary, selected)
+        lp_value_fig = build_lp_value_chart(cashflows, summary, selected, notes)
+        if lp_value_fig is not None:
+            st.plotly_chart(lp_value_fig, width="stretch")
+            st.caption("Dashed line shows LP economic position: cumulative LP cash plus remaining LP claim value, capped by fund NAV.")
+        render_captions(cashflows, summary, selected)
 
-    routing_fig = build_routing_chart(cashflows, summary, selected, notes)
-    if routing_fig is not None:
-        st.plotly_chart(routing_fig, width="stretch")
-        st.caption("This chart shows generated RE cashflow and HF harvest routed to LP distributions, HF reinvestment, and reserve.")
+        cashflow_fig = build_cashflow_chart(cashflows, summary, selected, notes)
+        if cashflow_fig is not None:
+            st.plotly_chart(cashflow_fig, width="stretch")
+            st.caption("Reserve drawdown is inferred from reserve opening NAV less reserve closing NAV when no explicit drawdown column exists.")
+        render_captions(cashflows, summary, selected)
 
-    trigger_fig = build_trigger_funding_chart(cashflows, summary, selected, notes)
-    if trigger_fig is not None:
-        st.plotly_chart(trigger_fig, width="stretch")
-        st.caption("This chart shows only active hurdle completion trigger funding sources. Blank panels mean no trigger funding was used.")
+        routing_fig = build_routing_chart(cashflows, summary, selected, notes)
+        if routing_fig is not None:
+            st.plotly_chart(routing_fig, width="stretch")
+            st.caption("This chart shows generated RE cashflow and HF harvest routed to LP distributions, HF reinvestment, and reserve.")
 
-    hf_reinvestment_fig = build_single_line_chart(
-        cashflows,
-        summary,
-        selected,
-        notes,
-        "hf_closing_nav",
-        "HF NAV growth including reinvestments.",
-        "HF NAV",
-        "#4c78a8",
-    )
-    if hf_reinvestment_fig is not None:
-        st.plotly_chart(hf_reinvestment_fig, width="stretch")
+        trigger_fig = build_trigger_funding_chart(cashflows, summary, selected, notes)
+        if trigger_fig is not None:
+            st.plotly_chart(trigger_fig, width="stretch")
+            st.caption("This chart shows only active hurdle completion trigger funding sources. Blank panels mean no trigger funding was used.")
 
-    reserve_fig = build_single_line_chart(
-        cashflows,
-        summary,
-        selected,
-        notes,
-        "reserve_closing_nav",
-        "Reserve NAV growth.",
-        "Reserve NAV",
-        "#f58518",
-    )
-    if reserve_fig is not None:
-        st.plotly_chart(reserve_fig, width="stretch")
+        hf_reinvestment_fig = build_single_line_chart(
+            cashflows,
+            summary,
+            selected,
+            notes,
+            "hf_closing_nav",
+            "HF NAV growth including reinvestments.",
+            "HF NAV",
+            "#4c78a8",
+        )
+        if hf_reinvestment_fig is not None:
+            st.plotly_chart(hf_reinvestment_fig, width="stretch")
 
-    gp_residual_fig = build_single_line_chart(
-        cashflows,
-        summary,
-        selected,
-        notes,
-        "gp_residual_nav",
-        "GP residual NAV over time.",
-        "GP residual NAV",
-        "#9b5de5",
-    )
-    if gp_residual_fig is not None:
-        st.plotly_chart(gp_residual_fig, width="stretch")
+        reserve_fig = build_single_line_chart(
+            cashflows,
+            summary,
+            selected,
+            notes,
+            "reserve_closing_nav",
+            "Reserve NAV growth.",
+            "Reserve NAV",
+            "#f58518",
+        )
+        if reserve_fig is not None:
+            st.plotly_chart(reserve_fig, width="stretch")
 
-    nav_fig = build_nav_chart(cashflows, summary, selected, notes)
-    if nav_fig is not None:
-        st.plotly_chart(nav_fig, width="stretch")
-    render_captions(cashflows, summary, selected)
+        gp_residual_fig = build_single_line_chart(
+            cashflows,
+            summary,
+            selected,
+            notes,
+            "gp_residual_nav",
+            "GP residual NAV over time.",
+            "GP residual NAV",
+            "#9b5de5",
+        )
+        if gp_residual_fig is not None:
+            st.plotly_chart(gp_residual_fig, width="stretch")
 
-    st.divider()
-    render_traditional_statement(cashflows, summary, selected)
-    download_cashflows_button(cashflows)
+        nav_fig = build_nav_chart(cashflows, summary, selected, notes)
+        if nav_fig is not None:
+            st.plotly_chart(nav_fig, width="stretch")
+        render_captions(cashflows, summary, selected)
+
+        st.divider()
+        render_traditional_statement(cashflows, summary, selected)
+        download_cashflows_button(cashflows)
+
+    with tab_simulator:
+        render_simulator_tab(cashflows, summary)
+
     st.caption(f"{APP_VERSION}. Routing sliders rerun scenarios in memory only; saved YAML and outputs are unchanged.")
 
 

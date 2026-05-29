@@ -36,11 +36,29 @@ def _fmt_x(value) -> str:
     return f"{float(value):.2f}x"
 
 
+GLOBAL_ASSUMPTION_DETAILS = {
+    "model.initial_lp_capital": "CRITICAL. The total equity basis for all MOIC and IRR calculations.",
+    "allocation.hedge_fund_allocation_pct": "CRITICAL. Determines the Day 1 'Liquid Alpha' pool used to accelerate the hurdle.",
+    "allocation.real_estate_allocation_pct": "CRITICAL. The primary capital allocated to property acquisitions.",
+    "waterfall.lp_hurdle_moic": "CRITICAL. The terminal target. The engine runs until this cash multiple is returned.",
+    "waterfall.require_liquidity_for_lp_redemption": "HIGH. If 'Yes', the LP is only paid when the fund has actual cash available.",
+    "cashflow_routing.re_cashflow.lp_distribution_pct": "HIGH. Controls how much property profit goes to the LP vs. staying in the fund.",
+    "cashflow_routing.hf_harvest.lp_distribution_pct": "HIGH. Controls how much liquid profit is 'harvested' to pay down the LP hurdle.",
+    "hurdle_completion_trigger.enabled": "HIGH. The automated 'exit scanner' that triggers asset sales to finish the LP payout.",
+    "backend_liquidity_strategy.enabled": "HIGH. A scheduled plan to refinance properties to generate LP liquidity.",
+    "real_estate.mode": "Determines if the model uses general assumptions (Top-Down) or specific properties (Bottom-Up).",
+    "lp_cash_yield_policy.enabled": "If enabled, the fund prioritizes a target annual yield to the LP before other routing.",
+    "liquidity.max_refinance_or_sale_capacity_pct_of_re_nav": "Limits how much cash can be pulled out of properties in a single event.",
+}
+
+
 def build_html_report(
     summary_csv: str | Path = "outputs/scenario_summary.csv",
     charts_dir: str | Path = "outputs/charts",
     output_path: str | Path = "outputs/report.html",
     title: str = "Hybrid Fund Model — Scenario Report",
+    config: dict[str, Any] | None = None,
+    scenarios: dict[str, Any] | None = None,
 ) -> Path:
     """Build a self-contained HTML report with all charts and tables."""
 
@@ -97,6 +115,16 @@ def build_html_report(
         rows.append("</tbody>")
         return '<table class="data-table">' + "".join(rows) + "</table>"
 
+    def _fmt_val(val: Any) -> str:
+        if val is None or val == "": return "—"
+        if isinstance(val, bool): return "Yes" if val else "No"
+        if isinstance(val, list): return ", ".join([_fmt_val(v) for v in val])
+        if isinstance(val, float):
+            if 0 < abs(val) < 1: return f"{val:.1%}"
+            return f"{val:,.2f}"
+        if isinstance(val, int): return f"{val:,}"
+        return str(val)
+
     # ── CSS ─────────────────────────────────────────────────────────────
     css = """
     <style>
@@ -137,6 +165,14 @@ def build_html_report(
             padding: 12px 16px; margin: 16px 0; border-radius: 0 4px 4px 0;
             font-size: 13px;
         }
+        .assumptions-box {
+            background: #fdfefe; border: 1px solid #d5d8dc;
+            padding: 10px; border-radius: 4px; font-size: 11px;
+            margin: 10px 0;
+        }
+        .assumptions-box table { width: 100%; border-collapse: collapse; }
+        .assumptions-box td { padding: 3px 8px; border-bottom: 1px solid #f2f3f4; }
+        .assumptions-box td:first-child { font-weight: 600; color: #7f8c8d; width: 30%; }
     </style>
     """
 
@@ -149,6 +185,21 @@ def build_html_report(
     parts.append(h(1, title))
     parts.append(p(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}"))
     parts.append(p("Deterministic annual scenario model. LP hurdle achievement is based on actual cash distributions received, not NAV appreciation. Scenarios run on a 20-year diagnostic horizon; the engine stops early once the LP cash hurdle is achieved."))
+
+    # ── global assumptions ──────────────────────────────────────────────
+    if config:
+        parts.append(h(2, "Global Assumptions"))
+        from src.chatgpt_export import GLOBAL_ASSUMPTION_KEYS, _get_nested
+        ga_rows = []
+        for key, label in GLOBAL_ASSUMPTION_KEYS:
+            val = _get_nested(config, key)
+            detail = GLOBAL_ASSUMPTION_DETAILS.get(key, "Standard operational parameter.")
+            ga_rows.append({
+                "Assumption": label, 
+                "Value": _fmt_val(val),
+                "Context / Importance": detail
+            })
+        parts.append(table_html(pd.DataFrame(ga_rows), ["Assumption", "Value", "Context / Importance"]))
 
     # ── key findings ────────────────────────────────────────────────────
     n_total = len(sf)
@@ -291,6 +342,29 @@ def build_html_report(
             f"GP Total Econ: <strong>{_fmt_m(row.get('gp_total_economics'))}</strong>"
         )
         parts.append(p(stats_line))
+
+        # Scenario assumptions box
+        if scenarios and name in scenarios:
+            s_data = scenarios[name]
+            re = s_data.get("real_estate", {})
+            hf = s_data.get("hedge_fund", {})
+            
+            from src.chatgpt_export import _scenario_overrides
+            overrides = _scenario_overrides(s_data)
+            
+            parts.append('<div class="assumptions-box">')
+            parts.append('<table>')
+            parts.append(f'<tr><td>Description</td><td>{s_data.get("description", "—")}</td></tr>')
+            parts.append(f'<tr><td>Diagnostic Horizon</td><td>{s_data.get("years", "—")} years</td></tr>')
+            parts.append(f'<tr><td>Initial NOI Yield</td><td>{_fmt_val(re.get("initial_noi_yield"))}</td></tr>')
+            parts.append(f'<tr><td>NOI Annual Growth</td><td>{_fmt_val(re.get("annual_noi_growth"))}</td></tr>')
+            parts.append(f'<tr><td>NAV Appreciation</td><td>{_fmt_val(re.get("annual_nav_appreciation"))}</td></tr>')
+            parts.append(f'<tr><td>Gross Rent Yield</td><td>{_fmt_val(re.get("gross_rent_yield"))}</td></tr>')
+            parts.append(f'<tr><td>HF Annual Returns</td><td>{_fmt_val(hf.get("annual_returns"))}</td></tr>')
+            if overrides:
+                parts.append(f'<tr><td>Custom Overrides</td><td>{overrides}</td></tr>')
+            parts.append('</table>')
+            parts.append('</div>')
 
         # Waterfall chart — lookup by underscore key, display with spaces
         display_name = name.replace("_", " ")

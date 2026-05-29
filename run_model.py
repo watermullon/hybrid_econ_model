@@ -9,6 +9,8 @@ from src.outputs import write_outputs
 from src.reporting import write_markdown_report
 from src.report_html import build_html_report
 from src.tax import TaxConfig, run_tax_analysis, write_tax_outputs
+from src.charts import build_all_charts
+from src.charts_gp_lp import build_all_splits
 
 
 def main() -> None:
@@ -45,11 +47,29 @@ def main() -> None:
                         format_worksheet(writer.sheets["Tax Summary"])
                         format_worksheet(writer.sheets["Tax Yearly"])
 
+        # --- Chart generation ---
+        output_dir = root / "outputs"
+        charts_dir = output_dir / "charts"
+        build_all_charts(
+            csv_path=output_dir / "scenario_cashflows.csv",
+            summary_csv_path=output_dir / "scenario_summary.csv",
+            deal_csv_path=output_dir / "deal_cashflows.csv",
+            tax_summary_csv=output_dir / "tax_summary.csv",
+            tax_yearly_csv=output_dir / "tax_yearly.csv",
+            output_dir=charts_dir,
+        )
+        build_all_splits(
+            csv_path=output_dir / "scenario_cashflows.csv",
+            output_dir=charts_dir,
+        )
+
         # --- HTML Report (self-contained, all charts embedded as base64) ---
         build_html_report(
             summary_csv=root / "outputs" / "scenario_summary.csv",
             charts_dir=root / "outputs" / "charts",
             output_path=root / "outputs" / "report.html",
+            config=config.model_dump(),
+            scenarios={name: s.model_dump() for name, s in scenarios.scenarios.items()},
         )
 
     except PermissionError as exc:
@@ -63,3 +83,7 @@ def main() -> None:
     print(f"Ran {len(results)} scenarios.")
     print("Outputs written to outputs/")
     print("ChatGPT context written to outputs/chatgpt_model_context.md")
+
+
+if __name__ == "__main__":
+    main()
