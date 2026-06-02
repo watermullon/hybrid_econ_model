@@ -959,6 +959,170 @@ def render_configure_tab(
     )
 
 
+def render_help_tab(model_config: dict[str, Any], scenario_assumptions: dict[str, Any]) -> None:
+    """Render the Help & Assumptions tab."""
+    import streamlit as st
+
+    # ── How to use ────────────────────────────────────────────────────────────
+    st.header("How to use this app")
+    st.markdown("""
+**There are four tabs across the top:**
+
+| Tab | What it does |
+|---|---|
+| Scenario Explorer | Charts and diagnostics for all pre-built scenarios. Use the scenario selector to drill into one. |
+| Simulator | Step through a scenario year by year. Use the slider or Previous / Next buttons. Walkthrough mode (sidebar) shows key assumptions alongside each year. |
+| Configure & Run | Enter your own deal and fund assumptions and run the model in-memory. Results appear in Explorer and Simulator as a "Custom" scenario. |
+| Help & Assumptions | This page. |
+
+**To walk through the base case scenario:**
+1. Click the **Simulator** tab
+2. Make sure **Jon Base Case** is selected in the dropdown
+3. Use **Next Year** to step forward year by year
+4. The left sidebar shows the key assumptions (routing, HF return, hurdle target)
+5. The right side shows events and flags for each year
+
+**To run your own deal:**
+1. Click the **Configure & Run** tab
+2. Fill in the deal details — purchase price, debt, NOI, capex, refi targets
+3. Set the fund structure — LP capital, hurdle, HF return
+4. Click **Run scenario**
+5. Switch to Explorer or Simulator to see the results
+6. Download the cashflow CSV if needed
+    """)
+
+    st.divider()
+
+    # ── Walkthrough notes ─────────────────────────────────────────────────────
+    st.header("Scenario walkthrough notes")
+    st.caption("Presenter notes for walking someone through the base case year by year.")
+    walkthrough_path = ROOT / "outputs" / "jon_base_case_walkthrough.md"
+    if walkthrough_path.exists():
+        st.markdown(walkthrough_path.read_text(encoding="utf-8"))
+    else:
+        st.info("Walkthrough notes not found. Run the model to generate outputs.")
+
+    st.divider()
+
+    # ── Pre-baked scenario assumptions ───────────────────────────────────────
+    st.header("Pre-built scenario assumptions")
+    st.caption("These are the assumptions behind the scenarios in the Explorer and Simulator tabs.")
+
+    # Global fund assumptions
+    m = model_config.get("model", {})
+    w = model_config.get("waterfall", {})
+    lp_cap = m.get("initial_lp_capital", 0)
+    hurdle = w.get("lp_hurdle_moic", 2.0)
+    cr = model_config.get("cashflow_routing", {})
+    re_cr = cr.get("re_cashflow", {})
+
+    with st.expander("Global fund settings", expanded=True):
+        g1, g2, g3 = st.columns(3)
+        with g1:
+            st.metric("LP capital", f"${lp_cap/1e6:.1f}M")
+            st.metric("LP hurdle", f"{hurdle:.1f}x = ${lp_cap * hurdle/1e6:.1f}M")
+        with g2:
+            st.metric("Default RE cashflow to LP", f"{re_cr.get('lp_distribution_pct', 0):.0%}")
+            st.metric("Default RE cashflow to HF", f"{re_cr.get('hf_reinvestment_pct', 0):.0%}")
+            st.metric("Default RE cashflow to reserve", f"{re_cr.get('reserve_pct', 0):.0%}")
+        with g3:
+            trig = model_config.get("hurdle_completion_trigger", {})
+            st.metric("Hurdle trigger enabled", str(trig.get("enabled", False)))
+            st.metric("Max HF liquidation", f"{trig.get('max_hf_liquidation_pct', 0):.0%}")
+
+    # Per-scenario assumptions
+    scenario_display_order = [
+        ("jon_base_case", "Base Case"),
+        ("jon_downside", "Downside"),
+        ("jon_upside", "Upside"),
+    ]
+    other_scenarios = [(k, k.replace("_", " ").title()) for k in scenario_assumptions
+                       if k not in {s for s, _ in scenario_display_order}]
+    all_scenarios = scenario_display_order + other_scenarios
+
+    for key, label in all_scenarios:
+        sc = scenario_assumptions.get(key)
+        if sc is None:
+            continue
+        with st.expander(f"Scenario: {label}"):
+            st.caption(sc.get("description", ""))
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.markdown("**Real estate**")
+                re = sc.get("real_estate", {})
+                mode = sc.get("real_estate_model", {}).get("mode", "top_down")
+                st.write(f"Mode: `{mode}`")
+                if mode == "top_down":
+                    st.write(f"Initial NOI yield: {re.get('initial_noi_yield', 0):.1%}")
+                    st.write(f"Annual NOI growth: {re.get('annual_noi_growth', 0):.1%}")
+                    st.write(f"Annual appreciation: {re.get('annual_nav_appreciation', 0):.1%}")
+                else:
+                    st.write("Deal assumptions from deal config (see below)")
+            with c2:
+                st.markdown("**Hedge fund**")
+                hf_returns = sc.get("hedge_fund", {}).get("annual_returns", [])
+                unique_returns = sorted(set(hf_returns), reverse=True)
+                if len(unique_returns) == 1:
+                    st.write(f"Return: {unique_returns[0]:.1%} flat")
+                else:
+                    st.write("Returns: " + ", ".join(f"{r:.0%}" for r in hf_returns[:5]) + ("..." if len(hf_returns) > 5 else ""))
+            with c3:
+                st.markdown("**Cashflow routing**")
+                sc_routing = sc.get("cashflow_routing", {}).get("re_cashflow", re_cr)
+                st.write(f"To LP: {sc_routing.get('lp_distribution_pct', re_cr.get('lp_distribution_pct', 0)):.0%}")
+                st.write(f"To HF: {sc_routing.get('hf_reinvestment_pct', re_cr.get('hf_reinvestment_pct', 0)):.0%}")
+                st.write(f"To reserve: {sc_routing.get('reserve_pct', re_cr.get('reserve_pct', 0)):.0%}")
+
+    st.divider()
+
+    # ── Deal assumptions ──────────────────────────────────────────────────────
+    st.header("Deal assumptions")
+    st.caption("The underlying real estate deal used in the bottom-up scenarios.")
+
+    deals_path = ROOT / "inputs" / "deals.yaml"
+    if deals_path.exists():
+        import yaml
+        with deals_path.open("r", encoding="utf-8") as f:
+            deals_raw = yaml.safe_load(f) or {}
+        for deal_key, deal in deals_raw.get("deals", {}).items():
+            with st.expander(f"Deal: {deal_key}", expanded=True):
+                st.caption(deal.get("description", ""))
+                d1, d2, d3 = st.columns(3)
+                acq = deal.get("acquisition", {})
+                stack = deal.get("capital_stack", {})
+                ops = deal.get("operations", {})
+                debt = deal.get("debt", {})
+                capex = deal.get("capex", {})
+                refi = deal.get("refinance", {})
+                with d1:
+                    st.markdown("**Capital stack**")
+                    st.write(f"Purchase price: ${acq.get('purchase_price', 0)/1e6:.2f}M")
+                    st.write(f"Assumed debt: ${stack.get('assumed_debt', 0)/1e6:.2f}M")
+                    st.write(f"Assumed liabilities: ${stack.get('assumed_liabilities', 0)/1e6:.2f}M")
+                    equity = acq.get('asset_value', 0) - stack.get('assumed_debt', 0) - stack.get('assumed_liabilities', 0)
+                    st.write(f"**Net fund equity: ${equity/1e6:.2f}M**")
+                    st.write(f"New equity required: ${acq.get('new_equity_required', 0)/1e6:.2f}M")
+                with d2:
+                    st.markdown("**Operations & debt**")
+                    st.write(f"Current NOI: ${ops.get('current_noi', 0)/1e3:.0f}k")
+                    st.write(f"Stabilised NOI: ${ops.get('stabilized_noi', 0)/1e3:.0f}k")
+                    st.write(f"Years to stabilisation: {ops.get('years_to_stabilization', 0)}")
+                    st.write(f"NOI growth (post-stab): {ops.get('annual_noi_growth_after_stabilization', 0):.1%}")
+                    st.write(f"Debt rate: {debt.get('interest_rate', 0):.2%}")
+                    st.write(f"Debt type: {debt.get('amortization_type', 'n/a')}")
+                    st.write(f"Debt maturity: Year {debt.get('maturity_year', 'n/a')}")
+                with d3:
+                    st.markdown("**Capex & refinance**")
+                    for yr, amt in capex.get("annual_capex", {}).items():
+                        st.write(f"Capex Year {yr}: ${amt/1e3:.0f}k")
+                    st.write(f"Recurring capex: {capex.get('recurring_capex_pct_of_noi', 0):.1%} of NOI")
+                    st.write(f"Refi target years: {refi.get('target_years', [])}")
+                    st.write(f"Refi LTV: {refi.get('refi_ltv', 0):.0%}")
+                    st.write(f"Refi costs: {refi.get('refi_costs_pct', 0):.1%}")
+    else:
+        st.info("No deals.yaml found.")
+
+
 def generate_scenario_caption(scenario_df: pd.DataFrame, scenario_summary_row: pd.Series) -> str:
     """Generate a plain-English scenario caption directly from output data."""
     scenario = str(scenario_summary_row["scenario"])
@@ -2663,7 +2827,7 @@ def main() -> None:
             st.warning(f"Could not rerun model with dashboard routing controls. Showing saved outputs instead. Error: {exc}")
     cashflows, summary = append_custom_scenario_if_available(cashflows, summary)
 
-    tab_explorer, tab_simulator, tab_configure = st.tabs(["Scenario Explorer", "Simulator", "Configure & Run"])
+    tab_explorer, tab_simulator, tab_configure, tab_help = st.tabs(["Scenario Explorer", "Simulator", "Configure & Run", "Help & Assumptions"])
 
     with tab_explorer:
         outcome_fig = build_outcome_chart(summary, notes)
@@ -2763,6 +2927,9 @@ def main() -> None:
 
     with tab_configure:
         render_configure_tab(routing_override, trigger_override, cashflows)
+
+    with tab_help:
+        render_help_tab(model_config, scenario_assumptions)
 
     st.caption(f"{APP_VERSION}. Nothing here saves to YAML or output files.")
 
