@@ -23,8 +23,8 @@ from src.validation import validate_all_scenarios
 from src.waterfall import available_liquidity, pay_lp_distribution, redeem_lp
 
 
-def calculate_initial_allocation(config: ModelConfig, scenario: Scenario) -> tuple[float, float, float]:
-    capital = config.model.initial_lp_capital
+def calculate_initial_allocation(config: ModelConfig, scenario: Scenario, lp_capital_override: float | None = None) -> tuple[float, float, float]:
+    capital = lp_capital_override if lp_capital_override is not None else config.model.initial_lp_capital
     allocation = merge_model(config.allocation, scenario.allocation)
     if allocation.method == "fixed":
         hf_nav = capital * allocation.hedge_fund_allocation_pct
@@ -73,7 +73,7 @@ def run_scenario(
     real_estate_mode = real_estate_settings.mode
     refinance_events_by_year = events_by_year(scenario.refinance_events)
 
-    initial_lp_capital = config.model.initial_lp_capital
+    initial_lp_capital = scenario.lp_capital_override if scenario.lp_capital_override is not None else config.model.initial_lp_capital
     lp_hurdle_amount = initial_lp_capital * config.waterfall.lp_hurdle_moic
     portfolio_years: list[RealEstatePortfolioYearResult] = []
     deal_cashflows = []
@@ -128,7 +128,7 @@ def run_scenario(
         initial_re_entry_equity_cushion = initial_portfolio_year.entry_equity_cushion
         initial_re_value_to_new_equity_multiple = initial_portfolio_year.value_to_new_equity_multiple
     else:
-        re_nav, hf_nav, reserve_nav = calculate_initial_allocation(config, scenario)
+        re_nav, hf_nav, reserve_nav = calculate_initial_allocation(config, scenario, lp_capital_override=scenario.lp_capital_override)
         initial_re_cash_deployed = re_nav
         initial_re_gross_asset_value = re_nav
         initial_re_net_equity_value = re_nav

@@ -16,11 +16,12 @@ Scenarios are run on a diagnostic horizon set in the YAML inputs, currently 20 y
 | exceptional_dynasty_outcome | Y9 | 2.00x | 2.00x | 8.2% | 8.2% | Yes | Y9 | Backend-heavy | Yes | Y9 | $16,855,162 | $43,049 | $20,000,000 | $7,805,368 | Yes | $22,566,878 | Hurdle trigger executed |
 | liquidity_trap | Y11 | 2.00x | 2.00x | 6.7% | 6.7% | Yes | Y11 | Backend-heavy | Yes | Y11 | $15,038,310 | $1,784,428 | $20,000,000 | $8,031,785 | Yes | $21,119,584 | Hurdle trigger executed |
 | failure_never_reaches_hurdle | Y20 | 0.07x | 2.00x | -18.5% | 3.6% | No |  | Moderate yield | No |  | $0 | $0 | $659,359 | $4,945,192 | Yes | $0 | Value hurdle reached but liquidity constrained |
-| jon_base_case | Y9 | 2.00x | 2.00x | 8.5% | 8.5% | Yes | Y9 | Backend-heavy | Yes | Y9 | $11,332,919 | $0 | $20,000,000 | $1,583,940 | Yes | $13,931,349 | Hurdle trigger executed |
-| jon_downside_case | Y18 | 2.00x | 2.00x | 4.2% | 4.2% | Yes | Y18 | Backend-heavy | Yes | Y18 | $14,874,343 | $760,597 | $20,000,000 | $1,455,020 | Yes | $12,936,519 | Hurdle trigger executed |
-| jon_property_shock_25 | Y11 | 2.00x | 2.00x | 7.3% | 7.3% | Yes | Y11 | Backend-heavy | Yes | Y11 | $10,266,122 | $0 | $20,000,000 | $2,536,073 | Yes | $16,072,128 | Hurdle trigger executed |
-| jon_property_shock_40 | Y11 | 2.00x | 2.00x | 7.5% | 7.5% | Yes | Y11 | Backend-heavy | Yes | Y11 | $6,685,702 | $0 | $20,000,000 | $3,015,795 | Yes | $12,713,960 | Hurdle trigger executed |
-| jon_upside_case | Y6 | 2.00x | 2.00x | 13.0% | 13.0% | Yes | Y6 | Backend-heavy | Yes | Y6 | $11,876,237 | $0 | $20,000,000 | $1,437,689 | Yes | $13,040,413 | Hurdle trigger executed |
+| jon_base_case | Y11 | 2.00x | 2.00x | 6.8% | 6.8% | Yes | Y11 | Backend-heavy | Yes | Y11 | $14,952,218 | $0 | $20,000,000 | $1,089,784 | Yes | $14,831,028 | Hurdle trigger executed |
+| jon_downside_case | Y20 | 2.00x | 2.00x | 3.6% | 3.6% | Yes | Y20 | Backend-heavy | Yes | Y20 | $17,739,608 | $145,661 | $20,000,000 | $675,119 | Yes | $11,472,958 | Hurdle trigger executed |
+| jon_property_shock_25 | Y11 | 2.00x | 2.00x | 6.9% | 6.9% | Yes | Y11 | Backend-heavy | Yes | Y11 | $13,364,158 | $649,734 | $20,000,000 | $1,421,547 | Yes | $9,599,878 | Hurdle trigger executed |
+| jon_property_shock_40 | Y12 | 2.00x | 2.00x | 6.5% | 6.5% | Yes | Y12 | Backend-heavy | Yes | Y12 | $11,248,096 | $0 | $20,000,000 | $1,940,054 | Yes | $10,880,366 | Hurdle trigger executed |
+| five_million_fund | Y12 | 2.00x | 2.00x | 6.5% | 6.5% | Yes | Y12 | Backend-heavy | Yes | Y12 | $7,483,231 | $513,907 | $10,000,000 | $667,621 | Yes | $6,257,786 | Hurdle trigger executed |
+| jon_upside_case | Y8 | 2.00x | 2.00x | 9.5% | 9.5% | Yes | Y8 | Backend-heavy | Yes | Y8 | $13,056,082 | $0 | $20,000,000 | $1,165,108 | Yes | $15,865,766 | Hurdle trigger executed |
 
 ## Scenario Notes
 
@@ -186,41 +187,43 @@ Both sleeves disappoint; LP never reaches 2.0x.
 
 ### jon_base_case
 
-Deal 1 base case — 116-unit Class C value-add multifamily, Southwest US. $23M purchase, $3.5M equity, $16M senior + $2.5M assumed liabilities. NOI $1.28M Y1 ramping to $2.15M stabilized. 7.5% IO debt. Refi Y4/Y7 at 70% LTV. HF 13% base. Cashflow routing 60/25/15.
+Deal 1 base case — 116-unit Class C value-add multifamily, Southwest US. $13M purchase, $3M equity, $10M senior debt. NOI $720k Y1 ramping to $1.21M stabilized. 7.5% IO debt. Refi Y4/Y7 at 70% LTV. HF 13% base. Cashflow routing 60/25/15.
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 8.5%
-- LP economic IRR: 8.5%
-- Years until LP 2x cash return: 9
+- LP cash IRR: 6.8%
+- LP economic IRR: 6.8%
+- Years until LP 2x cash return: 11
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 9
-- Trigger HF liquidation used: $11,332,919
+- Hurdle trigger year: 11
+- Trigger HF liquidation used: $14,952,218
 - Trigger refi used: $0
 - Total cash distributed to LP: $20,000,000
-- Total cash reinvested into HF: $1,583,940
-- GP residual NAV: $13,931,349
+- Total cash reinvested into HF: $1,089,784
+- GP residual NAV: $14,831,028
 - GP survivability risk: True
 - Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Refinance event occurred
 
 #### Bottom-Up Deal Summary
 
-- jon_deal_1: gross assets $23,000,000; assumed debt $16,000,000; other liabilities $2,500,000; new equity required $3,500,000; entry equity cushion $1,000,000; current NOI $1,278,000; refi LTV capacity $97,500
+- jon_deal_1: gross assets $13,000,000; assumed debt $10,000,000; other liabilities $0; new equity required $3,000,000; entry equity cushion $0; current NOI $720,000; refi LTV capacity $0
 
 Annual bottom-up RE portfolio:
 
 | Year | Gross assets | Debt | Liabilities | NOI | DSCR | Free cashflow | Refi proceeds | Deal NAV |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1.00 | 23,000,000.00 | 16,000,000.00 | 2,500,000.00 | 1,278,000.00 | 1.06 | -473,120.00 | 0.00 | 4,500,000.00 |
-| 2.00 | 23,690,000.00 | 16,000,000.00 | 2,500,000.00 | 1,568,666.67 | 1.31 | -94,080.00 | 0.00 | 5,190,000.00 |
-| 3.00 | 24,400,700.00 | 16,000,000.00 | 2,500,000.00 | 1,859,333.33 | 1.55 | 334,960.00 | 0.00 | 5,900,700.00 |
-| 4.00 | 25,132,721.00 | 16,000,000.00 | 2,500,000.00 | 2,150,000.00 | 1.79 | 714,000.00 | 1,553,082.08 | 6,632,721.00 |
-| 5.00 | 25,886,702.63 | 16,000,000.00 | 2,500,000.00 | 2,214,500.00 | 1.85 | 925,920.00 | 0.00 | 7,386,702.63 |
-| 6.00 | 26,663,303.71 | 16,000,000.00 | 2,500,000.00 | 2,280,935.00 | 1.90 | 989,697.60 | 0.00 | 8,163,303.71 |
-| 7.00 | 27,463,202.82 | 16,000,000.00 | 2,500,000.00 | 2,349,363.05 | 1.96 | 1,055,388.53 | 1,629,380.89 | 8,963,202.82 |
-| 8.00 | 28,287,098.90 | 16,000,000.00 | 2,500,000.00 | 2,419,843.94 | 2.02 | 1,123,050.18 | 0.00 | 9,787,098.90 |
-| 9.00 | 29,135,711.87 | 16,000,000.00 | 2,500,000.00 | 2,492,439.26 | 2.08 | 1,192,741.69 | 0.00 | 10,635,711.87 |
+| 1.00 | 13,000,000.00 | 10,000,000.00 | 0.00 | 720,000.00 | 0.96 | -338,800.00 | 0.00 | 3,000,000.00 |
+| 2.00 | 13,390,000.00 | 10,000,000.00 | 0.00 | 883,333.33 | 1.18 | -127,000.00 | 0.00 | 3,390,000.00 |
+| 3.00 | 13,791,700.00 | 10,000,000.00 | 0.00 | 1,046,666.67 | 1.40 | 114,800.00 | 0.00 | 3,791,700.00 |
+| 4.00 | 14,205,451.00 | 10,000,000.00 | 0.00 | 1,210,000.00 | 1.61 | 326,600.00 | 0.00 | 4,205,451.00 |
+| 5.00 | 14,631,614.53 | 10,000,000.00 | 0.00 | 1,246,300.00 | 1.66 | 446,448.00 | 0.00 | 4,631,614.53 |
+| 6.00 | 15,070,562.97 | 10,000,000.00 | 0.00 | 1,283,689.00 | 1.71 | 482,341.44 | 0.00 | 5,070,562.97 |
+| 7.00 | 15,522,679.85 | 10,000,000.00 | 0.00 | 1,322,199.67 | 1.76 | 519,311.68 | 844,229.00 | 5,522,679.85 |
+| 8.00 | 15,988,360.25 | 10,000,000.00 | 0.00 | 1,361,865.66 | 1.82 | 557,391.03 | 0.00 | 5,988,360.25 |
+| 9.00 | 16,468,011.06 | 10,000,000.00 | 0.00 | 1,402,721.63 | 1.87 | 596,612.76 | 0.00 | 6,468,011.06 |
+| 10.00 | 16,962,051.39 | 10,000,000.00 | 0.00 | 1,444,803.28 | 1.93 | 637,011.15 | 0.00 | 6,962,051.39 |
+| 11.00 | 17,470,912.93 | 10,000,000.00 | 0.00 | 1,488,147.38 | 1.98 | 678,621.48 | 0.00 | 7,470,912.93 |
 
 ### jon_downside_case
 
@@ -228,46 +231,48 @@ Deal 1 downside — slower lease-up, lower NOI ramp, higher capex, tighter refi.
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 4.2%
-- LP economic IRR: 4.2%
-- Years until LP 2x cash return: 18
+- LP cash IRR: 3.6%
+- LP economic IRR: 3.6%
+- Years until LP 2x cash return: 20
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 18
-- Trigger HF liquidation used: $14,874,343
-- Trigger refi used: $760,597
+- Hurdle trigger year: 20
+- Trigger HF liquidation used: $17,739,608
+- Trigger refi used: $145,661
 - Total cash distributed to LP: $20,000,000
-- Total cash reinvested into HF: $1,455,020
-- GP residual NAV: $12,936,519
+- Total cash reinvested into HF: $675,119
+- GP residual NAV: $11,472,958
 - GP survivability risk: True
 - Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, LP redeemed via refi, Long zero-distribution period
 
 #### Bottom-Up Deal Summary
 
-- jon_deal_1: gross assets $23,000,000; assumed debt $16,000,000; other liabilities $2,500,000; new equity required $3,500,000; entry equity cushion $1,000,000; current NOI $1,000,000; refi LTV capacity $0
+- jon_deal_1: gross assets $13,000,000; assumed debt $10,000,000; other liabilities $0; new equity required $3,000,000; entry equity cushion $0; current NOI $565,000; refi LTV capacity $0
 
 Annual bottom-up RE portfolio:
 
 | Year | Gross assets | Debt | Liabilities | NOI | DSCR | Free cashflow | Refi proceeds | Deal NAV |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1.00 | 23,000,000.00 | 16,000,000.00 | 2,500,000.00 | 1,000,000.00 | 0.83 | -850,000.00 | 0.00 | 4,500,000.00 |
-| 2.00 | 23,230,000.00 | 16,000,000.00 | 2,500,000.00 | 1,150,000.00 | 0.96 | -607,500.00 | 0.00 | 4,730,000.00 |
-| 3.00 | 23,462,300.00 | 16,000,000.00 | 2,500,000.00 | 1,300,000.00 | 1.08 | -315,000.00 | 0.00 | 4,962,300.00 |
-| 4.00 | 23,696,923.00 | 16,000,000.00 | 2,500,000.00 | 1,450,000.00 | 1.21 | -22,500.00 | 0.00 | 5,196,923.00 |
-| 5.00 | 23,933,892.23 | 16,000,000.00 | 2,500,000.00 | 1,600,000.00 | 1.33 | 220,000.00 | 0.00 | 5,433,892.23 |
-| 6.00 | 24,173,231.15 | 16,000,000.00 | 2,500,000.00 | 1,616,000.00 | 1.35 | 335,200.00 | 0.00 | 5,673,231.15 |
-| 7.00 | 24,414,963.46 | 16,000,000.00 | 2,500,000.00 | 1,632,160.00 | 1.36 | 350,552.00 | 0.00 | 5,914,963.46 |
-| 8.00 | 24,659,113.10 | 16,000,000.00 | 2,500,000.00 | 1,648,481.60 | 1.37 | 366,057.52 | 0.00 | 6,159,113.10 |
-| 9.00 | 24,905,704.23 | 16,000,000.00 | 2,500,000.00 | 1,664,966.42 | 1.39 | 381,718.10 | 0.00 | 6,405,704.23 |
-| 10.00 | 25,154,761.27 | 16,000,000.00 | 2,500,000.00 | 1,681,616.08 | 1.40 | 397,535.28 | 0.00 | 6,654,761.27 |
-| 11.00 | 25,406,308.88 | 16,000,000.00 | 2,500,000.00 | 1,698,432.24 | 1.42 | 413,510.63 | 0.00 | 6,906,308.88 |
-| 12.00 | 25,660,371.97 | 16,000,000.00 | 2,500,000.00 | 1,715,416.56 | 1.43 | 429,645.74 | 0.00 | 7,160,371.97 |
-| 13.00 | 25,916,975.69 | 16,000,000.00 | 2,500,000.00 | 1,732,570.73 | 1.44 | 445,942.19 | 0.00 | 7,416,975.69 |
-| 14.00 | 26,176,145.45 | 16,000,000.00 | 2,500,000.00 | 1,749,896.44 | 1.46 | 462,401.61 | 0.00 | 7,676,145.45 |
-| 15.00 | 26,437,906.90 | 16,000,000.00 | 2,500,000.00 | 1,767,395.40 | 1.47 | 479,025.63 | 0.00 | 7,937,906.90 |
-| 16.00 | 26,702,285.97 | 16,000,000.00 | 2,500,000.00 | 1,785,069.35 | 1.49 | 495,815.89 | 0.00 | 8,202,285.97 |
-| 17.00 | 26,969,308.83 | 16,000,000.00 | 2,500,000.00 | 1,802,920.05 | 1.50 | 512,774.05 | 0.00 | 8,469,308.83 |
-| 18.00 | 27,239,001.92 | 16,000,000.00 | 2,500,000.00 | 1,820,949.25 | 1.52 | 529,901.79 | 0.00 | 8,739,001.92 |
+| 1.00 | 13,000,000.00 | 10,000,000.00 | 0.00 | 565,000.00 | 0.75 | -553,250.00 | 0.00 | 3,000,000.00 |
+| 2.00 | 13,130,000.00 | 10,000,000.00 | 0.00 | 648,750.00 | 0.86 | -413,687.50 | 0.00 | 3,130,000.00 |
+| 3.00 | 13,261,300.00 | 10,000,000.00 | 0.00 | 732,500.00 | 0.98 | -254,125.00 | 0.00 | 3,261,300.00 |
+| 4.00 | 13,393,913.00 | 10,000,000.00 | 0.00 | 816,250.00 | 1.09 | -89,562.50 | 0.00 | 3,393,913.00 |
+| 5.00 | 13,527,852.13 | 10,000,000.00 | 0.00 | 900,000.00 | 1.20 | 50,000.00 | 0.00 | 3,527,852.13 |
+| 6.00 | 13,663,130.65 | 10,000,000.00 | 0.00 | 909,000.00 | 1.21 | 113,550.00 | 0.00 | 3,663,130.65 |
+| 7.00 | 13,799,761.96 | 10,000,000.00 | 0.00 | 918,090.00 | 1.22 | 122,185.50 | 0.00 | 3,799,761.96 |
+| 8.00 | 13,937,759.58 | 10,000,000.00 | 0.00 | 927,270.90 | 1.24 | 130,907.36 | 0.00 | 3,937,759.58 |
+| 9.00 | 14,077,137.17 | 10,000,000.00 | 0.00 | 936,543.61 | 1.25 | 139,716.43 | 0.00 | 4,077,137.17 |
+| 10.00 | 14,217,908.54 | 10,000,000.00 | 0.00 | 945,909.05 | 1.26 | 148,613.59 | 0.00 | 4,217,908.54 |
+| 11.00 | 14,360,087.63 | 10,000,000.00 | 0.00 | 955,368.14 | 1.27 | 157,599.73 | 0.00 | 4,360,087.63 |
+| 12.00 | 14,503,688.51 | 10,000,000.00 | 0.00 | 964,921.82 | 1.29 | 166,675.73 | 0.00 | 4,503,688.51 |
+| 13.00 | 14,648,725.39 | 10,000,000.00 | 0.00 | 974,571.04 | 1.30 | 175,842.48 | 0.00 | 4,648,725.39 |
+| 14.00 | 14,795,212.65 | 10,000,000.00 | 0.00 | 984,316.75 | 1.31 | 185,100.91 | 0.00 | 4,795,212.65 |
+| 15.00 | 14,943,164.77 | 10,000,000.00 | 0.00 | 994,159.91 | 1.33 | 194,451.92 | 0.00 | 4,943,164.77 |
+| 16.00 | 15,092,596.42 | 10,000,000.00 | 0.00 | 1,004,101.51 | 1.34 | 203,896.44 | 0.00 | 5,092,596.42 |
+| 17.00 | 15,243,522.38 | 10,000,000.00 | 0.00 | 1,014,142.53 | 1.35 | 213,435.40 | 0.00 | 5,243,522.38 |
+| 18.00 | 15,395,957.61 | 10,000,000.00 | 0.00 | 1,024,283.95 | 1.37 | 223,069.75 | 0.00 | 5,395,957.61 |
+| 19.00 | 15,549,917.18 | 10,000,000.00 | 0.00 | 1,034,526.79 | 1.38 | 232,800.45 | 0.00 | 5,549,917.18 |
+| 20.00 | 15,705,416.36 | 10,000,000.00 | 0.00 | 1,044,872.06 | 1.39 | 242,628.46 | 0.00 | 5,705,416.36 |
 
 ### jon_property_shock_25
 
@@ -275,39 +280,39 @@ Deal 1 property shock — 25% value drop in Year 2 (market correction), 5-year r
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 7.3%
-- LP economic IRR: 7.3%
+- LP cash IRR: 6.9%
+- LP economic IRR: 6.9%
 - Years until LP 2x cash return: 11
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: True
 - Hurdle trigger year: 11
-- Trigger HF liquidation used: $10,266,122
-- Trigger refi used: $0
+- Trigger HF liquidation used: $13,364,158
+- Trigger refi used: $649,734
 - Total cash distributed to LP: $20,000,000
-- Total cash reinvested into HF: $2,536,073
-- GP residual NAV: $16,072,128
+- Total cash reinvested into HF: $1,421,547
+- GP residual NAV: $9,599,878
 - GP survivability risk: True
-- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Covenant Breach Hf Injection, Refinance event occurred, RE NAV impairment
+- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, LP redeemed via refi, Covenant Breach Hf Injection, Refinance event occurred, RE NAV impairment
 
 #### Bottom-Up Deal Summary
 
-- jon_deal_1: gross assets $23,000,000; assumed debt $16,000,000; other liabilities $2,500,000; new equity required $3,500,000; entry equity cushion $1,000,000; current NOI $1,278,000; refi LTV capacity $97,500
+- jon_deal_1: gross assets $13,000,000; assumed debt $10,000,000; other liabilities $0; new equity required $3,000,000; entry equity cushion $0; current NOI $720,000; refi LTV capacity $0
 
 Annual bottom-up RE portfolio:
 
 | Year | Gross assets | Debt | Liabilities | NOI | DSCR | Free cashflow | Refi proceeds | Deal NAV |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1.00 | 23,000,000.00 | 16,000,000.00 | 2,500,000.00 | 1,278,000.00 | 1.06 | -473,120.00 | 0.00 | 4,500,000.00 |
-| 2.00 | 23,690,000.00 | 16,000,000.00 | 2,500,000.00 | 1,568,666.67 | 1.31 | -94,080.00 | 0.00 | 5,190,000.00 |
-| 3.00 | 17,767,500.00 | 14,214,000.00 | 2,500,000.00 | 1,859,333.33 | 1.74 | 468,910.00 | 0.00 | 1,053,500.00 |
-| 4.00 | 18,815,782.50 | 14,214,000.00 | 2,500,000.00 | 2,150,000.00 | 2.02 | 847,950.00 | 0.00 | 2,101,782.50 |
-| 5.00 | 19,925,913.67 | 14,214,000.00 | 2,500,000.00 | 2,214,500.00 | 2.08 | 1,059,870.00 | 0.00 | 3,211,913.67 |
-| 6.00 | 21,101,542.57 | 14,214,000.00 | 2,500,000.00 | 2,280,935.00 | 2.14 | 1,123,647.60 | 0.00 | 4,387,542.57 |
-| 7.00 | 22,346,533.59 | 14,214,000.00 | 2,500,000.00 | 2,349,363.05 | 2.20 | 1,189,338.53 | 1,392,859.17 | 5,632,533.59 |
-| 8.00 | 23,664,979.07 | 14,214,000.00 | 2,500,000.00 | 2,419,843.94 | 2.27 | 1,257,000.18 | 0.00 | 6,950,979.07 |
-| 9.00 | 24,374,928.44 | 14,214,000.00 | 2,500,000.00 | 2,492,439.26 | 2.34 | 1,326,691.69 | 0.00 | 7,660,928.44 |
-| 10.00 | 25,106,176.29 | 14,214,000.00 | 2,500,000.00 | 2,567,212.44 | 2.41 | 1,398,473.94 | 0.00 | 8,392,176.29 |
-| 11.00 | 25,859,361.58 | 14,214,000.00 | 2,500,000.00 | 2,644,228.81 | 2.48 | 1,472,409.66 | 0.00 | 9,145,361.58 |
+| 1.00 | 13,000,000.00 | 10,000,000.00 | 0.00 | 720,000.00 | 0.96 | -338,800.00 | 0.00 | 3,000,000.00 |
+| 2.00 | 13,390,000.00 | 10,000,000.00 | 0.00 | 883,333.33 | 1.18 | -127,000.00 | 0.00 | 3,390,000.00 |
+| 3.00 | 10,042,500.00 | 8,034,000.00 | 0.00 | 1,046,666.67 | 1.74 | 262,250.00 | 0.00 | 2,008,500.00 |
+| 4.00 | 10,635,007.50 | 8,034,000.00 | 0.00 | 1,210,000.00 | 2.01 | 474,050.00 | 0.00 | 2,601,007.50 |
+| 5.00 | 11,262,472.94 | 8,034,000.00 | 0.00 | 1,246,300.00 | 2.07 | 593,898.00 | 0.00 | 3,228,472.94 |
+| 6.00 | 11,926,958.85 | 8,034,000.00 | 0.00 | 1,283,689.00 | 2.13 | 629,791.44 | 0.00 | 3,892,958.85 |
+| 7.00 | 12,630,649.42 | 8,034,000.00 | 0.00 | 1,322,199.67 | 2.19 | 666,761.68 | 787,268.23 | 4,596,649.42 |
+| 8.00 | 13,375,857.73 | 8,034,000.00 | 0.00 | 1,361,865.66 | 2.26 | 704,841.03 | 0.00 | 5,341,857.73 |
+| 9.00 | 13,777,133.47 | 8,034,000.00 | 0.00 | 1,402,721.63 | 2.33 | 744,062.76 | 0.00 | 5,743,133.47 |
+| 10.00 | 14,190,447.47 | 8,034,000.00 | 0.00 | 1,444,803.28 | 2.40 | 784,461.15 | 0.00 | 6,156,447.47 |
+| 11.00 | 14,616,160.89 | 8,034,000.00 | 0.00 | 1,488,147.38 | 2.47 | 826,071.48 | 0.00 | 6,582,160.89 |
 
 ### jon_property_shock_40
 
@@ -315,39 +320,60 @@ Deal 1 severe shock — 40% value drop in Year 2, property deeply underwater (de
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 7.5%
-- LP economic IRR: 7.5%
-- Years until LP 2x cash return: 11
+- LP cash IRR: 6.5%
+- LP economic IRR: 6.5%
+- Years until LP 2x cash return: 12
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 11
-- Trigger HF liquidation used: $6,685,702
+- Hurdle trigger year: 12
+- Trigger HF liquidation used: $11,248,096
 - Trigger refi used: $0
 - Total cash distributed to LP: $20,000,000
-- Total cash reinvested into HF: $3,015,795
-- GP residual NAV: $12,713,960
+- Total cash reinvested into HF: $1,940,054
+- GP residual NAV: $10,880,366
 - GP survivability risk: True
-- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Covenant Breach Hf Injection, Refinance event occurred, HF major drawdown, RE NAV impairment
+- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Covenant Breach Hf Injection, Refinance event occurred, RE NAV impairment
 
 #### Bottom-Up Deal Summary
 
-- jon_deal_1: gross assets $23,000,000; assumed debt $16,000,000; other liabilities $2,500,000; new equity required $3,500,000; entry equity cushion $1,000,000; current NOI $1,278,000; refi LTV capacity $97,500
+- jon_deal_1: gross assets $13,000,000; assumed debt $10,000,000; other liabilities $0; new equity required $3,000,000; entry equity cushion $0; current NOI $720,000; refi LTV capacity $0
 
 Annual bottom-up RE portfolio:
 
 | Year | Gross assets | Debt | Liabilities | NOI | DSCR | Free cashflow | Refi proceeds | Deal NAV |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1.00 | 23,000,000.00 | 16,000,000.00 | 2,500,000.00 | 1,278,000.00 | 1.06 | -473,120.00 | 0.00 | 4,500,000.00 |
-| 2.00 | 23,690,000.00 | 16,000,000.00 | 2,500,000.00 | 1,568,666.67 | 1.31 | -94,080.00 | 0.00 | 5,190,000.00 |
-| 3.00 | 14,214,000.00 | 11,371,200.00 | 2,500,000.00 | 1,859,333.33 | 2.18 | 682,120.00 | 0.00 | 342,800.00 |
-| 4.00 | 15,749,112.00 | 11,371,200.00 | 2,500,000.00 | 2,150,000.00 | 2.52 | 1,061,160.00 | 0.00 | 1,877,912.00 |
-| 5.00 | 17,450,016.10 | 11,371,200.00 | 2,500,000.00 | 2,214,500.00 | 2.60 | 1,273,080.00 | 0.00 | 3,578,816.10 |
-| 6.00 | 19,334,617.83 | 11,371,200.00 | 2,500,000.00 | 2,280,935.00 | 2.67 | 1,336,857.60 | 0.00 | 5,463,417.83 |
-| 7.00 | 21,422,756.56 | 11,371,200.00 | 2,500,000.00 | 2,349,363.05 | 2.75 | 1,402,548.53 | 3,534,111.35 | 7,551,556.56 |
-| 8.00 | 23,736,414.27 | 11,371,200.00 | 2,500,000.00 | 2,419,843.94 | 2.84 | 1,470,210.18 | 0.00 | 9,865,214.27 |
-| 9.00 | 24,448,506.70 | 11,371,200.00 | 2,500,000.00 | 2,492,439.26 | 2.92 | 1,539,901.69 | 0.00 | 10,577,306.70 |
-| 10.00 | 25,181,961.90 | 11,371,200.00 | 2,500,000.00 | 2,567,212.44 | 3.01 | 1,611,683.94 | 0.00 | 11,310,761.90 |
-| 11.00 | 25,937,420.75 | 11,371,200.00 | 2,500,000.00 | 2,644,228.81 | 3.10 | 1,685,619.66 | 0.00 | 12,066,220.75 |
+| 1.00 | 13,000,000.00 | 10,000,000.00 | 0.00 | 720,000.00 | 0.96 | -338,800.00 | 0.00 | 3,000,000.00 |
+| 2.00 | 13,390,000.00 | 10,000,000.00 | 0.00 | 883,333.33 | 1.18 | -127,000.00 | 0.00 | 3,390,000.00 |
+| 3.00 | 8,034,000.00 | 6,427,200.00 | 0.00 | 1,046,666.67 | 2.17 | 382,760.00 | 0.00 | 1,606,800.00 |
+| 4.00 | 8,901,672.00 | 6,427,200.00 | 0.00 | 1,210,000.00 | 2.51 | 594,560.00 | 0.00 | 2,474,472.00 |
+| 5.00 | 9,863,052.58 | 6,427,200.00 | 0.00 | 1,246,300.00 | 2.59 | 714,408.00 | 0.00 | 3,435,852.58 |
+| 6.00 | 10,928,262.25 | 6,427,200.00 | 0.00 | 1,283,689.00 | 2.66 | 750,301.44 | 0.00 | 4,501,062.25 |
+| 7.00 | 12,108,514.58 | 6,427,200.00 | 0.00 | 1,322,199.67 | 2.74 | 787,271.68 | 1,997,541.20 | 5,681,314.58 |
+| 8.00 | 13,416,234.15 | 6,427,200.00 | 0.00 | 1,361,865.66 | 2.83 | 825,351.03 | 0.00 | 6,989,034.15 |
+| 9.00 | 13,818,721.18 | 6,427,200.00 | 0.00 | 1,402,721.63 | 2.91 | 864,572.76 | 0.00 | 7,391,521.18 |
+| 10.00 | 14,233,282.81 | 6,427,200.00 | 0.00 | 1,444,803.28 | 3.00 | 904,971.15 | 0.00 | 7,806,082.81 |
+| 11.00 | 14,660,281.30 | 6,427,200.00 | 0.00 | 1,488,147.38 | 3.09 | 946,581.48 | 0.00 | 8,233,081.30 |
+| 12.00 | 15,100,089.74 | 6,427,200.00 | 0.00 | 1,532,791.80 | 3.18 | 989,440.13 | 0.00 | 8,672,889.74 |
+
+### five_million_fund
+
+$5M LP raise — $3M deployed into real estate equity, $2M into hedge fund. No initial reserve. LP hurdle $10M (2x). Same RE and HF assumptions as jon_base_case. Cashflow routing 60/25/15.
+
+- LP cash multiple: 2.00x
+- LP economic multiple: 2.00x
+- LP cash IRR: 6.5%
+- LP economic IRR: 6.5%
+- Years until LP 2x cash return: 12
+- LP cashflow profile: Backend-heavy
+- Hurdle completion trigger executed: True
+- Hurdle trigger year: 12
+- Trigger HF liquidation used: $7,483,231
+- Trigger refi used: $513,907
+- Total cash distributed to LP: $10,000,000
+- Total cash reinvested into HF: $667,621
+- GP residual NAV: $6,257,786
+- GP survivability risk: True
+- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, LP redeemed via refi
 
 ### jon_upside_case
 
@@ -355,31 +381,33 @@ Deal 1 upside — faster lease-up, stronger NOI, 5% value growth, better HF retu
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 13.0%
-- LP economic IRR: 13.0%
-- Years until LP 2x cash return: 6
+- LP cash IRR: 9.5%
+- LP economic IRR: 9.5%
+- Years until LP 2x cash return: 8
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 6
-- Trigger HF liquidation used: $11,876,237
+- Hurdle trigger year: 8
+- Trigger HF liquidation used: $13,056,082
 - Trigger refi used: $0
 - Total cash distributed to LP: $20,000,000
-- Total cash reinvested into HF: $1,437,689
-- GP residual NAV: $13,040,413
+- Total cash reinvested into HF: $1,165,108
+- GP residual NAV: $15,865,766
 - GP survivability risk: True
-- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Refinance event occurred, Good LP IRR with large GP residual
+- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Refinance event occurred
 
 #### Bottom-Up Deal Summary
 
-- jon_deal_1: gross assets $23,000,000; assumed debt $16,000,000; other liabilities $2,500,000; new equity required $3,500,000; entry equity cushion $1,000,000; current NOI $1,500,000; refi LTV capacity $98,500
+- jon_deal_1: gross assets $13,000,000; assumed debt $10,000,000; other liabilities $0; new equity required $3,000,000; entry equity cushion $0; current NOI $850,000; refi LTV capacity $0
 
 Annual bottom-up RE portfolio:
 
 | Year | Gross assets | Debt | Liabilities | NOI | DSCR | Free cashflow | Refi proceeds | Deal NAV |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1.00 | 23,000,000.00 | 16,000,000.00 | 2,500,000.00 | 1,500,000.00 | 1.25 | -87,500.00 | 0.00 | 4,500,000.00 |
-| 2.00 | 24,150,000.00 | 16,000,000.00 | 2,500,000.00 | 2,000,000.00 | 1.67 | 500,000.00 | 0.00 | 5,650,000.00 |
-| 3.00 | 25,357,500.00 | 16,000,000.00 | 2,500,000.00 | 2,500,000.00 | 2.08 | 1,087,500.00 | 0.00 | 6,857,500.00 |
-| 4.00 | 26,625,375.00 | 16,000,000.00 | 2,500,000.00 | 2,600,000.00 | 2.17 | 1,185,000.00 | 2,598,196.06 | 8,125,375.00 |
-| 5.00 | 27,956,643.75 | 16,000,000.00 | 2,500,000.00 | 2,704,000.00 | 2.25 | 1,436,400.00 | 0.00 | 9,456,643.75 |
-| 6.00 | 29,354,475.94 | 16,000,000.00 | 2,500,000.00 | 2,812,160.00 | 2.34 | 1,541,856.00 | 0.00 | 10,854,475.94 |
+| 1.00 | 13,000,000.00 | 10,000,000.00 | 0.00 | 850,000.00 | 1.13 | -121,250.00 | 0.00 | 3,000,000.00 |
+| 2.00 | 13,650,000.00 | 10,000,000.00 | 0.00 | 1,130,000.00 | 1.51 | 211,750.00 | 0.00 | 3,650,000.00 |
+| 3.00 | 14,332,500.00 | 10,000,000.00 | 0.00 | 1,410,000.00 | 1.88 | 539,750.00 | 0.00 | 4,332,500.00 |
+| 4.00 | 15,049,125.00 | 10,000,000.00 | 0.00 | 1,466,400.00 | 1.96 | 594,740.00 | 526,371.69 | 5,049,125.00 |
+| 5.00 | 15,801,581.25 | 10,000,000.00 | 0.00 | 1,525,056.00 | 2.03 | 736,929.60 | 0.00 | 5,801,581.25 |
+| 6.00 | 16,591,660.31 | 10,000,000.00 | 0.00 | 1,586,058.24 | 2.11 | 796,406.78 | 0.00 | 6,591,660.31 |
+| 7.00 | 17,421,243.33 | 10,000,000.00 | 0.00 | 1,649,500.57 | 2.20 | 858,263.06 | 1,643,471.16 | 7,421,243.33 |
+| 8.00 | 18,292,305.49 | 10,000,000.00 | 0.00 | 1,715,480.59 | 2.29 | 922,593.58 | 0.00 | 8,292,305.49 |

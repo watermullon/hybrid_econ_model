@@ -53,7 +53,7 @@ failure_never_reaches_hurdle,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a l
 failure_never_reaches_hurdle,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 failure_never_reaches_hurdle,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 failure_never_reaches_hurdle,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
-jon_base_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
+jon_base_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 11.
 jon_base_case,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 jon_base_case,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 jon_base_case,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
@@ -61,7 +61,7 @@ jon_base_case,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion t
 jon_base_case,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
 jon_base_case,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 jon_base_case,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
-jon_downside_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 18.
+jon_downside_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 20.
 jon_downside_case,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 jon_downside_case,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 jon_downside_case,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
@@ -77,10 +77,11 @@ jon_property_shock_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early ye
 jon_property_shock_25,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
 jon_property_shock_25,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
 jon_property_shock_25,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+jon_property_shock_25,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
 jon_property_shock_25,COVENANT_BREACH_HF_INJECTION,high,LTV covenant breached; HF injected equity to cure the debt shortfall.
 jon_property_shock_25,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 jon_property_shock_25,RE_NAV_IMPAIRMENT,medium,Real estate NAV fell by more than the configured impairment threshold.
-jon_property_shock_40,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 11.
+jon_property_shock_40,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 12.
 jon_property_shock_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 jon_property_shock_40,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 jon_property_shock_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
@@ -89,13 +90,20 @@ jon_property_shock_40,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hur
 jon_property_shock_40,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 jon_property_shock_40,COVENANT_BREACH_HF_INJECTION,high,LTV covenant breached; HF injected equity to cure the debt shortfall.
 jon_property_shock_40,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
-jon_property_shock_40,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
 jon_property_shock_40,RE_NAV_IMPAIRMENT,medium,Real estate NAV fell by more than the configured impairment threshold.
-jon_upside_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 6.
+five_million_fund,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 12.
+five_million_fund,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+five_million_fund,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+five_million_fund,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+five_million_fund,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+five_million_fund,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+five_million_fund,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+five_million_fund,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+jon_upside_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 8.
 jon_upside_case,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+jon_upside_case,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 jon_upside_case,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 jon_upside_case,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
 jon_upside_case,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
 jon_upside_case,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 jon_upside_case,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
-jon_upside_case,LP_GOOD_IRR_GP_LARGE_RESIDUAL,medium,LP IRR is attractive while GP residual NAV is large.

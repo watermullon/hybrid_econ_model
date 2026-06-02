@@ -90,7 +90,7 @@ scenarios:
       annual_returns: [-0.20, 0.10, 0.15, 0.03, 0.24, 0.04, 0.13, 0.18, -0.12, 0.28, 0.12, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08]
 
   jon_base_case:
-    description: "Deal 1 base case — 116-unit Class C value-add multifamily, Southwest US. $23M purchase, $3.5M equity, $16M senior + $2.5M assumed liabilities. NOI $1.28M Y1 ramping to $2.15M stabilized. 7.5% IO debt. Refi Y4/Y7 at 70% LTV. HF 13% base. Cashflow routing 60/25/15."
+    description: "Deal 1 base case — 116-unit Class C value-add multifamily, Southwest US. $13M purchase, $3M equity, $10M senior debt. NOI $720k Y1 ramping to $1.21M stabilized. 7.5% IO debt. Refi Y4/Y7 at 70% LTV. HF 13% base. Cashflow routing 60/25/15."
     years: 20
     real_estate_model:
       mode: "bottom_up"
@@ -120,17 +120,17 @@ scenarios:
     deal_overrides:
       jon_deal_1:
         operations:
-          current_noi: 1000000
-          stabilized_noi: 1600000
+          current_noi: 565000
+          stabilized_noi: 900000
           years_to_stabilization: 5
           annual_noi_growth_after_stabilization: 0.01
         capex:
           annual_capex:
-            1: 600000
-            2: 500000
-            3: 350000
-            4: 200000
-            5: 100000
+            1: 340000
+            2: 280000
+            3: 200000
+            4: 115000
+            5: 55000
           recurring_capex_pct_of_noi: 0.05
         valuation:
           annual_value_growth: 0.01
@@ -241,6 +241,33 @@ scenarios:
         hf_reinvestment_pct: 0.25
         reserve_pct: 0.15
 
+  five_million_fund:
+    description: "$5M LP raise — $3M deployed into real estate equity, $2M into hedge fund. No initial reserve. LP hurdle $10M (2x). Same RE and HF assumptions as jon_base_case. Cashflow routing 60/25/15."
+    years: 20
+    lp_capital_override: 5000000
+    allocation:
+      method: "fixed"
+      real_estate_allocation_pct: 0.60
+      hedge_fund_allocation_pct: 0.40
+      reserve_allocation_pct: 0.00
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
   jon_upside_case:
     description: "Deal 1 upside — faster lease-up, stronger NOI, 5% value growth, better HF returns (25%)."
     years: 20
@@ -249,15 +276,15 @@ scenarios:
     deal_overrides:
       jon_deal_1:
         operations:
-          current_noi: 1500000
-          stabilized_noi: 2500000
+          current_noi: 850000
+          stabilized_noi: 1410000
           years_to_stabilization: 3
           annual_noi_growth_after_stabilization: 0.04
         capex:
           annual_capex:
-            1: 350000
-            2: 250000
-            3: 150000
+            1: 200000
+            2: 140000
+            3: 85000
           recurring_capex_pct_of_noi: 0.025
         valuation:
           annual_value_growth: 0.05

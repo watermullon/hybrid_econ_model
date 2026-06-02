@@ -286,6 +286,7 @@ class Scenario(BaseModel):
     real_estate_model: dict[str, Any] | None = None
     deal_overrides: dict[str, Any] | None = None
     refinance_events: list[RefinanceEvent] = Field(default_factory=list)
+    lp_capital_override: float | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
     def validate_years(self) -> "Scenario":
