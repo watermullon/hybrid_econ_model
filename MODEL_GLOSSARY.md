@@ -4,7 +4,7 @@ This document explains the parameters and assumptions used in the Hybrid Fund Ec
 
 ---
 
-## 🏗️ Core Abbreviations & Concepts
+## ️ Core Abbreviations & Concepts
 
 - **LP (Limited Partner):** The investor who provides the majority of the capital.
 - **GP (General Partner):** The manager who runs the fund.
@@ -18,7 +18,7 @@ This document explains the parameters and assumptions used in the Hybrid Fund Ec
 
 ---
 
-## ⚙️ Global Model Settings (`model_config.yaml`)
+## ️ Global Model Settings (`model_config.yaml`)
 
 These settings apply to every scenario by default.
 
@@ -38,8 +38,8 @@ These settings apply to every scenario by default.
 
 ### Fees (`fees`)
 - **RE Asset Management Fee:** A fee paid to the GP for managing the properties.
-  - **Rate:** The percentage fee (e.g., 3%).
-  - **Basis:** What the fee is calculated on (usually Gross Rent or NOI).
+ - **Rate:** The percentage fee (e.g., 3%).
+ - **Basis:** What the fee is calculated on (usually Gross Rent or NOI).
 - **Hedge Fund Fees:** Fees for the liquid portfolio. Often modeled as "net returns," meaning the returns you enter already have fees taken out.
 
 ### Cashflow Routing (`cashflow_routing`)
@@ -50,7 +50,7 @@ These settings apply to every scenario by default.
 
 ---
 
-## 🏢 Real Estate Parameters (`deals.yaml` or `scenarios.yaml`)
+## Real Estate Parameters (`deals.yaml` or `scenarios.yaml`)
 
 Real estate can be modeled "Top-Down" (general assumptions) or "Bottom-Up" (specific properties).
 
@@ -63,8 +63,8 @@ Real estate can be modeled "Top-Down" (general assumptions) or "Bottom-Up" (spec
 ### Debt & Financing (`debt`)
 - **Interest Rate:** The annual cost of the loan.
 - **Amortization Type:** 
-  - **Interest Only:** You only pay the interest each year; the loan balance stays the same.
-  - **Fixed Debt Service:** You pay a flat dollar amount each year that covers both interest and some principal.
+ - **Interest Only:** You only pay the interest each year; the loan balance stays the same.
+ - **Fixed Debt Service:** You pay a flat dollar amount each year that covers both interest and some principal.
 - **DSCR (Debt Service Coverage Ratio):** A safety check. It's the property's profit (NOI) divided by the debt payment. A ratio of 1.25x means you have 25% more profit than you need to pay the loan.
 
 ### Refinancing (`refinance`)
@@ -73,14 +73,14 @@ Real estate can be modeled "Top-Down" (general assumptions) or "Bottom-Up" (spec
 
 ---
 
-## 📈 Hedge Fund Parameters
+## Hedge Fund Parameters
 
 - **Annual Returns:** A list of the expected performance for the liquid portfolio each year (e.g., 15%, -5%, 20%).
 - **Harvest Rate:** What percent of *gains* are pulled out of the Hedge Fund each year to be used elsewhere (like paying the LP).
 
 ---
 
-## 🚨 Risk & Success Flags (`flag_thresholds`)
+## Risk & Success Flags (`flag_thresholds`)
 
 The model automatically "flags" results to highlight risks or exceptional outcomes.
 - **HF Major Drawdown:** Triggers if the Hedge Fund loses more than a certain percentage in one year.
@@ -90,7 +90,7 @@ The model automatically "flags" results to highlight risks or exceptional outcom
 
 ---
 
-## 🔄 Liquidity Triggers
+## Liquidity Triggers
 
 - **Hurdle Completion Trigger:** A specialized logic that "scans" the fund's assets. If it sees that the fund has enough combined cash (from the Reserve, Hedge Fund, and Refinancing) to finish paying the LP their 2.0x, it will automatically "trigger" those events to end the scenario.
 - **Backend Liquidity Strategy:** A scheduled plan to refinance properties in specific years (e.g., years 5, 7, and 10) to generate the cash needed to pay the LP.
