@@ -2583,10 +2583,36 @@ def render_simulator_tab(
                 st.info("No cash routed this year.")
 
 
+def check_password() -> bool:
+    """Return True if the user has entered the correct password, False otherwise."""
+    import streamlit as st
+
+    password = st.secrets.get("password", "")
+    if not password:
+        return True
+
+    if st.session_state.get("authenticated"):
+        return True
+
+    st.title("Hybrid Fund Model")
+    entered = st.text_input("Password", type="password", placeholder="Enter password to access")
+    if st.button("Enter"):
+        if entered == password:
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    return False
+
+
 def main() -> None:
     import streamlit as st
 
     st.set_page_config(page_title="Hybrid Fund Model", layout="wide")
+
+    if not check_password():
+        st.stop()
+
     st.title("Hybrid Fund Model")
     st.caption("LP hurdle is based on actual cash distributions received, not NAV appreciation. Nothing here saves to YAML or output files.")
 
