@@ -156,7 +156,7 @@ scenarios:
         hf_reinvestment_pct: 0.25
         reserve_pct: 0.15
 
-  jon_property_shock:
+  jon_property_shock_25:
     description: "Deal 1 property shock — 25% value drop in Year 2 (market correction), 5-year recovery back to pre-shock trajectory. HF 13% base. Cashflow routing 60/25/15."
     years: 20
     real_estate_model:
@@ -172,6 +172,57 @@ scenarios:
             5: 0.059
             6: 0.059
             7: 0.059
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  jon_property_shock_40:
+    description: "Deal 1 severe shock — 40% value drop in Year 2, property deeply underwater (debt > value). 5-year recovery at 10.8%/yr. Tests LP resilience when all scheduled refis fail. HF 13% base. Cashflow routing 60/25/15."
+    years: 20
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      jon_deal_1:
+        valuation:
+          annual_value_growth: 0.03
+          value_growth_by_year:
+            2: -0.40
+            3: 0.108
+            4: 0.108
+            5: 0.108
+            6: 0.108
+            7: 0.108
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
     real_estate:
       initial_noi_yield: 0.055
       annual_noi_growth: 0.03

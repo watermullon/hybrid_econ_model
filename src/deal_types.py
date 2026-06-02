@@ -47,6 +47,7 @@ class DealDebt(BaseModel):
     amortization_years: int | None = Field(default=None, gt=0)
     dscr_minimum: float | None = Field(default=None, ge=0)
     recourse: str = "unknown"
+    ltv_covenant: float | None = Field(default=None, ge=0, le=1)
 
 
 class DealCapex(BaseModel):
@@ -158,6 +159,10 @@ class DealYearResult:
     value_to_new_equity_multiple: float | None
     new_equity_required: float
     refinance_proceeds_use: str
+    covenant_breach: bool = False
+    covenant_ltv: float | None = None
+    covenant_paydown_required: float = 0.0
+    covenant_paydown_applied: float = 0.0
 
 
 @dataclass
@@ -188,3 +193,6 @@ class RealEstatePortfolioYearResult:
     deal_nav: float
     entry_equity_cushion: float
     value_to_new_equity_multiple: float | None
+    covenant_breach: bool = False
+    covenant_paydown_required: float = 0.0
+    covenant_paydown_applied: float = 0.0

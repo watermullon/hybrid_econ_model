@@ -407,6 +407,7 @@ class YearlyResult:
     hf_nav_liquidated_for_hurdle: float = 0.0
     refi_proceeds_for_hurdle: float = 0.0
     re_nav_sold_for_hurdle: float = 0.0
+    covenant_hf_injection: float = 0.0
     event_flag: str = ""
 
 

@@ -36,6 +36,7 @@ deals:
       amortization_years: null
       dscr_minimum: 1.25
       recourse: "unknown"
+      ltv_covenant: 0.80
 
     capex:
       annual_capex:

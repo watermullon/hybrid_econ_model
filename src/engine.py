@@ -98,6 +98,7 @@ def run_scenario(
             if deal.enabled and deal.acquisition_year == 1
         }
         cumulative_refi_liability_by_deal = {deal_name: 0.0 for deal_name in effective_deals.deals}
+        cumulative_debt_paydown_by_deal: dict[str, float] = {deal_name: 0.0 for deal_name in effective_deals.deals}
         initial_portfolio_year, _ = build_re_portfolio_year(
             scenario_name=name,
             deals=effective_deals,
@@ -134,6 +135,8 @@ def run_scenario(
     initial_re_nav = re_nav
     initial_hf_nav = hf_nav
 
+    if real_estate_mode != "bottom_up":
+        cumulative_debt_paydown_by_deal: dict[str, float] = {}
     retained_cash = 0.0
     lp_cumulative_distribution = 0.0
     gp_cumulative_fees = 0.0
@@ -172,6 +175,7 @@ def run_scenario(
         acquisition_funding_source = ""
 
         portfolio_year = None
+        covenant_hf_injection = 0.0
         if real_estate_mode == "bottom_up":
             if effective_deals is None:
                 raise ValueError(f"Scenario '{name}' uses bottom_up real estate mode but no deals were provided.")
@@ -223,8 +227,12 @@ def run_scenario(
                 deals=effective_deals,
                 funded_deal_names=funded_deal_names,
                 cumulative_refi_liability_by_deal=cumulative_refi_liability_by_deal,
+                cumulative_debt_paydown_by_deal=cumulative_debt_paydown_by_deal,
+                available_hf_for_cure=hf_nav,
             )
             deal_cashflows.extend(deal_rows)
+            covenant_hf_injection = portfolio_year.covenant_paydown_applied
+            hf_nav -= covenant_hf_injection
 
         acquisition_ending_retained_cash = retained_cash
         acquisition_ending_reserve = reserve_nav
@@ -461,6 +469,8 @@ def run_scenario(
         )
 
         event_flag = ""
+        if covenant_hf_injection > 0:
+            event_flag = append_event_text(event_flag, "COVENANT_BREACH_HF_INJECTION")
         if acquisition_unfunded_shortfall > 0:
             event_flag = append_event_text(event_flag, "ACQUISITION_FUNDING_SHORTFALL")
         if re_cashflow_shortfall > 0:
@@ -641,6 +651,7 @@ def run_scenario(
                 hf_nav_liquidated_for_hurdle=trigger_result["from_hf_liquidation"],
                 refi_proceeds_for_hurdle=trigger_result["from_refi"],
                 re_nav_sold_for_hurdle=trigger_result["from_re_sale"],
+                covenant_hf_injection=covenant_hf_injection,
                 event_flag=event_flag,
             )
         )
@@ -1129,6 +1140,9 @@ def build_flags(
         add("LP_REDEEMED_VIA_REFI", "medium", "LP hurdle completion used refinance proceeds.")
     if any(row.trigger_cash_from_re_sale > 0 for row in cashflows):
         add("LP_REDEEMED_VIA_PARTIAL_RE_SALE", "medium", "LP hurdle completion used partial real estate sale proceeds.")
+
+    if any(row.covenant_hf_injection > 0 for row in cashflows):
+        add("COVENANT_BREACH_HF_INJECTION", "high", "LTV covenant breached; HF injected equity to cure the debt shortfall.")
 
     if any(row.refinance_proceeds > 0 for row in cashflows):
         add("REFINANCE_EVENT_OCCURRED", "info", "One or more configured refinance events generated proceeds.")

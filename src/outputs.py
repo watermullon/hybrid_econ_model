@@ -190,6 +190,7 @@ CASHFLOW_COLUMNS = [
     "hf_nav_liquidated_for_hurdle",
     "refi_proceeds_for_hurdle",
     "re_nav_sold_for_hurdle",
+    "covenant_hf_injection",
     "gp_fees",
     "gp_cumulative_fees",
     "gp_residual_nav",
