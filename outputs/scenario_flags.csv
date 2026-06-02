@@ -70,6 +70,15 @@ jon_downside_case,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle 
 jon_downside_case,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 jon_downside_case,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
 jon_downside_case,LONG_ZERO_DISTRIBUTION_PERIOD,medium,LP experienced a long streak of zero-distribution years.
+jon_property_shock,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
+jon_property_shock,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+jon_property_shock,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+jon_property_shock,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+jon_property_shock,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+jon_property_shock,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+jon_property_shock,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+jon_property_shock,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+jon_property_shock,RE_NAV_IMPAIRMENT,medium,Real estate NAV fell by more than the configured impairment threshold.
 jon_upside_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 6.
 jon_upside_case,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 jon_upside_case,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.

@@ -69,6 +69,7 @@ class DealValuation(BaseModel):
     exit_cap_rate: float | None = Field(default=None, gt=0)
     annual_value_growth: float = 0.0
     stabilized_value: float | None = Field(default=None, ge=0)
+    value_growth_by_year: dict[int, float] = Field(default_factory=dict)
 
 
 class DealRefinance(BaseModel):

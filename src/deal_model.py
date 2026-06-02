@@ -71,6 +71,14 @@ def calculate_capex(deal: DealConfig, relative_year: int, noi: float) -> float:
 
 def calculate_asset_value(deal: DealConfig, relative_year: int, noi: float) -> float:
     if deal.valuation.method == "growth":
+        by_year = deal.valuation.value_growth_by_year
+        if by_year:
+            # Compound year by year using per-year overrides where specified
+            value = deal.acquisition.asset_value
+            for yr in range(1, relative_year):
+                rate = by_year.get(yr, deal.valuation.annual_value_growth)
+                value *= (1 + rate)
+            return value
         return deal.acquisition.asset_value * ((1 + deal.valuation.annual_value_growth) ** (relative_year - 1))
     if deal.valuation.method == "cap_rate":
         if deal.valuation.exit_cap_rate is None:
