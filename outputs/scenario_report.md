@@ -18,8 +18,8 @@ Scenarios are run on a diagnostic horizon set in the YAML inputs, currently 20 y
 | failure_never_reaches_hurdle | Y20 | 0.07x | 2.00x | -18.5% | 3.6% | No |  | Moderate yield | No |  | $0 | $0 | $659,359 | $4,945,192 | Yes | $0 | Value hurdle reached but liquidity constrained |
 | jon_base_case | Y9 | 2.00x | 2.00x | 8.5% | 8.5% | Yes | Y9 | Backend-heavy | Yes | Y9 | $11,332,919 | $0 | $20,000,000 | $1,583,940 | Yes | $13,931,349 | Hurdle trigger executed |
 | jon_downside_case | Y18 | 2.00x | 2.00x | 4.2% | 4.2% | Yes | Y18 | Backend-heavy | Yes | Y18 | $14,874,343 | $760,597 | $20,000,000 | $1,455,020 | Yes | $12,936,519 | Hurdle trigger executed |
-| jon_property_shock_25 | Y9 | 2.00x | 2.00x | 8.6% | 8.6% | Yes | Y9 | Backend-heavy | Yes | Y9 | $12,419,285 | $0 | $20,000,000 | $1,818,352 | Yes | $12,008,229 | Hurdle trigger executed |
-| jon_property_shock_40 | Y8 | 2.00x | 2.00x | 9.7% | 9.7% | Yes | Y8 | Backend-heavy | Yes | Y8 | $10,313,606 | $0 | $20,000,000 | $1,806,494 | Yes | $12,237,907 | Hurdle trigger executed |
+| jon_property_shock_25 | Y11 | 2.00x | 2.00x | 7.3% | 7.3% | Yes | Y11 | Backend-heavy | Yes | Y11 | $10,266,122 | $0 | $20,000,000 | $2,536,073 | Yes | $16,072,128 | Hurdle trigger executed |
+| jon_property_shock_40 | Y11 | 2.00x | 2.00x | 7.5% | 7.5% | Yes | Y11 | Backend-heavy | Yes | Y11 | $6,685,702 | $0 | $20,000,000 | $3,015,795 | Yes | $12,713,960 | Hurdle trigger executed |
 | jon_upside_case | Y6 | 2.00x | 2.00x | 13.0% | 13.0% | Yes | Y6 | Backend-heavy | Yes | Y6 | $11,876,237 | $0 | $20,000,000 | $1,437,689 | Yes | $13,040,413 | Hurdle trigger executed |
 
 ## Scenario Notes
@@ -275,17 +275,17 @@ Deal 1 property shock — 25% value drop in Year 2 (market correction), 5-year r
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 8.6%
-- LP economic IRR: 8.6%
-- Years until LP 2x cash return: 9
+- LP cash IRR: 7.3%
+- LP economic IRR: 7.3%
+- Years until LP 2x cash return: 11
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 9
-- Trigger HF liquidation used: $12,419,285
+- Hurdle trigger year: 11
+- Trigger HF liquidation used: $10,266,122
 - Trigger refi used: $0
 - Total cash distributed to LP: $20,000,000
-- Total cash reinvested into HF: $1,818,352
-- GP residual NAV: $12,008,229
+- Total cash reinvested into HF: $2,536,073
+- GP residual NAV: $16,072,128
 - GP survivability risk: True
 - Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Covenant Breach Hf Injection, Refinance event occurred, RE NAV impairment
 
@@ -306,6 +306,8 @@ Annual bottom-up RE portfolio:
 | 7.00 | 22,346,533.59 | 14,214,000.00 | 2,500,000.00 | 2,349,363.05 | 2.20 | 1,189,338.53 | 1,392,859.17 | 5,632,533.59 |
 | 8.00 | 23,664,979.07 | 14,214,000.00 | 2,500,000.00 | 2,419,843.94 | 2.27 | 1,257,000.18 | 0.00 | 6,950,979.07 |
 | 9.00 | 24,374,928.44 | 14,214,000.00 | 2,500,000.00 | 2,492,439.26 | 2.34 | 1,326,691.69 | 0.00 | 7,660,928.44 |
+| 10.00 | 25,106,176.29 | 14,214,000.00 | 2,500,000.00 | 2,567,212.44 | 2.41 | 1,398,473.94 | 0.00 | 8,392,176.29 |
+| 11.00 | 25,859,361.58 | 14,214,000.00 | 2,500,000.00 | 2,644,228.81 | 2.48 | 1,472,409.66 | 0.00 | 9,145,361.58 |
 
 ### jon_property_shock_40
 
@@ -313,19 +315,19 @@ Deal 1 severe shock — 40% value drop in Year 2, property deeply underwater (de
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 9.7%
-- LP economic IRR: 9.7%
-- Years until LP 2x cash return: 8
+- LP cash IRR: 7.5%
+- LP economic IRR: 7.5%
+- Years until LP 2x cash return: 11
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 8
-- Trigger HF liquidation used: $10,313,606
+- Hurdle trigger year: 11
+- Trigger HF liquidation used: $6,685,702
 - Trigger refi used: $0
 - Total cash distributed to LP: $20,000,000
-- Total cash reinvested into HF: $1,806,494
-- GP residual NAV: $12,237,907
+- Total cash reinvested into HF: $3,015,795
+- GP residual NAV: $12,713,960
 - GP survivability risk: True
-- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Covenant Breach Hf Injection, Refinance event occurred, RE NAV impairment
+- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, Slow time horizon drift, GP survivability risk, Hurdle trigger executed, Trigger attempted but insufficient, LP redeemed via HF liquidation, Covenant Breach Hf Injection, Refinance event occurred, HF major drawdown, RE NAV impairment
 
 #### Bottom-Up Deal Summary
 
@@ -343,6 +345,9 @@ Annual bottom-up RE portfolio:
 | 6.00 | 19,334,617.83 | 11,371,200.00 | 2,500,000.00 | 2,280,935.00 | 2.67 | 1,336,857.60 | 0.00 | 5,463,417.83 |
 | 7.00 | 21,422,756.56 | 11,371,200.00 | 2,500,000.00 | 2,349,363.05 | 2.75 | 1,402,548.53 | 3,534,111.35 | 7,551,556.56 |
 | 8.00 | 23,736,414.27 | 11,371,200.00 | 2,500,000.00 | 2,419,843.94 | 2.84 | 1,470,210.18 | 0.00 | 9,865,214.27 |
+| 9.00 | 24,448,506.70 | 11,371,200.00 | 2,500,000.00 | 2,492,439.26 | 2.92 | 1,539,901.69 | 0.00 | 10,577,306.70 |
+| 10.00 | 25,181,961.90 | 11,371,200.00 | 2,500,000.00 | 2,567,212.44 | 3.01 | 1,611,683.94 | 0.00 | 11,310,761.90 |
+| 11.00 | 25,937,420.75 | 11,371,200.00 | 2,500,000.00 | 2,644,228.81 | 3.10 | 1,685,619.66 | 0.00 | 12,066,220.75 |
 
 ### jon_upside_case
 

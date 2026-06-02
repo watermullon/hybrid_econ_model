@@ -294,8 +294,9 @@ def run_scenario(
             active_deal_count = portfolio_year.active_deal_count
 
         hf_return = scenario.hedge_fund.annual_returns[year - 1]
-        hf_nav_pre_harvest = hf_opening_nav * (1 + hf_return)
-        hf_gain = max(0.0, hf_nav_pre_harvest - hf_opening_nav)
+        hf_nav_post_injection = hf_nav  # hf_nav reduced by covenant injection (if any)
+        hf_nav_pre_harvest = hf_nav_post_injection * (1 + hf_return)
+        hf_gain = max(0.0, hf_nav_pre_harvest - hf_nav_post_injection)
         hf_harvest = hf_gain * distribution_policy.hf_positive_return_harvest_rate
         hf_harvest_generated = hf_harvest
         hf_nav = hf_nav_pre_harvest - hf_harvest

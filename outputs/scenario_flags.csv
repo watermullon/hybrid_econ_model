@@ -70,7 +70,7 @@ jon_downside_case,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle 
 jon_downside_case,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 jon_downside_case,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
 jon_downside_case,LONG_ZERO_DISTRIBUTION_PERIOD,medium,LP experienced a long streak of zero-distribution years.
-jon_property_shock_25,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
+jon_property_shock_25,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 11.
 jon_property_shock_25,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 jon_property_shock_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 jon_property_shock_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
@@ -80,7 +80,7 @@ jon_property_shock_25,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion
 jon_property_shock_25,COVENANT_BREACH_HF_INJECTION,high,LTV covenant breached; HF injected equity to cure the debt shortfall.
 jon_property_shock_25,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 jon_property_shock_25,RE_NAV_IMPAIRMENT,medium,Real estate NAV fell by more than the configured impairment threshold.
-jon_property_shock_40,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 8.
+jon_property_shock_40,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 11.
 jon_property_shock_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 jon_property_shock_40,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 jon_property_shock_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
@@ -89,6 +89,7 @@ jon_property_shock_40,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hur
 jon_property_shock_40,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 jon_property_shock_40,COVENANT_BREACH_HF_INJECTION,high,LTV covenant breached; HF injected equity to cure the debt shortfall.
 jon_property_shock_40,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
+jon_property_shock_40,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
 jon_property_shock_40,RE_NAV_IMPAIRMENT,medium,Real estate NAV fell by more than the configured impairment threshold.
 jon_upside_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 6.
 jon_upside_case,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.

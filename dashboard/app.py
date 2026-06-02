@@ -131,6 +131,10 @@ FLAG_TRANSLATIONS = {
         "tone": "amber",
         "text": "The LP redemption used partial real estate sale proceeds.",
     },
+    "COVENANT_BREACH_HF_INJECTION": {
+        "tone": "amber",
+        "text": "The property value fell below the LTV covenant threshold. The hedge fund injected equity to pay down debt and cure the breach.",
+    },
 }
 
 
@@ -2383,9 +2387,38 @@ def render_event_detail(row: pd.Series, scenario_df: pd.DataFrame, max_hf_liq_pc
             "</div>", unsafe_allow_html=True,
         )
 
+    # Covenant breach with HF equity injection
+    covenant_injection = float(row.get("covenant_hf_injection", 0) or 0)
+    if covenant_injection > 0:
+        has_event = True
+        gross_value = float(row.get("re_gross_asset_value", 0) or 0)
+        new_debt = float(row.get("re_debt_balance", 0) or 0)
+        old_debt = new_debt + covenant_injection
+        old_ltv = old_debt / gross_value if gross_value > 0 else 0
+        new_ltv = new_debt / gross_value if gross_value > 0 else 0
+        old_debt_service = old_debt * 0.075
+        new_debt_service = new_debt * 0.075
+        annual_saving = old_debt_service - new_debt_service
+        st.markdown(
+            "<div style='background:#fff3e0;color:#7a3b00;padding:12px;border-radius:6px;margin-bottom:8px;'>"
+            f"<b>LTV covenant breach cured — Year {year}</b><br><br>"
+            f"<b>What happened:</b> Property value fell to <b>{format_money(gross_value)}</b>. "
+            f"Existing debt of <b>{format_money(old_debt)}</b> pushed LTV to <b>{old_ltv:.0%}</b>, "
+            f"above the 80% maintenance covenant.<br><br>"
+            f"<b>Cure:</b> Hedge fund injected <b>{format_money(covenant_injection)}</b> to pay down debt.<br>"
+            f"Debt reduced: <b>{format_money(old_debt)}</b> → <b>{format_money(new_debt)}</b> "
+            f"(LTV: {old_ltv:.0%} → <b>{new_ltv:.0%}</b>)<br><br>"
+            f"<b>Ongoing benefit:</b> Annual debt service drops by <b>{format_money(annual_saving)}</b>/yr "
+            f"({format_money(old_debt_service)} → {format_money(new_debt_service)})<br>"
+            f"<span style='font-size:11px;'>The HF loses this capital from its compounding base, "
+            f"slowing future growth. Lower debt also improves future refi capacity.</span>"
+            "</div>", unsafe_allow_html=True,
+        )
+
     # Any other event flags not already rendered above
     event_flag = str(row.get("event_flag", "") or "")
-    handled = {"HURDLE_COMPLETION_TRIGGER_EXECUTED", "HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT", "REFINANCE_EVENT_OCCURRED"}
+    handled = {"HURDLE_COMPLETION_TRIGGER_EXECUTED", "HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT",
+               "REFINANCE_EVENT_OCCURRED", "COVENANT_BREACH_HF_INJECTION"}
     for part in event_flag.split(";"):
         part = part.strip()
         if part and part not in handled:
@@ -2631,15 +2664,20 @@ def render_simulator_tab(
                 balance=re_closing_bal,
             )
 
-            # HF — split appreciation / reinvestment / liquidation
+            # HF — split appreciation / reinvestment / injection / liquidation
             hf_reinvestment = float(current_row.get("re_cashflow_to_hf", 0) or 0) + float(current_row.get("hf_harvest_to_hf", 0) or 0)
             hf_liquidated = float(current_row.get("hf_nav_liquidated_for_hurdle", 0) or 0)
+            covenant_injection = float(current_row.get("covenant_hf_injection", 0) or 0)
             hf_raw_change = float(current_row.get("hf_closing_nav", 0) or 0) - float(current_row.get("hf_opening_nav", 0) or 0)
-            hf_appreciation = hf_raw_change - hf_reinvestment + hf_liquidated
+            hf_appreciation = hf_raw_change - hf_reinvestment + hf_liquidated + covenant_injection
             hf_opening_val = float(current_row.get("hf_opening_nav", 0) or 0)
-            hf_rate = hf_appreciation / hf_opening_val if hf_opening_val > 0 else 0
+            hf_post_injection = hf_opening_val - covenant_injection
+            hf_rate = hf_appreciation / hf_post_injection if hf_post_injection > 0 else 0
             hf_closing_bal = float(current_row.get("hf_closing_nav", 0) or 0)
-            render_bridge_item("Hedge fund appreciation", hf_appreciation, rate=hf_rate, opening=hf_opening_val, balance=hf_closing_bal)
+            if covenant_injection > 0:
+                render_bridge_item("HF equity injected into RE (covenant cure)", -covenant_injection,
+                                   note="Paid down debt to restore LTV below covenant threshold. Reduces HF compounding base.")
+            render_bridge_item("Hedge fund appreciation", hf_appreciation, rate=hf_rate, opening=hf_post_injection, balance=hf_closing_bal)
             if hf_reinvestment > 0:
                 render_bridge_item("RE cashflow reinvested into HF", hf_reinvestment)
             if hf_liquidated > 0:
