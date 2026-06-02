@@ -2,7 +2,7 @@ deals:
   jon_deal_1:
     enabled: true
     acquisition_year: 1
-    description: "Equinox on Indian School — 116-unit Class C value-add, Phoenix AZ. Based on Sandpainter underwriting Apr 2026. Purchaser basis $23M. Existing $21.9M senior @ 8.47% SOFR+4.15% IO. NOI $1.28M T12, occupancy 85%. J-curve: heavy capex early, stabilization Y3-Y5."
+    description: "Deal 1 — 116-unit Class C value-add multifamily, Southwest US. Purchaser basis $23M. $16M senior debt IO. NOI $1.28M T12, occupancy 85%. J-curve: heavy capex early, stabilization Y3-Y5."
 
     acquisition:
       asset_value: 23000000

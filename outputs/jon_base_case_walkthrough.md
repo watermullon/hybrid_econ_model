@@ -1,6 +1,6 @@
 # Jon Base Case - Presenter Notes
 
-**The deal:** Equinox on Indian School, Phoenix AZ. 116-unit Class C multifamily, value-add.
+**The deal:** Deal 1, Southwest US. 116-unit Class C multifamily, value-add.
 
 **The structure:** LP puts in $10M. Fund holds real estate equity, a hedge fund sleeve, and a reserve. LP gets paid out at 2.0x ($20M) before GP takes anything.
 
