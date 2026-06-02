@@ -998,7 +998,10 @@ def render_help_tab(model_config: dict[str, Any], scenario_assumptions: dict[str
     st.caption("Presenter notes for walking someone through the base case year by year.")
     walkthrough_path = ROOT / "outputs" / "jon_base_case_walkthrough.md"
     if walkthrough_path.exists():
-        st.markdown(walkthrough_path.read_text(encoding="utf-8"))
+        content = walkthrough_path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+        # Escape $ signs so Streamlit doesn't interpret them as LaTeX delimiters
+        content = content.replace("$", r"\$")
+        st.markdown(content)
     else:
         st.info("Walkthrough notes not found. Run the model to generate outputs.")
 
