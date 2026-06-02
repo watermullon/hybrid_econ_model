@@ -1,2 +1,6 @@
 .env
-.local.streamlit/secrets.toml
+.local
+.streamlit/secrets.toml
+CLAUDE.md
+GEMINI.md
+noupload/
