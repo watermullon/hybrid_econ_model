@@ -2830,7 +2830,7 @@ def main() -> None:
             st.warning(f"Could not rerun model with dashboard routing controls. Showing saved outputs instead. Error: {exc}")
     cashflows, summary = append_custom_scenario_if_available(cashflows, summary)
 
-    tab_explorer, tab_simulator, tab_configure, tab_help = st.tabs(["Scenario Explorer", "Simulator", "Configure & Run", "Help & Assumptions"])
+    tab_explorer, tab_simulator, tab_configure, tab_help, tab_glossary = st.tabs(["Scenario Explorer", "Simulator", "Configure & Run", "Help & Assumptions", "Glossary"])
 
     with tab_explorer:
         outcome_fig = build_outcome_chart(summary, notes)
@@ -2933,6 +2933,15 @@ def main() -> None:
 
     with tab_help:
         render_help_tab(model_config, scenario_assumptions)
+
+    with tab_glossary:
+        glossary_path = ROOT / "MODEL_GLOSSARY.md"
+        if glossary_path.exists():
+            content = glossary_path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+            content = content.replace("$", r"\$")
+            st.markdown(content)
+        else:
+            st.info("Glossary file not found.")
 
     st.caption(f"{APP_VERSION}. Nothing here saves to YAML or output files.")
 
