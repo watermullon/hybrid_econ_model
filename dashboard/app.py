@@ -20,6 +20,15 @@ SUMMARY_CSV_PATH = ROOT / "outputs" / "scenario_summary.csv"
 SUMMARY_XLSX_PATH = ROOT / "outputs" / "scenario_summary.xlsx"
 MODEL_CONFIG_PATH = ROOT / "inputs" / "model_config.yaml"
 SCENARIOS_PATH = ROOT / "inputs" / "scenarios.yaml"
+CUSTOM_DEFAULTS_PATH = ROOT / "inputs" / "custom_scenario_defaults.yaml"
+
+
+def load_custom_defaults() -> dict[str, Any]:
+    if CUSTOM_DEFAULTS_PATH.exists():
+        with open(CUSTOM_DEFAULTS_PATH, encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        return {"deal": data.get("deal", {}), "fund": data.get("fund", {})}
+    return {"deal": {}, "fund": {}}
 
 # Streamlit may be launched from the repo root, this dashboard directory, or a
 # parent folder. Adding the project root explicitly keeps imports such as
@@ -803,61 +812,65 @@ def render_configure_tab(
         "Results appear in the Scenario Explorer and Simulator tabs as the 'Custom' scenario."
     )
 
+    defaults = load_custom_defaults()
+    d = defaults["deal"]
+    f = defaults["fund"]
+
     with st.form("configure_run_form"):
 
         # ── Deal assumptions ──────────────────────────────────────────────────
         st.subheader("The deal")
         d1, d2, d3 = st.columns(3)
         with d1:
-            purchase_price = st.number_input("Purchase price ($)", min_value=0, value=23_000_000, step=100_000, format="%d")
-            assumed_debt = st.number_input("Assumed / new debt ($)", min_value=0, value=16_000_000, step=100_000, format="%d")
-            assumed_liabilities = st.number_input("Assumed liabilities ($)", min_value=0, value=2_500_000, step=50_000, format="%d")
+            purchase_price = st.number_input("Purchase price ($)", min_value=0, value=int(d.get("purchase_price", 10_000_000)), step=100_000, format="%d")
+            assumed_debt = st.number_input("Assumed / new debt ($)", min_value=0, value=int(d.get("assumed_debt", 7_000_000)), step=100_000, format="%d")
+            assumed_liabilities = st.number_input("Assumed liabilities ($)", min_value=0, value=int(d.get("assumed_liabilities", 0)), step=50_000, format="%d")
         with d2:
-            current_noi = st.number_input("Current NOI ($)", min_value=0, value=1_278_000, step=10_000, format="%d")
-            stabilized_noi = st.number_input("Stabilised NOI ($)", min_value=0, value=2_150_000, step=10_000, format="%d")
-            years_to_stab = st.number_input("Years to stabilisation", min_value=0, max_value=10, value=4, step=1)
+            current_noi = st.number_input("Current NOI ($)", min_value=0, value=int(d.get("current_noi", 555_000)), step=10_000, format="%d")
+            stabilized_noi = st.number_input("Stabilised NOI ($)", min_value=0, value=int(d.get("stabilized_noi", 930_000)), step=10_000, format="%d")
+            years_to_stab = st.number_input("Years to stabilisation", min_value=0, max_value=10, value=int(d.get("years_to_stabilization", 4)), step=1)
         with d3:
-            debt_rate_pct = st.number_input("Debt interest rate (%)", min_value=0.0, max_value=20.0, value=7.5, step=0.25)
-            debt_maturity = st.number_input("Debt maturity (year)", min_value=1, max_value=20, value=5, step=1)
-            noi_growth_pct = st.number_input("NOI growth post-stabilisation (%/yr)", min_value=-10.0, max_value=20.0, value=3.0, step=0.5)
+            debt_rate_pct = st.number_input("Debt interest rate (%)", min_value=0.0, max_value=20.0, value=float(d.get("debt_rate_pct", 7.5)), step=0.25)
+            debt_maturity = st.number_input("Debt maturity (year)", min_value=1, max_value=20, value=int(d.get("debt_maturity_year", 5)), step=1)
+            noi_growth_pct = st.number_input("NOI growth post-stabilisation (%/yr)", min_value=-10.0, max_value=20.0, value=float(d.get("noi_growth_post_stab_pct", 3.0)), step=0.5)
 
         st.divider()
         st.markdown("**Capex schedule**")
         cx1, cx2, cx3, cx4, cx5 = st.columns(5)
         with cx1:
-            capex_y1 = st.number_input("Year 1 ($)", min_value=0, value=500_000, step=10_000, format="%d")
+            capex_y1 = st.number_input("Year 1 ($)", min_value=0, value=int(d.get("capex_y1", 215_000)), step=10_000, format="%d")
         with cx2:
-            capex_y2 = st.number_input("Year 2 ($)", min_value=0, value=400_000, step=10_000, format="%d")
+            capex_y2 = st.number_input("Year 2 ($)", min_value=0, value=int(d.get("capex_y2", 175_000)), step=10_000, format="%d")
         with cx3:
-            capex_y3 = st.number_input("Year 3 ($)", min_value=0, value=250_000, step=10_000, format="%d")
+            capex_y3 = st.number_input("Year 3 ($)", min_value=0, value=int(d.get("capex_y3", 110_000)), step=10_000, format="%d")
         with cx4:
-            capex_y4 = st.number_input("Year 4 ($)", min_value=0, value=150_000, step=10_000, format="%d")
+            capex_y4 = st.number_input("Year 4 ($)", min_value=0, value=int(d.get("capex_y4", 65_000)), step=10_000, format="%d")
         with cx5:
-            recurring_capex_pct = st.number_input("Recurring (% of NOI)", min_value=0.0, max_value=20.0, value=4.0, step=0.5)
+            recurring_capex_pct = st.number_input("Recurring (% of NOI)", min_value=0.0, max_value=20.0, value=float(d.get("recurring_capex_pct_of_noi", 4.0)), step=0.5)
 
         st.divider()
         st.markdown("**Valuation & refinance**")
         v1, v2, v3, v4 = st.columns(4)
         with v1:
-            annual_value_growth_pct = st.number_input("Annual value growth (%)", min_value=-20.0, max_value=30.0, value=3.0, step=0.5)
+            annual_value_growth_pct = st.number_input("Annual value growth (%)", min_value=-20.0, max_value=30.0, value=float(d.get("annual_value_growth_pct", 3.0)), step=0.5)
         with v2:
-            refi_target_years_str = st.text_input("Refi target years (comma-separated)", value="4, 7")
+            refi_target_years_str = st.text_input("Refi target years (comma-separated)", value=str(d.get("refi_target_years", "4, 7")))
         with v3:
-            refi_ltv_pct = st.number_input("Refi LTV (%)", min_value=0.0, max_value=90.0, value=70.0, step=5.0)
+            refi_ltv_pct = st.number_input("Refi LTV (%)", min_value=0.0, max_value=90.0, value=float(d.get("refi_ltv_pct", 70.0)), step=5.0)
         with v4:
-            refi_costs_pct = st.number_input("Refi costs (%)", min_value=0.0, max_value=10.0, value=2.5, step=0.25)
+            refi_costs_pct = st.number_input("Refi costs (%)", min_value=0.0, max_value=10.0, value=float(d.get("refi_costs_pct", 2.5)), step=0.25)
 
         # ── Fund structure ────────────────────────────────────────────────────
         st.subheader("Fund structure")
         f1, f2, f3, f4 = st.columns(4)
         with f1:
-            lp_capital = st.number_input("LP capital ($)", min_value=100_000, value=10_000_000, step=100_000, format="%d")
+            lp_capital = st.number_input("LP capital ($)", min_value=100_000, value=int(f.get("lp_capital", 10_000_000)), step=100_000, format="%d")
         with f2:
-            lp_hurdle_moic = st.number_input("LP hurdle (x MOIC)", min_value=1.0, max_value=5.0, value=2.0, step=0.25)
+            lp_hurdle_moic = st.number_input("LP hurdle (x MOIC)", min_value=1.0, max_value=5.0, value=float(f.get("lp_hurdle_moic", 2.0)), step=0.25)
         with f3:
-            years = st.number_input("Model horizon (years)", min_value=1, max_value=30, value=20, step=1)
+            years = st.number_input("Model horizon (years)", min_value=1, max_value=30, value=int(f.get("model_horizon_years", 20)), step=1)
         with f4:
-            hf_returns_text = st.text_input("HF annual returns (% comma-separated)", value="13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13")
+            hf_returns_text = st.text_input("HF annual returns (% comma-separated)", value=str(f.get("hf_annual_returns", "13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13")))
 
         st.markdown("**Cashflow routing**")
         r1, r2, r3 = st.columns(3)
