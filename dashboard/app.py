@@ -967,6 +967,14 @@ def render_help_tab(model_config: dict[str, Any], scenario_assumptions: dict[str
     """Render the Help & Assumptions tab."""
     import streamlit as st
 
+    # ── About ─────────────────────────────────────────────────────────────────
+    about_path = Path(__file__).resolve().parent / "about.md"
+    if about_path.exists():
+        content = about_path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+        content = content.replace("$", r"\$")
+        st.markdown(content)
+    st.divider()
+
     # ── How to use ────────────────────────────────────────────────────────────
     st.header("How to use this app")
     st.markdown("""
