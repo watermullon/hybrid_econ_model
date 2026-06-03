@@ -90,7 +90,7 @@ scenarios:
       annual_returns: [-0.20, 0.10, 0.15, 0.03, 0.24, 0.04, 0.13, 0.18, -0.12, 0.28, 0.12, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08]
 
   jon_base_case:
-    description: "Deal 1 base case — 116-unit Class C value-add multifamily, Southwest US. $13M purchase, $3M equity, $10M senior debt. NOI $720k Y1 ramping to $1.21M stabilized. 7.5% IO debt. Refi Y4/Y7 at 70% LTV. HF 13% base. Cashflow routing 60/25/15."
+    description: "Deal 1 base case — 116-unit Class C value-add multifamily, Southwest US. $10M purchase, $3M equity, $7M senior debt at 70% LTV. NOI $555k Y1 ramping to $930k stabilized. 7.5% IO debt. Refi Y4/Y7 at 70% LTV. HF 13% base. Cashflow routing 60/25/15."
     years: 20
     real_estate_model:
       mode: "bottom_up"
@@ -120,17 +120,17 @@ scenarios:
     deal_overrides:
       jon_deal_1:
         operations:
-          current_noi: 565000
-          stabilized_noi: 900000
+          current_noi: 435000
+          stabilized_noi: 695000
           years_to_stabilization: 5
           annual_noi_growth_after_stabilization: 0.01
         capex:
           annual_capex:
-            1: 340000
-            2: 280000
-            3: 200000
-            4: 115000
-            5: 55000
+            1: 260000
+            2: 215000
+            3: 155000
+            4: 90000
+            5: 42000
           recurring_capex_pct_of_noi: 0.05
         valuation:
           annual_value_growth: 0.01
@@ -276,15 +276,15 @@ scenarios:
     deal_overrides:
       jon_deal_1:
         operations:
-          current_noi: 850000
-          stabilized_noi: 1410000
+          current_noi: 655000
+          stabilized_noi: 1085000
           years_to_stabilization: 3
           annual_noi_growth_after_stabilization: 0.04
         capex:
           annual_capex:
-            1: 200000
-            2: 140000
-            3: 85000
+            1: 155000
+            2: 110000
+            3: 65000
           recurring_capex_pct_of_noi: 0.025
         valuation:
           annual_value_growth: 0.05

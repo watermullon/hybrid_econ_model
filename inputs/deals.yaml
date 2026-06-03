@@ -2,26 +2,26 @@ deals:
   jon_deal_1:
     enabled: true
     acquisition_year: 1
-    description: "Deal 1 — 116-unit Class C value-add multifamily, Southwest US. Purchaser basis $13M. $10M senior debt IO. NOI $720k T12, occupancy 85%. J-curve: heavy capex early, stabilization Y3-Y5."
+    description: "Deal 1 — 116-unit Class C value-add multifamily, Southwest US. Purchaser basis $10M. $7M senior debt IO at 70% LTV. NOI $555k T12, occupancy 85%. J-curve: heavy capex early, stabilization Y3-Y5."
 
     acquisition:
-      asset_value: 13000000
+      asset_value: 10000000
       value_type: "purchase_price"
-      purchase_price: 13000000
+      purchase_price: 10000000
       new_equity_required: 3000000
       closing_costs: 0
       initial_capex_reserve: 0
 
     capital_stack:
-      assumed_debt: 10000000
+      assumed_debt: 7000000
       assumed_liabilities: 0
       liabilities_written_down: 0
       seller_note: 0
       preferred_equity: 0
 
     operations:
-      current_noi: 720000
-      stabilized_noi: 1210000
+      current_noi: 555000
+      stabilized_noi: 930000
       years_to_stabilization: 4
       annual_noi_growth_after_stabilization: 0.03
       gross_rent: null
@@ -40,10 +40,10 @@ deals:
 
     capex:
       annual_capex:
-        1: 280000
-        2: 225000
-        3: 140000
-        4: 85000
+        1: 215000
+        2: 175000
+        3: 110000
+        4: 65000
       recurring_capex_pct_of_noi: 0.04
 
     valuation:
