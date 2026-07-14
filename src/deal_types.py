@@ -32,11 +32,23 @@ class DealCapitalStack(BaseModel):
 class DealOperations(BaseModel):
     current_noi: float | None = None
     stabilized_noi: float | None = None
+    noi_by_year: dict[int, float] = Field(default_factory=dict)
     years_to_stabilization: int = Field(default=3, ge=0)
     annual_noi_growth_after_stabilization: float = 0.0
     gross_rent: float | None = Field(default=None, ge=0)
     gross_rent_growth: float = 0.0
+    gross_rent_by_year: dict[int, float] = Field(default_factory=dict)
     vacancy_rate: float | None = Field(default=None, ge=0, le=1)
+
+    @field_validator("noi_by_year", "gross_rent_by_year")
+    @classmethod
+    def validate_schedule_years(cls, value: dict[int, float]) -> dict[int, float]:
+        for year, amount in value.items():
+            if year <= 0:
+                raise ValueError("Schedule years must be positive integers.")
+            if amount < 0:
+                raise ValueError("Schedule amounts must be non-negative.")
+        return value
 
 
 class DealDebt(BaseModel):
@@ -44,10 +56,21 @@ class DealDebt(BaseModel):
     maturity_year: int | None = Field(default=None, gt=0)
     amortization_type: AmortizationType = "interest_only"
     annual_debt_service: float | None = Field(default=None, ge=0)
+    debt_balance_by_year: dict[int, float] = Field(default_factory=dict)
     amortization_years: int | None = Field(default=None, gt=0)
     dscr_minimum: float | None = Field(default=None, ge=0)
     recourse: str = "unknown"
     ltv_covenant: float | None = Field(default=None, ge=0, le=1)
+
+    @field_validator("debt_balance_by_year")
+    @classmethod
+    def validate_debt_balance_years(cls, value: dict[int, float]) -> dict[int, float]:
+        for year, amount in value.items():
+            if year <= 0:
+                raise ValueError("Debt balance schedule years must be positive integers.")
+            if amount < 0:
+                raise ValueError("Debt balance schedule amounts must be non-negative.")
+        return value
 
 
 class DealCapex(BaseModel):

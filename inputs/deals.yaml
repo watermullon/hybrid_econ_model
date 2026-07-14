@@ -81,12 +81,24 @@ deals:
       preferred_equity: 0
 
     operations:
-      current_noi: 701409
-      stabilized_noi: 991777
+      current_noi: 701408.98
+      stabilized_noi: 991777.36
+      noi_by_year:
+        1: 792765.97
+        2: 867461.15
+        3: 942838.05
+        4: 966946.09
+        5: 991777.36
       years_to_stabilization: 5
       annual_noi_growth_after_stabilization: 0.03
       gross_rent: 1566747.71
       gross_rent_growth: 0.03
+      gross_rent_by_year:
+        1: 1685558.14
+        2: 1787826.65
+        3: 1891547.52
+        4: 1942908.35
+        5: 1995810.00
       vacancy_rate: 0.07
 
     debt:
@@ -94,17 +106,18 @@ deals:
       maturity_year: 5
       amortization_type: "fixed_annual_debt_service"
       annual_debt_service: 429706.52
+      debt_balance_by_year:
+        1: 5025918.48
+        2: 4973155.84
+        3: 4916436.01
+        4: 4855462.19
+        5: 4789915.33
       amortization_years: null
       dscr_minimum: 1.25
       recourse: "unknown"
 
     capex:
-      annual_capex:
-        1: 800000
-        2: 600000
-        3: 300000
-        4: 100000
-        5: 36000
+      annual_capex: {}
       recurring_capex_pct_of_noi: 0.0
 
     valuation:

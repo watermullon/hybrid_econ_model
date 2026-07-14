@@ -22,6 +22,9 @@ def relative_deal_year(deal: DealConfig, model_year: int) -> int:
 
 
 def calculate_noi(deal: DealConfig, relative_year: int) -> float:
+    if relative_year in deal.operations.noi_by_year:
+        return deal.operations.noi_by_year[relative_year]
+
     current = deal.operations.current_noi
     stabilized = deal.operations.stabilized_noi
     years = deal.operations.years_to_stabilization
@@ -48,9 +51,25 @@ def calculate_noi(deal: DealConfig, relative_year: int) -> float:
 
 
 def calculate_gross_rent(deal: DealConfig, relative_year: int) -> float:
+    if relative_year in deal.operations.gross_rent_by_year:
+        return deal.operations.gross_rent_by_year[relative_year]
     if deal.operations.gross_rent is None:
         return 0.0
+    if deal.operations.gross_rent_by_year and relative_year > max(deal.operations.gross_rent_by_year):
+        last_year = max(deal.operations.gross_rent_by_year)
+        last_value = deal.operations.gross_rent_by_year[last_year]
+        return last_value * ((1 + deal.operations.gross_rent_growth) ** (relative_year - last_year))
     return deal.operations.gross_rent * ((1 + deal.operations.gross_rent_growth) ** (relative_year - 1))
+
+
+def calculate_debt_balance(deal: DealConfig, relative_year: int, prior_debt_paydown: float = 0.0) -> float:
+    if relative_year in deal.debt.debt_balance_by_year:
+        balance = deal.debt.debt_balance_by_year[relative_year]
+    elif deal.debt.debt_balance_by_year and relative_year > max(deal.debt.debt_balance_by_year):
+        balance = deal.debt.debt_balance_by_year[max(deal.debt.debt_balance_by_year)]
+    else:
+        balance = deal.capital_stack.assumed_debt
+    return max(0.0, balance - prior_debt_paydown)
 
 
 def calculate_debt_service(deal: DealConfig, debt_balance: float) -> float:
@@ -175,10 +194,10 @@ def run_deal_year(
         )
 
     relative_year = relative_deal_year(deal, model_year)
-    debt_balance = deal.capital_stack.assumed_debt - prior_debt_paydown
     assumed_liabilities = deal.capital_stack.assumed_liabilities
     noi = calculate_noi(deal, relative_year)
     gross_rent = calculate_gross_rent(deal, relative_year)
+    debt_balance = calculate_debt_balance(deal, relative_year, prior_debt_paydown)
     capex = calculate_capex(deal, relative_year, noi)
     asset_value = calculate_asset_value(deal, relative_year, noi)
 

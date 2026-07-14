@@ -9,7 +9,9 @@ from src.config_loader import load_inputs
 from src.deal_model import (
     calculate_asset_value,
     calculate_capex,
+    calculate_debt_balance,
     calculate_debt_service,
+    calculate_gross_rent,
     calculate_noi,
     calculate_refi_capacity,
     run_deal_year,
@@ -168,6 +170,29 @@ def test_deal_helpers_cover_noi_interpolation_fixed_debt_cap_rate_and_refi_floor
     assert calculate_asset_value(fixed_debt_deal, 2, 1_500_000) == pytest.approx(23_000_000 * 1.03)
     assert calculate_asset_value(cap_rate_deal, 2, 1_500_000) == pytest.approx(18_750_000)
     assert calculate_refi_capacity(underwater_deal, 10_000_000, 16_000_000, 0).refi_capacity == 0
+
+
+def test_oak_cliff_base_deal_matches_workbook_operating_schedule() -> None:
+    _, _, deals = load_inputs(ROOT / "inputs")
+    oak_cliff = deals.deals["oak_cliff"]
+    workbook = load_workbook(ROOT / "reports" / "Blue Lion Multifamily Underwriting.xlsx", data_only=True)
+    sheet = workbook["Oak Cliff UW"]
+
+    workbook_year_one_noi = sheet["C54"].value
+    workbook_year_one_egi = sheet["C47"].value
+    workbook_year_one_debt_balance = sheet["C63"].value
+    workbook_year_one_debt_service = sheet["C64"].value
+    workbook_year_one_cashflow = sheet["C68"].value
+
+    assert calculate_noi(oak_cliff, 1) == pytest.approx(workbook_year_one_noi)
+    assert calculate_gross_rent(oak_cliff, 1) == pytest.approx(workbook_year_one_egi)
+    assert calculate_debt_balance(oak_cliff, 1) == pytest.approx(workbook_year_one_debt_balance)
+    assert calculate_capex(oak_cliff, 1, calculate_noi(oak_cliff, 1)) == 0
+
+    row = run_deal_year(scenario_name="oak", deal_name="oak_cliff", deal=oak_cliff, model_year=1)
+
+    assert row.debt_service == pytest.approx(workbook_year_one_debt_service)
+    assert row.free_cashflow_after_debt_and_capex == pytest.approx(workbook_year_one_cashflow)
 
 
 def test_portfolio_aggregation_handles_inactive_active_multiple_deals_and_overrides() -> None:
