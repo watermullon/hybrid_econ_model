@@ -313,6 +313,11 @@ scenarios:
   oak_cliff_base_no_refi:
     description: "Oak Cliff base case using independent underwriting, no deal-level refi."
     years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
     real_estate_model:
       mode: "bottom_up"
     deal_overrides:
@@ -344,6 +349,11 @@ scenarios:
   oak_cliff_base_year4_refi:
     description: "Oak Cliff base case with year-4 refi using independent valuation ramp."
     years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
     real_estate_model:
       mode: "bottom_up"
     deal_overrides:
@@ -378,6 +388,11 @@ scenarios:
   oak_cliff_year4_refi_to_lp:
     description: "Oak Cliff base case with year-4 refi proceeds distributed directly to LPs."
     years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
     real_estate_model:
       mode: "bottom_up"
     deal_overrides:
@@ -716,6 +731,11 @@ scenarios:
   oak_cliff_downside_no_refi:
     description: "Oak Cliff downside case with slower value growth, weaker HF returns, and no refi."
     years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
     real_estate_model:
       mode: "bottom_up"
     deal_overrides:

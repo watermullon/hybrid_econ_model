@@ -17,6 +17,8 @@ from dashboard.app import (
     parse_flags,
     panel_shape,
     read_dashboard_data,
+    read_assumption_yaml,
+    resolve_walkthrough_key_assumptions,
     run_custom_scenario_in_memory,
 )
 
@@ -112,6 +114,27 @@ def test_project_filter_keeps_only_project_scenarios() -> None:
 
     assert set(filtered_summary["scenario"]) == {"oak_cliff_6m_year5_sale_hf25_backend_liquidation"}
     assert set(filtered_cashflows["scenario"]) == {"oak_cliff_6m_year5_sale_hf25_backend_liquidation"}
+
+
+def test_walkthrough_sidebar_uses_scenario_summary_capital() -> None:
+    _, summary, _ = read_dashboard_data()
+    model_config, scenario_assumptions, _ = read_assumption_yaml()
+    selected = "oak_cliff_6m_year5_sale_hf25_backend_liquidation"
+    row = summary[summary["scenario"] == selected].iloc[0]
+
+    assumptions = resolve_walkthrough_key_assumptions(selected, scenario_assumptions, model_config, row)
+
+    assert assumptions["lp_capital"] == 6_000_000
+    assert assumptions["hurdle_amount"] == 12_000_000
+    assert assumptions["hf_label"] == "25.0%, 25.0%, 25.0%, 25.0%, 25.0%, 25.0%, 25.0%"
+
+
+def test_oak_cliff_saved_outputs_are_resized_away_from_10m() -> None:
+    _, summary, _ = read_dashboard_data()
+    oak = summary[summary["scenario"].str.startswith("oak_cliff")]
+
+    assert not oak.empty
+    assert set(oak["lp_initial_capital"]) == {6_000_000}
 
 
 def test_streamlit_app_exposes_routing_controls(monkeypatch) -> None:

@@ -2618,35 +2618,78 @@ def render_walkthrough_sidebar(
     selected_scenario: str,
     scenario_assumptions: dict[str, Any],
     model_config: dict[str, Any],
+    summary_row: pd.Series | None = None,
 ) -> None:
     """Read-only key assumptions panel shown in sidebar during walkthrough mode."""
     import streamlit as st
 
     st.sidebar.header("Key assumptions")
     st.sidebar.caption("Read-only. Switch off walkthrough mode to adjust routing.")
-    scenario = scenario_assumptions.get(selected_scenario, {})
-    routing = scenario.get("cashflow_routing", model_config.get("cashflow_routing", {}))
-    re_routing = routing.get("re_cashflow", {})
-    lp_capital = model_config.get("model", {}).get("initial_lp_capital", 10_000_000)
-    hurdle = model_config.get("waterfall", {}).get("lp_hurdle_moic", 2.0)
-    hf_returns = scenario.get("hedge_fund", {}).get("annual_returns", [])
-    hf_label = friendly_assumption_list_value("annual_returns", hf_returns) if hf_returns else "n/a"
+    assumptions = resolve_walkthrough_key_assumptions(selected_scenario, scenario_assumptions, model_config, summary_row)
     items = [
-        ("LP capital", format_money(lp_capital)),
-        ("LP hurdle", f"{hurdle:.1f}x = {format_money(lp_capital * hurdle)}"),
-        ("HF annual return", hf_label),
-        ("RE cashflow to LP", f"{re_routing.get('lp_distribution_pct', 0):.0%}"),
-        ("RE cashflow to HF", f"{re_routing.get('hf_reinvestment_pct', 0):.0%}"),
-        ("RE cashflow to reserve", f"{re_routing.get('reserve_pct', 0):.0%}"),
+        ("Scenario", assumptions["scenario_label"]),
+        ("LP capital", format_money(assumptions["lp_capital"])),
+        ("LP hurdle", f"{assumptions['hurdle_moic']:.1f}x = {format_money(assumptions['hurdle_amount'])}"),
+        ("HF annual return", assumptions["hf_label"]),
+        ("RE cashflow to LP", f"{assumptions['re_lp_pct']:.0%}"),
+        ("RE cashflow to HF", f"{assumptions['re_hf_pct']:.0%}"),
+        ("RE cashflow to reserve", f"{assumptions['re_reserve_pct']:.0%}"),
     ]
     for label, val in items:
         st.sidebar.markdown(
-            f"<div style='display:flex;justify-content:space-between;padding:4px 0;"
+            f"<div style='display:flex;justify-content:space-between;gap:8px;padding:4px 0;"
             f"border-bottom:1px solid #eee;font-size:13px;'>"
             f"<span style='color:#555;'>{label}</span>"
-            f"<span style='font-weight:600;'>{val}</span></div>",
+            f"<span style='font-weight:600;text-align:right;'>{val}</span></div>",
             unsafe_allow_html=True,
         )
+
+
+def resolve_walkthrough_key_assumptions(
+    selected_scenario: str,
+    scenario_assumptions: dict[str, Any],
+    model_config: dict[str, Any],
+    summary_row: pd.Series | None = None,
+) -> dict[str, Any]:
+    """Resolve sidebar assumptions from actual outputs first, then scenario overrides, then globals."""
+    scenario = scenario_assumptions.get(selected_scenario, {})
+    routing = scenario.get("cashflow_routing", model_config.get("cashflow_routing", {}))
+    re_routing = routing.get("re_cashflow", {})
+    summary = summary_row if summary_row is not None else pd.Series(dtype=object)
+
+    def missing(value: Any) -> bool:
+        return value is None or pd.isna(value)
+
+    lp_capital = summary.get("lp_initial_capital")
+    if missing(lp_capital):
+        lp_capital = scenario.get("model", {}).get(
+            "initial_lp_capital",
+            model_config.get("model", {}).get("initial_lp_capital", 10_000_000),
+        )
+
+    hurdle = summary.get("lp_hurdle_moic")
+    if missing(hurdle):
+        hurdle = scenario.get("waterfall", {}).get(
+            "lp_hurdle_moic",
+            model_config.get("waterfall", {}).get("lp_hurdle_moic", 2.0),
+        )
+
+    hurdle_amount = summary.get("lp_hurdle_amount")
+    if missing(hurdle_amount):
+        hurdle_amount = float(lp_capital) * float(hurdle)
+
+    hf_returns = scenario.get("hedge_fund", {}).get("annual_returns", [])
+    hf_label = friendly_assumption_list_value("annual_returns", hf_returns) if hf_returns else "n/a"
+    return {
+        "scenario_label": display_name(selected_scenario),
+        "lp_capital": float(lp_capital),
+        "hurdle_moic": float(hurdle),
+        "hurdle_amount": float(hurdle_amount),
+        "hf_label": hf_label,
+        "re_lp_pct": float(re_routing.get("lp_distribution_pct", 0)),
+        "re_hf_pct": float(re_routing.get("hf_reinvestment_pct", 0)),
+        "re_reserve_pct": float(re_routing.get("reserve_pct", 0)),
+    }
 
 
 def render_simulator_tab(
@@ -3012,7 +3055,9 @@ def main() -> None:
         else:
             _sim_scenario = None
         if _sim_scenario:
-            render_walkthrough_sidebar(_sim_scenario, scenario_assumptions, model_config)
+            _summary_match = summary[summary["scenario"] == _sim_scenario]
+            _summary_row = _summary_match.iloc[0] if not _summary_match.empty else None
+            render_walkthrough_sidebar(_sim_scenario, scenario_assumptions, model_config, _summary_row)
         routing_override = default_routing_from_config(model_config)
         routing_valid = True
         trigger_override = default_trigger_from_config(model_config)

@@ -22,16 +22,16 @@ Scenarios are run on a diagnostic horizon set in the YAML inputs, currently 20 y
 | jon_property_shock_40 | Y12 | 2.00x | 2.00x | 6.8% | 6.8% | Yes | Y12 | Backend-heavy | Yes | Y12 | $5,679,324 | $4,354,007 | $20,000,000 | $2,810,033 | Yes | $20,664,356 | Hurdle trigger executed |
 | five_million_fund | Y12 | 2.00x | 2.00x | 6.5% | 6.5% | Yes | Y12 | Backend-heavy | Yes | Y12 | $7,483,231 | $513,907 | $10,000,000 | $667,621 | Yes | $6,257,786 | Hurdle trigger executed |
 | jon_upside_case | Y9 | 2.00x | 2.00x | 8.7% | 8.7% | Yes | Y9 | Backend-heavy | Yes | Y9 | $9,533,742 | $2,288,272 | $20,000,000 | $1,938,908 | Yes | $18,050,088 | Hurdle trigger executed |
-| oak_cliff_base_no_refi | Y7 | 0.12x | 2.00x | -30.6% | 10.6% | No |  | Moderate yield | No |  | $0 | $0 | $1,189,194 | $495,497 | Yes | $0 | Value hurdle reached but liquidity constrained |
-| oak_cliff_base_year4_refi | Y7 | 0.12x | 2.00x | -30.6% | 10.6% | No |  | Moderate yield | No |  | $0 | $0 | $1,189,194 | $495,497 | Yes | $0 | Value hurdle reached but liquidity constrained |
-| oak_cliff_year4_refi_to_lp | Y7 | 0.30x | 2.00x | -22.0% | 11.1% | No |  | Moderate yield | No |  | $0 | $0 | $3,035,012 | $495,497 | Yes | $0 | Value hurdle reached but liquidity constrained |
+| oak_cliff_base_no_refi | Y7 | 0.20x | 2.00x | -24.4% | 10.7% | No |  | Moderate yield | No |  | $0 | $0 | $1,189,194 | $495,497 | Yes | $0 | Value hurdle reached but liquidity constrained |
+| oak_cliff_base_year4_refi | Y7 | 0.20x | 2.00x | -24.4% | 10.7% | No |  | Moderate yield | No |  | $0 | $0 | $1,189,194 | $495,497 | Yes | $0 | Value hurdle reached but liquidity constrained |
+| oak_cliff_year4_refi_to_lp | Y7 | 0.51x | 2.00x | -13.5% | 11.6% | No |  | Moderate yield | No |  | $0 | $0 | $3,035,012 | $495,497 | Yes | $0 | Value hurdle reached but liquidity constrained |
 | oak_cliff_6m_year5_sale_to_lp | Y7 | 1.19x | 2.00x | 3.5% | 12.7% | No |  | Aggressive distribution | No |  | $0 | $0 | $7,157,772 | $495,497 | Yes | $0 | Value hurdle reached but liquidity constrained |
 | oak_cliff_6m_year5_sale_plus_refi_to_lp | Y7 | 1.19x | 2.00x | 3.7% | 13.1% | No |  | Aggressive distribution | No |  | $0 | $0 | $7,157,772 | $495,497 | Yes | $0 | Value hurdle reached but liquidity constrained |
 | oak_cliff_6m_year5_sale_hf25_backend_liquidation | Y7 | 2.00x | 2.00x | 12.7% | 12.7% | Yes | Y7 | Aggressive distribution | Yes | Y7 | $4,544,930 | $0 | $12,000,000 | $495,497 | Yes | $5,893,952 | Hurdle trigger executed |
 | oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6 | Y7 | 2.00x | 2.00x | 12.7% | 12.7% | Yes | Y7 | Aggressive distribution | Yes | Y7 | $4,544,930 | $0 | $12,000,000 | $495,497 | Yes | $5,893,952 | Hurdle trigger executed |
 | oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5 | Y7 | 2.00x | 2.00x | 12.7% | 12.7% | Yes | Y7 | Aggressive distribution | Yes | Y7 | $4,544,930 | $0 | $12,000,000 | $495,497 | Yes | $5,893,952 | Hurdle trigger executed |
 | oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct | Y6 | 2.00x | 2.00x | 13.7% | 13.7% | Yes | Y6 | Backend-heavy | Yes | Y6 | $4,969,690 | $0 | $12,000,000 | $353,911 | Yes | $2,424,254 | Hurdle trigger executed |
-| oak_cliff_downside_no_refi | Y7 | 0.09x | 1.20x | -33.5% | 2.7% | No |  | Backend-heavy | No |  | $0 | $0 | $874,896 | $364,540 | Yes | $0 | LP 2x not achieved |
+| oak_cliff_downside_no_refi | Y7 | 0.15x | 1.40x | -27.7% | 5.1% | No |  | Backend-heavy | No |  | $0 | $0 | $874,896 | $364,540 | Yes | $0 | LP 2x not achieved |
 
 ## Scenario Notes
 
@@ -428,10 +428,10 @@ Annual bottom-up RE portfolio:
 
 Oak Cliff base case using independent underwriting, no deal-level refi.
 
-- LP cash multiple: 0.12x
+- LP cash multiple: 0.20x
 - LP economic multiple: 2.00x
-- LP cash IRR: -30.6%
-- LP economic IRR: 10.6%
+- LP cash IRR: -24.4%
+- LP economic IRR: 10.7%
 - Years until LP 2x cash return: not reached
 - LP cashflow profile: Moderate yield
 - Hurdle completion trigger executed: False
@@ -464,10 +464,10 @@ Annual bottom-up RE portfolio:
 
 Oak Cliff base case with year-4 refi using independent valuation ramp.
 
-- LP cash multiple: 0.12x
+- LP cash multiple: 0.20x
 - LP economic multiple: 2.00x
-- LP cash IRR: -30.6%
-- LP economic IRR: 10.6%
+- LP cash IRR: -24.4%
+- LP economic IRR: 10.7%
 - Years until LP 2x cash return: not reached
 - LP cashflow profile: Moderate yield
 - Hurdle completion trigger executed: False
@@ -500,10 +500,10 @@ Annual bottom-up RE portfolio:
 
 Oak Cliff base case with year-4 refi proceeds distributed directly to LPs.
 
-- LP cash multiple: 0.30x
+- LP cash multiple: 0.51x
 - LP economic multiple: 2.00x
-- LP cash IRR: -22.0%
-- LP economic IRR: 11.1%
+- LP cash IRR: -13.5%
+- LP economic IRR: 11.6%
 - Years until LP 2x cash return: not reached
 - LP cashflow profile: Moderate yield
 - Hurdle completion trigger executed: False
@@ -751,10 +751,10 @@ Annual bottom-up RE portfolio:
 
 Oak Cliff downside case with slower value growth, weaker HF returns, and no refi.
 
-- LP cash multiple: 0.09x
-- LP economic multiple: 1.20x
-- LP cash IRR: -33.5%
-- LP economic IRR: 2.7%
+- LP cash multiple: 0.15x
+- LP economic multiple: 1.40x
+- LP cash IRR: -27.7%
+- LP economic IRR: 5.1%
 - Years until LP 2x cash return: not reached
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: False
