@@ -1,6 +1,6 @@
 # Hybrid Fund Model Context for ChatGPT Analysis
 
-Generated: 2026-07-14T18:00:40
+Generated: 2026-07-14T18:08:49
 
 ## How to read this file
 
