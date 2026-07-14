@@ -27,10 +27,10 @@ Scenarios are run on a diagnostic horizon set in the YAML inputs, currently 20 y
 | oak_cliff_year4_refi_to_lp | Y7 | 0.64x | 2.00x | -9.8% | 12.4% | No |  | Moderate yield | No |  | $0 | $0 | $3,863,051 | $805,812 | Yes | $0 | Value hurdle reached but liquidity constrained |
 | oak_cliff_6m_year5_sale_to_lp | Y6 | 2.00x | 2.00x | 14.5% | 14.5% | Yes | Y6 | Backend-heavy | Yes | Y6 | $3,404,022 | $0 | $12,000,000 | $666,075 | Yes | $4,715,191 | Hurdle trigger executed |
 | oak_cliff_6m_year5_sale_plus_refi_to_lp | Y6 | 2.00x | 2.00x | 15.1% | 15.1% | Yes | Y6 | Backend-heavy | Yes | Y6 | $3,408,904 | $0 | $12,000,000 | $666,075 | Yes | $4,715,191 | Hurdle trigger executed |
-| oak_cliff_6m_year5_sale_hf25_backend_liquidation | Y5 | 2.00x | 2.00x | 15.6% | 15.6% | Yes | Y5 | Backend-heavy | Yes | Y5 | $3,801,637 | $0 | $12,000,000 | $533,537 | Yes | $1,607,510 | Hurdle trigger executed |
-| oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6 | Y5 | 2.00x | 2.00x | 15.6% | 15.6% | Yes | Y5 | Backend-heavy | Yes | Y5 | $3,801,637 | $0 | $12,000,000 | $533,537 | Yes | $1,607,510 | Hurdle trigger executed |
+| oak_cliff_6m_year5_sale_hf25_backend_liquidation | Y7 | 2.00x | 2.00x | 13.7% | 13.7% | Yes | Y7 | Aggressive distribution | Yes | Y7 | $2,984,810 | $0 | $12,000,000 | $805,812 | Yes | $8,358,810 | Hurdle trigger executed |
+| oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6 | Y6 | 2.00x | 2.00x | 14.5% | 14.5% | Yes | Y6 | Backend-heavy | Yes | Y6 | $3,404,022 | $0 | $12,000,000 | $666,075 | Yes | $4,715,191 | Hurdle trigger executed |
 | oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5 | Y5 | 2.00x | 2.00x | 15.6% | 15.6% | Yes | Y5 | Backend-heavy | Yes | Y5 | $3,801,637 | $0 | $12,000,000 | $533,537 | Yes | $1,607,510 | Hurdle trigger executed |
-| oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct | Y5 | 2.00x | 2.00x | 15.6% | 15.6% | Yes | Y5 | Backend-heavy | Yes | Y5 | $3,801,637 | $0 | $12,000,000 | $533,537 | Yes | $1,607,510 | Hurdle trigger executed |
+| oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct | Y7 | 2.00x | 2.00x | 13.7% | 13.7% | Yes | Y7 | Aggressive distribution | Yes | Y7 | $2,984,810 | $0 | $12,000,000 | $805,812 | Yes | $8,358,810 | Hurdle trigger executed |
 | oak_cliff_downside_no_refi | Y7 | 0.17x | 1.49x | -26.6% | 6.1% | No |  | Moderate yield | No |  | $0 | $0 | $1,024,374 | $426,822 | Yes | $0 | LP 2x not achieved |
 
 ## Scenario Notes
@@ -606,19 +606,19 @@ Oak Cliff $6m fund case with year-5 sale proxy to LPs and year-7 backend HF liqu
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 15.6%
-- LP economic IRR: 15.6%
-- Years until LP 2x cash return: 5
-- LP cashflow profile: Backend-heavy
+- LP cash IRR: 13.7%
+- LP economic IRR: 13.7%
+- Years until LP 2x cash return: 7
+- LP cashflow profile: Aggressive distribution
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 5
-- Trigger HF liquidation used: $3,801,637
+- Hurdle trigger year: 7
+- Trigger HF liquidation used: $2,984,810
 - Trigger refi used: $0
 - Total cash distributed to LP: $12,000,000
-- Total cash reinvested into HF: $533,537
-- GP residual NAV: $1,607,510
+- Total cash reinvested into HF: $805,812
+- GP residual NAV: $8,358,810
 - GP survivability risk: True
-- Key flags: LP 2x achieved, GP survivability risk, Hurdle trigger executed, LP redeemed via HF liquidation, Refinance event occurred, Refi-dependent LP outcome
+- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, GP survivability risk, Hurdle trigger executed, LP redeemed via HF liquidation, Refinance event occurred, Refi-dependent LP outcome, Good LP IRR with large GP residual
 
 #### Bottom-Up Deal Summary
 
@@ -633,6 +633,8 @@ Annual bottom-up RE portfolio:
 | 3.00 | 8,947,957.36 | 4,916,436.01 | 0.00 | 942,838.05 | 2.19 | 513,131.53 | 0.00 | 4,031,521.35 |
 | 4.00 | 9,940,697.44 | 4,855,462.19 | 0.00 | 966,946.09 | 2.25 | 537,239.57 | 0.00 | 5,085,235.25 |
 | 5.00 | 11,043,578.05 | 4,789,915.33 | 0.00 | 991,777.36 | 2.31 | 562,070.84 | 0.00 | 6,253,662.72 |
+| 6.00 | 12,268,818.86 | 4,789,915.33 | 0.00 | 1,021,530.68 | 2.38 | 591,824.16 | 0.00 | 7,478,903.53 |
+| 7.00 | 13,629,995.24 | 4,789,915.33 | 0.00 | 1,052,176.60 | 2.45 | 622,470.08 | 0.00 | 8,840,079.91 |
 
 ### oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6
 
@@ -640,19 +642,19 @@ Oak Cliff $6m fund case with year-5 sale proxy to LPs and year-6 backend HF liqu
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 15.6%
-- LP economic IRR: 15.6%
-- Years until LP 2x cash return: 5
+- LP cash IRR: 14.5%
+- LP economic IRR: 14.5%
+- Years until LP 2x cash return: 6
 - LP cashflow profile: Backend-heavy
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 5
-- Trigger HF liquidation used: $3,801,637
+- Hurdle trigger year: 6
+- Trigger HF liquidation used: $3,404,022
 - Trigger refi used: $0
 - Total cash distributed to LP: $12,000,000
-- Total cash reinvested into HF: $533,537
-- GP residual NAV: $1,607,510
+- Total cash reinvested into HF: $666,075
+- GP residual NAV: $4,715,191
 - GP survivability risk: True
-- Key flags: LP 2x achieved, GP survivability risk, Hurdle trigger executed, LP redeemed via HF liquidation, Refinance event occurred, Refi-dependent LP outcome
+- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, GP survivability risk, Hurdle trigger executed, LP redeemed via HF liquidation, Refinance event occurred, Refi-dependent LP outcome
 
 #### Bottom-Up Deal Summary
 
@@ -667,6 +669,7 @@ Annual bottom-up RE portfolio:
 | 3.00 | 8,947,957.36 | 4,916,436.01 | 0.00 | 942,838.05 | 2.19 | 513,131.53 | 0.00 | 4,031,521.35 |
 | 4.00 | 9,940,697.44 | 4,855,462.19 | 0.00 | 966,946.09 | 2.25 | 537,239.57 | 0.00 | 5,085,235.25 |
 | 5.00 | 11,043,578.05 | 4,789,915.33 | 0.00 | 991,777.36 | 2.31 | 562,070.84 | 0.00 | 6,253,662.72 |
+| 6.00 | 12,268,818.86 | 4,789,915.33 | 0.00 | 1,021,530.68 | 2.38 | 591,824.16 | 0.00 | 7,478,903.53 |
 
 ### oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5
 
@@ -708,19 +711,19 @@ Oak Cliff $6m fund case with year-5 sale proxy to LPs and year-7 backend HF liqu
 
 - LP cash multiple: 2.00x
 - LP economic multiple: 2.00x
-- LP cash IRR: 15.6%
-- LP economic IRR: 15.6%
-- Years until LP 2x cash return: 5
-- LP cashflow profile: Backend-heavy
+- LP cash IRR: 13.7%
+- LP economic IRR: 13.7%
+- Years until LP 2x cash return: 7
+- LP cashflow profile: Aggressive distribution
 - Hurdle completion trigger executed: True
-- Hurdle trigger year: 5
-- Trigger HF liquidation used: $3,801,637
+- Hurdle trigger year: 7
+- Trigger HF liquidation used: $2,984,810
 - Trigger refi used: $0
 - Total cash distributed to LP: $12,000,000
-- Total cash reinvested into HF: $533,537
-- GP residual NAV: $1,607,510
+- Total cash reinvested into HF: $805,812
+- GP residual NAV: $8,358,810
 - GP survivability risk: True
-- Key flags: LP 2x achieved, GP survivability risk, Hurdle trigger executed, LP redeemed via HF liquidation, Refinance event occurred, Refi-dependent LP outcome
+- Key flags: LP 2x achieved, Value hurdle reached but liquidity constrained, GP survivability risk, Hurdle trigger executed, LP redeemed via HF liquidation, Refinance event occurred, Refi-dependent LP outcome, Good LP IRR with large GP residual
 
 #### Bottom-Up Deal Summary
 
@@ -735,6 +738,8 @@ Annual bottom-up RE portfolio:
 | 3.00 | 8,947,957.36 | 4,916,436.01 | 0.00 | 942,838.05 | 2.19 | 513,131.53 | 0.00 | 4,031,521.35 |
 | 4.00 | 9,940,697.44 | 4,855,462.19 | 0.00 | 966,946.09 | 2.25 | 537,239.57 | 0.00 | 5,085,235.25 |
 | 5.00 | 11,043,578.05 | 4,789,915.33 | 0.00 | 991,777.36 | 2.31 | 562,070.84 | 0.00 | 6,253,662.72 |
+| 6.00 | 12,268,818.86 | 4,789,915.33 | 0.00 | 1,021,530.68 | 2.38 | 591,824.16 | 0.00 | 7,478,903.53 |
+| 7.00 | 13,629,995.24 | 4,789,915.33 | 0.00 | 1,052,176.60 | 2.45 | 622,470.08 | 0.00 | 8,840,079.91 |
 
 ### oak_cliff_downside_no_refi
 

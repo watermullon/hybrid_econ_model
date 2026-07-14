@@ -145,13 +145,16 @@ oak_cliff_6m_year5_sale_plus_refi_to_lp,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIEN
 oak_cliff_6m_year5_sale_plus_refi_to_lp,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 oak_cliff_6m_year5_sale_plus_refi_to_lp,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 oak_cliff_6m_year5_sale_plus_refi_to_lp,REFI_DEPENDENT_LP_OUTCOME,medium,LP hurdle achievement depended on refinance proceeds distributed to LPs.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 5.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 7.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,REFI_DEPENDENT_LP_OUTCOME,medium,LP hurdle achievement depended on refinance proceeds distributed to LPs.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 5.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation,LP_GOOD_IRR_GP_LARGE_RESIDUAL,medium,LP IRR is attractive while GP residual NAV is large.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 6.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
@@ -163,12 +166,14 @@ oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,HURDLE_COMPLETION_TRIGGER_EX
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,REFI_DEPENDENT_LP_OUTCOME,medium,LP hurdle achievement depended on refinance proceeds distributed to LPs.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 5.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 7.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,REFI_DEPENDENT_LP_OUTCOME,medium,LP hurdle achievement depended on refinance proceeds distributed to LPs.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,LP_GOOD_IRR_GP_LARGE_RESIDUAL,medium,LP IRR is attractive while GP residual NAV is large.
 oak_cliff_downside_no_refi,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
 oak_cliff_downside_no_refi,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 oak_cliff_downside_no_refi,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.

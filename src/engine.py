@@ -876,6 +876,8 @@ def evaluate_hurdle_completion_trigger(
     }
     if not trigger.enabled or lp_remaining_hurdle <= 1e-9:
         return result
+    if trigger.target_years and year not in trigger.target_years:
+        return result
     if trigger.trigger_when_economic_hurdle_passed and not economic_hurdle_passed:
         return result
 

@@ -545,6 +545,7 @@ scenarios:
       use_reserve: true
       execute_only_if_lp_hurdle_completed: true
     hurdle_completion_trigger:
+      target_years: [7]
       max_hf_liquidation_pct: 0.75
       allow_refi: false
       execute_only_if_lp_fully_redeemed: true
@@ -599,6 +600,7 @@ scenarios:
       use_reserve: true
       execute_only_if_lp_hurdle_completed: true
     hurdle_completion_trigger:
+      target_years: [6]
       max_hf_liquidation_pct: 0.75
       allow_refi: false
       execute_only_if_lp_fully_redeemed: true
@@ -653,6 +655,7 @@ scenarios:
       use_reserve: true
       execute_only_if_lp_hurdle_completed: true
     hurdle_completion_trigger:
+      target_years: [5]
       max_hf_liquidation_pct: 0.75
       allow_refi: false
       execute_only_if_lp_fully_redeemed: true
@@ -707,6 +710,7 @@ scenarios:
       use_reserve: true
       execute_only_if_lp_hurdle_completed: true
     hurdle_completion_trigger:
+      target_years: [7]
       max_hf_liquidation_pct: 1.0
       allow_refi: false
       execute_only_if_lp_fully_redeemed: true

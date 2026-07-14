@@ -18,6 +18,7 @@ def trigger_config(
     reserve_liquidity_pct: float = 1.0,
     passive_liquidity_pct: float = 0.0,
     backend_liquidity_strategy: dict | None = None,
+    trigger_target_years: list[int] | None = None,
 ) -> ModelConfig:
     config_data = {
             "model": {
@@ -82,6 +83,7 @@ def trigger_config(
             },
             "hurdle_completion_trigger": {
                 "enabled": True,
+                "target_years": trigger_target_years or [],
                 "trigger_when_economic_hurdle_passed": True,
                 "minimum_lp_cash_moic_before_trigger": minimum_cash_moic,
                 "max_hf_liquidation_pct": max_hf_liquidation_pct,
@@ -272,6 +274,30 @@ def test_trigger_can_execute_outside_backend_target_year_using_normal_caps() -> 
     assert row.hurdle_trigger_attempted is True
     assert row.hurdle_trigger_executed is True
     assert row.trigger_cash_from_refi == pytest.approx(20_000_000)
+
+
+def test_trigger_target_years_block_early_execution() -> None:
+    config = trigger_config(
+        allocation={
+            "hedge_fund_allocation_pct": 0.0,
+            "real_estate_allocation_pct": 1.0,
+            "reserve_allocation_pct": 0.0,
+        },
+        max_years=2,
+        allow_refi=True,
+        max_refi_pct=1.0,
+        trigger_target_years=[2],
+    )
+
+    result = run_scenario("target_year_trigger", scenario(years=2, re_appreciation=[1.0, 0.0]), config)
+    first_year, second_year = result.cashflows
+
+    assert first_year.economic_hurdle_passed is True
+    assert first_year.hurdle_trigger_attempted is False
+    assert first_year.hurdle_trigger_executed is False
+    assert second_year.hurdle_trigger_attempted is True
+    assert second_year.hurdle_trigger_executed is True
+    assert result.summary["year_hurdle_achieved"] == 2
 
 
 def test_backend_strategy_is_refi_led_before_hf_liquidation() -> None:

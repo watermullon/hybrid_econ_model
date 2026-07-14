@@ -178,6 +178,7 @@ class GPSurvivabilitySettings(BaseModel):
 
 class HurdleCompletionTriggerSettings(BaseModel):
     enabled: bool = True
+    target_years: list[int] = Field(default_factory=list)
     trigger_when_economic_hurdle_passed: bool = True
     minimum_lp_cash_moic_before_trigger: float = Field(default=1.25, ge=0)
     max_hf_liquidation_pct: float = Field(default=0.75, ge=0, le=1)
@@ -188,6 +189,13 @@ class HurdleCompletionTriggerSettings(BaseModel):
     allow_refi: bool = True
     allow_partial_re_sale: bool = False
     max_partial_re_sale_pct_of_re_nav: float = Field(default=0.0, ge=0, le=1)
+
+    @field_validator("target_years")
+    @classmethod
+    def target_years_must_be_positive(cls, value: list[int]) -> list[int]:
+        if any(year <= 0 for year in value):
+            raise ValueError("Hurdle completion trigger target years must be positive.")
+        return sorted(set(value))
 
 
 class BackendLiquidityStrategySettings(BaseModel):
