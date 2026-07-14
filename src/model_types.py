@@ -276,6 +276,7 @@ class RefinanceEvent(BaseModel):
 class Scenario(BaseModel):
     description: str
     years: int = Field(gt=0)
+    model: dict[str, Any] | None = None
     real_estate: RealEstateScenario
     hedge_fund: HedgeFundScenario
     liquidity: dict[str, Any] | None = None
@@ -283,7 +284,9 @@ class Scenario(BaseModel):
     cashflow_routing: dict[str, Any] | None = None
     lp_cash_yield_policy: dict[str, Any] | None = None
     backend_liquidity_strategy: dict[str, Any] | None = None
+    hurdle_completion_trigger: dict[str, Any] | None = None
     allocation: dict[str, Any] | None = None
+    bottom_up_allocation: dict[str, Any] | None = None
     reserve: dict[str, Any] | None = None
     real_estate_model: dict[str, Any] | None = None
     deal_overrides: dict[str, Any] | None = None

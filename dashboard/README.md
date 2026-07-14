@@ -12,6 +12,7 @@ The dashboard reads:
 - `outputs/scenario_summary.csv`
 - `inputs/model_config.yaml`
 - `inputs/scenarios.yaml`
+- `inputs/projects.yaml`
 
 If the summary CSV is missing, it falls back to the `Summary` tab in `outputs/scenario_summary.xlsx`.
 
@@ -65,10 +66,11 @@ Explicit columns used from `scenario_cashflows.csv`:
 - Reserve drawdown is inferred as `reserve_opening_nav - reserve_closing_nav`, clipped at zero, because the model does not currently emit an explicit reserve drawdown column.
 - If a required column is missing, the affected chart is skipped or simplified and a note is shown in the dashboard.
 - Scenario display names are presentation labels mapped in `SCENARIO_DISPLAY_NAMES`; they do not change model identifiers.
+- Project groupings are read from `inputs/projects.yaml` and filter the saved scenario outputs before charts are rendered.
 - Selected-scenario assumptions are displayed from YAML in a collapsible section. They are read-only and do not re-run the model.
 
 ## Scope
 
-This is a presentation dashboard for the eight pre-baked scenarios. The routing sliders rerun those same scenarios in memory only, using temporary routing assumptions. They do not edit YAML or overwrite CSV/Excel outputs.
+This is a presentation dashboard for the saved pre-baked scenarios. The project selector groups scenarios into deal packages such as the original hybrid fund cases or the Oak Cliff anchor fund. The routing sliders rerun the saved scenarios in memory only, using temporary routing assumptions. They do not edit YAML or overwrite CSV/Excel outputs.
 
 The sidebar also includes a custom scenario form. Pressing **Run custom scenario** creates a temporary in-memory scenario and adds it to the selector as `Custom dashboard scenario`. This custom scenario is not saved to YAML and is not written to the model output files.

@@ -88,3 +88,453 @@ scenarios:
       gross_rent_yield: 0.08
     hedge_fund:
       annual_returns: [-0.20, 0.10, 0.15, 0.03, 0.24, 0.04, 0.13, 0.18, -0.12, 0.28, 0.12, 0.08]
+
+  oak_cliff_base_no_refi:
+    description: "Oak Cliff base case using independent underwriting, no deal-level refi."
+    years: 7
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_base_year4_refi:
+    description: "Oak Cliff base case with year-4 refi using independent valuation ramp."
+    years: 7
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: true
+          target_years: [4]
+          refi_ltv: 0.70
+          refi_costs_pct: 0.02
+          proceeds_use: "fund_liquidity"
+      jon_deal_1:
+        enabled: false
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_year4_refi_to_lp:
+    description: "Oak Cliff base case with year-4 refi proceeds distributed directly to LPs."
+    years: 7
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    refinance_events:
+      - year: 4
+        pct_of_re_nav: 0.3793533127
+        use_of_proceeds: "lp_distribution"
+        description: "Synthetic year-4 Oak Cliff refi sized to match deal-level 70% LTV cash-out proceeds."
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_6m_year5_sale_to_lp:
+    description: "Oak Cliff $6m fund case with year-5 sale proceeds proxied by a scenario-level liquidity event to LPs."
+    years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    refinance_events:
+      - year: 5
+        pct_of_re_nav: 1.0
+        use_of_proceeds: "lp_distribution"
+        description: "Sale proxy: distribute year-5 Oak Cliff net equity value to LPs. Model records this as refinance liability because explicit sale events are not supported."
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_6m_year5_sale_plus_refi_to_lp:
+    description: "Oak Cliff $6m fund case with year-4 refi to LPs and year-5 sale proceeds net of refi liability proxied to LPs."
+    years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    refinance_events:
+      - year: 4
+        pct_of_re_nav: 0.3793533127
+        use_of_proceeds: "lp_distribution"
+        description: "Synthetic year-4 Oak Cliff refi sized to match deal-level 70% LTV cash-out proceeds."
+      - year: 5
+        pct_of_re_nav: 0.6907440224
+        use_of_proceeds: "lp_distribution"
+        description: "Sale proxy: distribute year-5 Oak Cliff net equity value after subtracting the year-4 refi liability. Model records this as refinance liability because explicit sale events are not supported."
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_6m_year5_sale_hf25_backend_liquidation:
+    description: "Oak Cliff $6m fund case with year-5 sale proxy to LPs and year-7 backend HF liquidation capped at 75%."
+    years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    refinance_events:
+      - year: 5
+        pct_of_re_nav: 1.0
+        use_of_proceeds: "lp_distribution"
+        description: "Sale proxy: distribute year-5 Oak Cliff net equity value to LPs. Model records this as refinance liability because explicit sale events are not supported."
+    backend_liquidity_strategy:
+      enabled: true
+      target_years: [7]
+      refi_first: false
+      max_refi_pct_of_re_nav: 0.0
+      max_hf_liquidation_pct: 0.75
+      use_retained_cash: true
+      use_reserve: true
+      execute_only_if_lp_hurdle_completed: true
+    hurdle_completion_trigger:
+      max_hf_liquidation_pct: 0.75
+      allow_refi: false
+      execute_only_if_lp_fully_redeemed: true
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6:
+    description: "Oak Cliff $6m fund case with year-5 sale proxy to LPs and year-6 backend HF liquidation capped at 75%."
+    years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    refinance_events:
+      - year: 5
+        pct_of_re_nav: 1.0
+        use_of_proceeds: "lp_distribution"
+        description: "Sale proxy: distribute year-5 Oak Cliff net equity value to LPs. Model records this as refinance liability because explicit sale events are not supported."
+    backend_liquidity_strategy:
+      enabled: true
+      target_years: [6]
+      refi_first: false
+      max_refi_pct_of_re_nav: 0.0
+      max_hf_liquidation_pct: 0.75
+      use_retained_cash: true
+      use_reserve: true
+      execute_only_if_lp_hurdle_completed: true
+    hurdle_completion_trigger:
+      max_hf_liquidation_pct: 0.75
+      allow_refi: false
+      execute_only_if_lp_fully_redeemed: true
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5:
+    description: "Oak Cliff $6m fund case with year-5 sale proxy to LPs and year-5 backend HF liquidation capped at 75%."
+    years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    refinance_events:
+      - year: 5
+        pct_of_re_nav: 1.0
+        use_of_proceeds: "lp_distribution"
+        description: "Sale proxy: distribute year-5 Oak Cliff net equity value to LPs. Model records this as refinance liability because explicit sale events are not supported."
+    backend_liquidity_strategy:
+      enabled: true
+      target_years: [5]
+      refi_first: false
+      max_refi_pct_of_re_nav: 0.0
+      max_hf_liquidation_pct: 0.75
+      use_retained_cash: true
+      use_reserve: true
+      execute_only_if_lp_hurdle_completed: true
+    hurdle_completion_trigger:
+      max_hf_liquidation_pct: 0.75
+      allow_refi: false
+      execute_only_if_lp_fully_redeemed: true
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct:
+    description: "Oak Cliff $6m fund case with year-5 sale proxy to LPs and year-7 backend HF liquidation capped at 100%."
+    years: 7
+    model:
+      initial_lp_capital: 6000000
+    bottom_up_allocation:
+      remaining_capital_hf_pct: 0.8134
+      remaining_capital_reserve_pct: 0.1866
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    refinance_events:
+      - year: 5
+        pct_of_re_nav: 1.0
+        use_of_proceeds: "lp_distribution"
+        description: "Sale proxy: distribute year-5 Oak Cliff net equity value to LPs. Model records this as refinance liability because explicit sale events are not supported."
+    backend_liquidity_strategy:
+      enabled: true
+      target_years: [7]
+      refi_first: false
+      max_refi_pct_of_re_nav: 0.0
+      max_hf_liquidation_pct: 1.0
+      use_retained_cash: true
+      use_reserve: true
+      execute_only_if_lp_hurdle_completed: true
+    hurdle_completion_trigger:
+      max_hf_liquidation_pct: 1.0
+      allow_refi: false
+      execute_only_if_lp_fully_redeemed: true
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  oak_cliff_downside_no_refi:
+    description: "Oak Cliff downside case with slower value growth, weaker HF returns, and no refi."
+    years: 7
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      oak_cliff:
+        enabled: true
+        operations:
+          current_noi: 650000
+          stabilized_noi: 900000
+          years_to_stabilization: 5
+          annual_noi_growth_after_stabilization: 0.02
+        capex:
+          annual_capex:
+            1: 900000
+            2: 700000
+            3: 400000
+            4: 150000
+            5: 50000
+          recurring_capex_pct_of_noi: 0.0
+        valuation:
+          method: "growth"
+          annual_value_growth: 0.06
+        refinance:
+          enabled: false
+          target_years: []
+      jon_deal_1:
+        enabled: false
+    real_estate:
+      initial_noi_yield: 0.07
+      annual_noi_growth: 0.02
+      annual_nav_appreciation: 0.02
+      gross_rent_yield: 0.11
+    hedge_fund:
+      annual_returns: [-0.08, -0.07, 0.00, 0.06, 0.08, 0.08, 0.08]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15

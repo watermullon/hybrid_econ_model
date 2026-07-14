@@ -11,9 +11,10 @@ def validate_scenario_against_config(
     config: ModelConfig,
     deals: DealSet | None = None,
 ) -> None:
-    if scenario.years > config.model.max_years:
+    model_settings = merge_model(config.model, scenario.model)
+    if scenario.years > model_settings.max_years:
         raise ValueError(
-            f"Scenario '{name}' has years={scenario.years}, greater than max_years={config.model.max_years}."
+            f"Scenario '{name}' has years={scenario.years}, greater than max_years={model_settings.max_years}."
         )
     if config.allocation.method == "cap_rate_sized":
         hf_pct = scenario.real_estate.initial_noi_yield

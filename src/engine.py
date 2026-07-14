@@ -57,6 +57,8 @@ def run_scenario(
     config: ModelConfig,
     deals: DealSet | None = None,
 ) -> ScenarioResult:
+    model_settings = merge_model(config.model, scenario.model)
+    bottom_up_allocation = merge_model(config.bottom_up_allocation, scenario.bottom_up_allocation)
     liquidity = merge_model(config.liquidity, scenario.liquidity)
     distribution_policy = merge_model(config.distribution_policy, scenario.distribution_policy)
     cashflow_routing = merge_model(config.cashflow_routing, scenario.cashflow_routing)
@@ -64,6 +66,7 @@ def run_scenario(
     backend_liquidity_strategy = merge_model(
         config.backend_liquidity_strategy, scenario.backend_liquidity_strategy
     )
+    hurdle_completion_trigger = merge_model(config.hurdle_completion_trigger, scenario.hurdle_completion_trigger)
     if lp_cash_yield_policy.enabled and not lp_cash_yield_policy.reduce_lp_hurdle:
         raise ValueError(
             "LP cash yield policy is invalid: actual LP cash yield payments must reduce the LP cash hurdle."
@@ -73,7 +76,7 @@ def run_scenario(
     real_estate_mode = real_estate_settings.mode
     refinance_events_by_year = events_by_year(scenario.refinance_events)
 
-    initial_lp_capital = config.model.initial_lp_capital
+    initial_lp_capital = model_settings.initial_lp_capital
     lp_hurdle_amount = initial_lp_capital * config.waterfall.lp_hurdle_moic
     portfolio_years: list[RealEstatePortfolioYearResult] = []
     deal_cashflows = []
@@ -111,14 +114,14 @@ def run_scenario(
             if deal.enabled and deal.acquisition_year == 1
         )
         remaining_capital = initial_lp_capital - initial_re_cash_deployed
-        if remaining_capital < -1e-6 and not config.bottom_up_allocation.allow_overallocated_deals:
+        if remaining_capital < -1e-6 and not bottom_up_allocation.allow_overallocated_deals:
             raise ValueError(
                 f"Scenario '{name}' bottom-up deals require ${initial_re_cash_deployed:,.0f} of year-1 equity, "
                 f"which exceeds initial LP capital of ${initial_lp_capital:,.0f}."
         )
         allocatable_remaining = max(0.0, remaining_capital)
-        hf_nav = allocatable_remaining * config.bottom_up_allocation.remaining_capital_hf_pct
-        reserve_nav = allocatable_remaining * config.bottom_up_allocation.remaining_capital_reserve_pct
+        hf_nav = allocatable_remaining * bottom_up_allocation.remaining_capital_hf_pct
+        reserve_nav = allocatable_remaining * bottom_up_allocation.remaining_capital_reserve_pct
         re_nav = initial_portfolio_year.deal_nav
         initial_re_gross_asset_value = initial_portfolio_year.gross_asset_value
         initial_re_debt_balance = initial_portfolio_year.debt_balance
@@ -201,13 +204,13 @@ def run_scenario(
                         "retained_cash;reserve" if acquisition_funded_from_reserve > 0 else "retained_cash"
                     )
                     funded_deal_names.update(acquisition_deals)
-                elif config.bottom_up_allocation.failed_acquisition_funding_treatment == "partial_loss":
+                elif bottom_up_allocation.failed_acquisition_funding_treatment == "partial_loss":
                     potential_retained_cash = min(retained_cash, funding_need)
                     remaining_after_retained = funding_need - potential_retained_cash
                     potential_reserve = min(reserve_nav, remaining_after_retained)
                     available_partial_funding = potential_retained_cash + potential_reserve
                     acquisition_failed_loss = (
-                        available_partial_funding * config.bottom_up_allocation.failed_acquisition_loss_pct
+                        available_partial_funding * bottom_up_allocation.failed_acquisition_loss_pct
                     )
                     loss_from_retained_cash = min(retained_cash, acquisition_failed_loss)
                     retained_cash -= loss_from_retained_cash
@@ -466,7 +469,7 @@ def run_scenario(
         if re_cashflow_shortfall > 0:
             event_flag = append_event_text(event_flag, "RE_CASHFLOW_SHORTFALL")
         trigger_result = evaluate_hurdle_completion_trigger(
-            trigger=config.hurdle_completion_trigger,
+            trigger=hurdle_completion_trigger,
             backend_strategy=backend_liquidity_strategy,
             year=year,
             lp_remaining_hurdle=lp_remaining_hurdle,
@@ -767,7 +770,7 @@ def run_scenario(
         "years_until_lp_1x_cash_return": year_until_cash_multiple(cashflows, initial_lp_capital, 1.0),
         "years_until_lp_2x_cash_return": year_until_cash_multiple(cashflows, initial_lp_capital, config.waterfall.lp_hurdle_moic),
         "lp_cashflow_profile_type": classify_lp_cashflow_profile(cashflows, initial_lp_capital),
-        "hurdle_completion_trigger_enabled": config.hurdle_completion_trigger.enabled,
+        "hurdle_completion_trigger_enabled": hurdle_completion_trigger.enabled,
         "backend_liquidity_strategy_enabled": backend_liquidity_strategy.enabled,
         "backend_liquidity_target_years": ", ".join(str(year) for year in backend_liquidity_strategy.target_years),
         "backend_liquidity_refi_first": backend_liquidity_strategy.refi_first,

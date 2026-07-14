@@ -1,0 +1,34 @@
+projects:
+  legacy_hybrid_fund:
+    label: "Original hybrid fund scenarios"
+    description: "Top-down demonstration scenarios from the original hybrid fund model."
+    deals: []
+    scenarios:
+      - base_hit_everyone_happy
+      - fast_success_crypto_bull
+      - slow_grind
+      - hedge_fund_failure_re_survival
+      - real_estate_distress_crypto_success
+      - exceptional_dynasty_outcome
+      - liquidity_trap
+      - failure_never_reaches_hurdle
+
+  oak_cliff_anchor:
+    label: "Oak Cliff anchor fund"
+    description: "Oak Cliff as the primary real estate asset with HF sleeve, sale/refi proxies, and backend LP completion tests."
+    deals:
+      - oak_cliff
+    notes:
+      - "Year-5 sale scenarios use scenario-level liquidity events as sale proxies because explicit sale events are not yet modeled."
+      - "The placeholder jon_deal_1 is disabled in Oak Cliff scenario overrides."
+    scenarios:
+      - oak_cliff_base_no_refi
+      - oak_cliff_base_year4_refi
+      - oak_cliff_year4_refi_to_lp
+      - oak_cliff_6m_year5_sale_to_lp
+      - oak_cliff_6m_year5_sale_plus_refi_to_lp
+      - oak_cliff_6m_year5_sale_hf25_backend_liquidation
+      - oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6
+      - oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5
+      - oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct
+      - oak_cliff_downside_no_refi

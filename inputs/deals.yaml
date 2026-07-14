@@ -57,3 +57,64 @@ deals:
       refi_costs_pct: 0.02
       max_cash_out_pct_of_value: null
       proceeds_use: "fund_liquidity"
+
+  oak_cliff:
+    enabled: true
+    acquisition_year: 1
+    description: "Oak Cliff Multifamily base case from Blue Lion underwriting."
+
+    acquisition:
+      asset_value: 7250000
+      value_type: "purchase_price"
+      purchase_price: 7250000
+      new_equity_required: 4156000
+      closing_costs: 145000
+      initial_capex_reserve: 1836000
+
+    capital_stack:
+      assumed_debt: 5075000
+      assumed_liabilities: 0
+      liabilities_written_down: 0
+      seller_note: 0
+      preferred_equity: 0
+
+    operations:
+      current_noi: 701409
+      stabilized_noi: 991777
+      years_to_stabilization: 5
+      annual_noi_growth_after_stabilization: 0.03
+      gross_rent: 1566747.71
+      gross_rent_growth: 0.03
+      vacancy_rate: 0.07
+
+    debt:
+      interest_rate: 0.075
+      maturity_year: 5
+      amortization_type: "fixed_annual_debt_service"
+      annual_debt_service: 429706.52
+      amortization_years: null
+      dscr_minimum: 1.25
+      recourse: "unknown"
+
+    capex:
+      annual_capex:
+        1: 800000
+        2: 600000
+        3: 300000
+        4: 100000
+        5: 36000
+      recurring_capex_pct_of_noi: 0.0
+
+    valuation:
+      method: "growth"
+      exit_cap_rate: null
+      annual_value_growth: 0.110946
+      stabilized_value: null
+
+    refinance:
+      enabled: false
+      target_years: []
+      refi_ltv: 0.70
+      refi_costs_pct: 0.02
+      max_cash_out_pct_of_value: null
+      proceeds_use: "fund_liquidity"

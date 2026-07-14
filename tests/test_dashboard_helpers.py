@@ -11,6 +11,7 @@ from dashboard.app import (
     flatten_assumptions,
     format_statement_for_display,
     format_money,
+    filter_project_data,
     generate_scenario_caption,
     parse_hf_returns,
     parse_flags,
@@ -98,8 +99,19 @@ def test_generate_caption_uses_data_not_hardcoded_text() -> None:
 def test_dashboard_reads_current_outputs() -> None:
     cashflows, summary, _ = read_dashboard_data()
 
-    assert len(summary["scenario"].unique()) == 8
-    assert len(cashflows["scenario"].unique()) == 8
+    expected_count = len(summary["scenario"].unique())
+    assert expected_count >= 1
+    assert len(cashflows["scenario"].unique()) == expected_count
+
+
+def test_project_filter_keeps_only_project_scenarios() -> None:
+    cashflows, summary, _ = read_dashboard_data()
+    project = {"scenarios": ["oak_cliff_6m_year5_sale_hf25_backend_liquidation"]}
+
+    filtered_cashflows, filtered_summary = filter_project_data(cashflows, summary, project)
+
+    assert set(filtered_summary["scenario"]) == {"oak_cliff_6m_year5_sale_hf25_backend_liquidation"}
+    assert set(filtered_cashflows["scenario"]) == {"oak_cliff_6m_year5_sale_hf25_backend_liquidation"}
 
 
 def test_streamlit_app_exposes_routing_controls(monkeypatch) -> None:

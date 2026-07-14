@@ -20,6 +20,7 @@ SUMMARY_CSV_PATH = ROOT / "outputs" / "scenario_summary.csv"
 SUMMARY_XLSX_PATH = ROOT / "outputs" / "scenario_summary.xlsx"
 MODEL_CONFIG_PATH = ROOT / "inputs" / "model_config.yaml"
 SCENARIOS_PATH = ROOT / "inputs" / "scenarios.yaml"
+PROJECTS_PATH = ROOT / "inputs" / "projects.yaml"
 
 # Streamlit may be launched from the repo root, this dashboard directory, or a
 # parent folder. Adding the project root explicitly keeps imports such as
@@ -40,6 +41,16 @@ SCENARIO_DISPLAY_NAMES = {
     "exceptional_dynasty_outcome": "Strong RE and strong HF",
     "liquidity_trap": "High NAV growth, low RE liquidity",
     "failure_never_reaches_hurdle": "Weak RE and weak HF",
+    "oak_cliff_base_no_refi": "Oak Cliff base, no refi",
+    "oak_cliff_base_year4_refi": "Oak Cliff year-4 refi retained",
+    "oak_cliff_year4_refi_to_lp": "Oak Cliff year-4 refi to LP",
+    "oak_cliff_6m_year5_sale_to_lp": "Oak Cliff $6m, year-5 sale",
+    "oak_cliff_6m_year5_sale_plus_refi_to_lp": "Oak Cliff $6m, refi plus sale",
+    "oak_cliff_6m_year5_sale_hf25_backend_liquidation": "Oak Cliff $6m, year-7 backend",
+    "oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6": "Oak Cliff $6m, year-6 backend",
+    "oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5": "Oak Cliff $6m, year-5 backend",
+    "oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct": "Oak Cliff $6m, year-7 backend 100%",
+    "oak_cliff_downside_no_refi": "Oak Cliff downside, no refi",
     "custom_dashboard_scenario": "Custom dashboard scenario",
 }
 
@@ -235,6 +246,72 @@ def read_assumption_yaml() -> tuple[dict[str, Any], dict[str, Any], list[str]]:
     return model_config, scenarios, notes
 
 
+def read_project_yaml(all_scenarios: list[str]) -> tuple[dict[str, Any], list[str]]:
+    """Read optional project groupings used to filter the dashboard."""
+    notes: list[str] = []
+    try:
+        with PROJECTS_PATH.open("r", encoding="utf-8") as file:
+            loaded = yaml.safe_load(file) or {}
+    except FileNotFoundError:
+        notes.append("projects.yaml was not found; showing all scenarios as one project.")
+        return fallback_projects(all_scenarios), notes
+    except yaml.YAMLError as exc:
+        notes.append(f"projects.yaml could not be parsed: {exc}; showing all scenarios as one project.")
+        return fallback_projects(all_scenarios), notes
+
+    projects = loaded.get("projects") if isinstance(loaded, dict) else None
+    if not isinstance(projects, dict) or not projects:
+        notes.append("projects.yaml did not contain a projects mapping; showing all scenarios as one project.")
+        return fallback_projects(all_scenarios), notes
+
+    normalized: dict[str, Any] = {}
+    known = set(all_scenarios)
+    for project_id, project in projects.items():
+        if not isinstance(project, dict):
+            notes.append(f"Project '{project_id}' was not a mapping and was skipped.")
+            continue
+        scenarios = [str(name) for name in project.get("scenarios", []) if str(name) in known]
+        missing = [str(name) for name in project.get("scenarios", []) if str(name) not in known]
+        if missing:
+            notes.append(f"Project '{project_id}' references missing scenarios: {', '.join(missing)}.")
+        if not scenarios:
+            notes.append(f"Project '{project_id}' has no available scenarios and was skipped.")
+            continue
+        normalized[str(project_id)] = {
+            "label": str(project.get("label") or project_id).strip(),
+            "description": str(project.get("description") or "").strip(),
+            "deals": [str(name) for name in project.get("deals", [])],
+            "notes": [str(note) for note in project.get("notes", [])],
+            "scenarios": scenarios,
+        }
+
+    return normalized or fallback_projects(all_scenarios), notes
+
+
+def fallback_projects(all_scenarios: list[str]) -> dict[str, Any]:
+    return {
+        "all_scenarios": {
+            "label": "All scenarios",
+            "description": "All saved model scenarios.",
+            "deals": [],
+            "notes": [],
+            "scenarios": list(all_scenarios),
+        }
+    }
+
+
+def filter_project_data(
+    cashflows: pd.DataFrame,
+    summary: pd.DataFrame,
+    project: dict[str, Any],
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    scenarios = [str(name) for name in project.get("scenarios", [])]
+    return (
+        cashflows[cashflows["scenario"].isin(scenarios)].copy(),
+        summary[summary["scenario"].isin(scenarios)].copy(),
+    )
+
+
 def normalize_numeric_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Normalize expected numeric output columns after CSV/Excel reads."""
     numeric_columns = [
@@ -334,7 +411,7 @@ def run_model_with_routing_override(
     routing: dict[str, dict[str, float]],
     trigger: dict[str, Any],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Rerun the existing eight scenarios in memory with dashboard routing values.
+    """Rerun the existing scenarios in memory with dashboard routing values.
 
     This is deliberately not a persistence layer: it does not write YAML, CSV,
     or Excel. It lets presentation users see how routing policy changes the
@@ -524,7 +601,7 @@ def render_routing_controls(model_config: dict[str, Any]) -> tuple[dict[str, dic
 
     defaults = default_routing_from_config(model_config)
     st.sidebar.header("Cashflow routing")
-    st.sidebar.caption("These controls rerun the eight scenarios in memory. They do not save changes to YAML or output files.")
+    st.sidebar.caption("These controls rerun the saved scenarios in memory. They do not save changes to YAML or output files.")
 
     re_lp = st.sidebar.slider("RE cashflow to LP", 0, 100, int(defaults["re_cashflow"]["lp_distribution_pct"] * 100), 5)
     re_hf = st.sidebar.slider("RE cashflow to HF", 0, 100, int(defaults["re_cashflow"]["hf_reinvestment_pct"] * 100), 5)
@@ -1072,7 +1149,7 @@ def build_nav_chart(cashflows: pd.DataFrame, summary: pd.DataFrame, selected: st
 def panel_shape(scenarios: list[str]) -> tuple[int, int]:
     if len(scenarios) == 1:
         return 1, 1
-    # The base presentation has eight scenarios, which fits cleanly in 2x4.
+    # The base presentation originally fit cleanly in 2x4; expand as scenarios are added.
     # A custom dashboard scenario adds a ninth panel, so calculate rows
     # dynamically instead of assuming the base scenario count.
     cols = 4
@@ -1469,6 +1546,61 @@ def render_scenario_comparison(summary: pd.DataFrame) -> None:
     )
 
 
+def render_project_selector(projects: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    """Render the first dashboard choice: which project/case set to inspect."""
+    import streamlit as st
+
+    labels = {project["label"]: project_id for project_id, project in projects.items()}
+    selected_label = st.selectbox(
+        "Project selector",
+        options=list(labels),
+        help="Choose the deal package or scenario family to inspect. The dashboard below is filtered to that project.",
+    )
+    project_id = labels[selected_label]
+    return project_id, projects[project_id]
+
+
+def render_project_overview(project_id: str, project: dict[str, Any], summary: pd.DataFrame) -> None:
+    """Show compact project-level facts before the scenario dashboard."""
+    import streamlit as st
+
+    st.subheader(project["label"])
+    if project.get("description"):
+        st.write(project["description"])
+
+    deals = project.get("deals") or []
+    metric_cols = st.columns(5)
+    metric_cols[0].metric("Scenarios", f"{len(summary):,}")
+    metric_cols[1].metric("Deals", ", ".join(deals) if deals else "none")
+    if not summary.empty:
+        capital_values = sorted(summary["lp_initial_capital"].dropna().unique()) if "lp_initial_capital" in summary else []
+        capital_label = ", ".join(format_money(value) for value in capital_values) if capital_values else "n/a"
+        metric_cols[2].metric("LP capital", capital_label)
+        best = summary.sort_values("lp_cash_moic", ascending=False).iloc[0] if "lp_cash_moic" in summary else None
+        first_2x = first_project_2x(summary)
+        metric_cols[3].metric("Best cash MOIC", format_multiple(best["lp_cash_moic"]) if best is not None else "n/a")
+        metric_cols[4].metric("First 2x cash", first_2x)
+
+    notes = project.get("notes") or []
+    if notes:
+        with st.expander("Project notes", expanded=project_id == "oak_cliff_anchor"):
+            for note in notes:
+                st.write(note)
+
+    if summary.empty:
+        st.warning("No output rows are available for this project.")
+
+
+def first_project_2x(summary: pd.DataFrame) -> str:
+    if "years_until_lp_2x_cash_return" not in summary.columns:
+        return "not reached"
+    reached = summary.dropna(subset=["years_until_lp_2x_cash_return"])
+    if reached.empty:
+        return "not reached"
+    row = reached.sort_values("years_until_lp_2x_cash_return").iloc[0]
+    return f"{display_name(row['scenario'])}, year {int(row['years_until_lp_2x_cash_return'])}"
+
+
 def build_traditional_statement(cashflows: pd.DataFrame, summary: pd.DataFrame, selected: str | None) -> pd.DataFrame:
     """Build a copyable annual cashflow and balance-sheet style table.
 
@@ -1611,8 +1743,8 @@ def main() -> None:
     st.set_page_config(page_title="Fund Model Scenario Explorer", layout="wide")
     st.title("Fund Model — Scenario Explorer (Stage 1)")
     st.write(
-        "This dashboard presents the eight pre-baked fund model scenarios as charts and plain-English diagnostics. "
-        "It can also rerun the same eight scenarios in memory when the cashflow routing sliders are changed. "
+        "This dashboard presents the saved fund model scenarios as charts and plain-English diagnostics. "
+        "It can also rerun the same scenarios in memory when the cashflow routing sliders are changed. "
         "It does not save new assumptions or create custom scenarios."
     )
     st.info("LP hurdle is based on actual cash distributions received, not NAV appreciation.")
@@ -1620,20 +1752,27 @@ def main() -> None:
     try:
         cashflows, summary, notes = read_dashboard_data()
         model_config, scenario_assumptions, assumption_notes = read_assumption_yaml()
+        projects, project_notes = read_project_yaml(list(summary["scenario"]))
     except Exception as exc:
         st.error(f"Could not load dashboard data: {exc}")
         st.stop()
 
+    notes.extend(project_notes)
     if notes:
         with st.expander("Data read notes and fallbacks"):
             for note in notes:
                 st.write(note)
 
+    selected_project_id, selected_project = render_project_selector(projects)
+    render_project_overview(selected_project_id, selected_project, summary)
+    cashflows, summary = filter_project_data(cashflows, summary, selected_project)
+
     routing_override, routing_valid = render_routing_controls(model_config)
     trigger_override = render_trigger_controls(model_config)
     if routing_valid:
         try:
-            cashflows, summary = run_model_with_routing_override(routing_override, trigger_override)
+            rerun_cashflows, rerun_summary = run_model_with_routing_override(routing_override, trigger_override)
+            cashflows, summary = filter_project_data(rerun_cashflows, rerun_summary, selected_project)
         except Exception as exc:
             st.warning(f"Could not rerun model with dashboard routing controls. Showing saved outputs instead. Error: {exc}")
     render_custom_scenario_controls(routing_override, trigger_override, routing_valid)
