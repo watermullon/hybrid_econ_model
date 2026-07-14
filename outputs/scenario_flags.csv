@@ -1,28 +1,31 @@
 scenario,flag,severity,explanation
-base_hit_everyone_happy,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+base_hit_everyone_happy,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 12.
 base_hit_everyone_happy,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 base_hit_everyone_happy,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 base_hit_everyone_happy,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
-base_hit_everyone_happy,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
-base_hit_everyone_happy,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
-fast_success_crypto_bull,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+base_hit_everyone_happy,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+base_hit_everyone_happy,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+base_hit_everyone_happy,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+fast_success_crypto_bull,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 13.
 fast_success_crypto_bull,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 fast_success_crypto_bull,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 fast_success_crypto_bull,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
-fast_success_crypto_bull,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
-fast_success_crypto_bull,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
-slow_grind,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+fast_success_crypto_bull,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+fast_success_crypto_bull,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+slow_grind,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 15.
 slow_grind,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 slow_grind,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 slow_grind,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
-slow_grind,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
-slow_grind,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
-hedge_fund_failure_re_survival,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+slow_grind,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+slow_grind,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+hedge_fund_failure_re_survival,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 18.
 hedge_fund_failure_re_survival,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 hedge_fund_failure_re_survival,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 hedge_fund_failure_re_survival,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
-hedge_fund_failure_re_survival,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
-hedge_fund_failure_re_survival,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+hedge_fund_failure_re_survival,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+hedge_fund_failure_re_survival,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+hedge_fund_failure_re_survival,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+hedge_fund_failure_re_survival,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
 real_estate_distress_crypto_success,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
 real_estate_distress_crypto_success,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 real_estate_distress_crypto_success,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
@@ -30,38 +33,102 @@ real_estate_distress_crypto_success,GP_SURVIVABILITY_RISK,medium,GP fee income i
 real_estate_distress_crypto_success,RE_NAV_IMPAIRMENT,medium,Real estate NAV fell by more than the configured impairment threshold.
 real_estate_distress_crypto_success,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 real_estate_distress_crypto_success,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
-exceptional_dynasty_outcome,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 10.
+exceptional_dynasty_outcome,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
 exceptional_dynasty_outcome,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 exceptional_dynasty_outcome,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 exceptional_dynasty_outcome,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 exceptional_dynasty_outcome,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
 exceptional_dynasty_outcome,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 exceptional_dynasty_outcome,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
-liquidity_trap,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+liquidity_trap,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 11.
 liquidity_trap,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 liquidity_trap,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 liquidity_trap,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
-liquidity_trap,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
-liquidity_trap,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+liquidity_trap,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+liquidity_trap,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+liquidity_trap,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
 failure_never_reaches_hurdle,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+failure_never_reaches_hurdle,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 failure_never_reaches_hurdle,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 failure_never_reaches_hurdle,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 failure_never_reaches_hurdle,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 failure_never_reaches_hurdle,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
+jon_base_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 11.
+jon_base_case,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+jon_base_case,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+jon_base_case,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+jon_base_case,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+jon_base_case,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+jon_base_case,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+jon_base_case,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+jon_base_case,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
+jon_downside_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 15.
+jon_downside_case,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+jon_downside_case,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+jon_downside_case,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+jon_downside_case,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+jon_downside_case,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+jon_downside_case,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+jon_downside_case,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+jon_downside_case,LONG_ZERO_DISTRIBUTION_PERIOD,medium,LP experienced a long streak of zero-distribution years.
+jon_property_shock_25,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 12.
+jon_property_shock_25,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+jon_property_shock_25,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+jon_property_shock_25,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+jon_property_shock_25,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+jon_property_shock_25,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+jon_property_shock_25,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+jon_property_shock_25,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+jon_property_shock_25,COVENANT_BREACH_HF_INJECTION,high,LTV covenant breached; HF injected equity to cure the debt shortfall.
+jon_property_shock_25,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
+jon_property_shock_40,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 12.
+jon_property_shock_40,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+jon_property_shock_40,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+jon_property_shock_40,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+jon_property_shock_40,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+jon_property_shock_40,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+jon_property_shock_40,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+jon_property_shock_40,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+jon_property_shock_40,COVENANT_BREACH_HF_INJECTION,high,LTV covenant breached; HF injected equity to cure the debt shortfall.
+jon_property_shock_40,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
+jon_property_shock_40,HF_MAJOR_DRAWDOWN,medium,Hedge fund NAV fell by more than the configured drawdown threshold.
+five_million_fund,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 12.
+five_million_fund,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+five_million_fund,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+five_million_fund,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+five_million_fund,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+five_million_fund,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+five_million_fund,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+five_million_fund,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+jon_upside_case,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 9.
+jon_upside_case,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+jon_upside_case,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
+jon_upside_case,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+jon_upside_case,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+jon_upside_case,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+jon_upside_case,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
+jon_upside_case,LP_REDEEMED_VIA_REFI,medium,LP hurdle completion used refinance proceeds.
+jon_upside_case,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 oak_cliff_base_no_refi,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+oak_cliff_base_no_refi,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 oak_cliff_base_no_refi,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 oak_cliff_base_no_refi,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+oak_cliff_base_no_refi,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
 oak_cliff_base_no_refi,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 oak_cliff_base_no_refi,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
 oak_cliff_base_year4_refi,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+oak_cliff_base_year4_refi,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 oak_cliff_base_year4_refi,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 oak_cliff_base_year4_refi,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+oak_cliff_base_year4_refi,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
 oak_cliff_base_year4_refi,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 oak_cliff_base_year4_refi,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 oak_cliff_base_year4_refi,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
 oak_cliff_year4_refi_to_lp,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+oak_cliff_year4_refi_to_lp,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 oak_cliff_year4_refi_to_lp,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 oak_cliff_year4_refi_to_lp,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+oak_cliff_year4_refi_to_lp,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
 oak_cliff_year4_refi_to_lp,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 oak_cliff_year4_refi_to_lp,LP_STILL_BELOW_1X_CASH_MOIC_AT_END,medium,LP cash distributions remain below 1.0x at model end.
 oak_cliff_year4_refi_to_lp,LP_EXPERIENCE_WEAK_DESPITE_POSITIVE_NAV,medium,Fund NAV is positive but LP cash recovery remains below 1.0x.
@@ -81,22 +148,27 @@ oak_cliff_6m_year5_sale_hf25_backend_liquidation,LP_HURDLE_ACHIEVED,info,LP reac
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation,REFI_DEPENDENT_LP_OUTCOME,medium,LP hurdle achievement depended on refinance proceeds distributed to LPs.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 7.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,LP_HURDLE_NOT_ACHIEVED,high,LP did not reach the target cash MOIC within the model horizon.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6,REFI_DEPENDENT_LP_OUTCOME,medium,LP hurdle achievement depended on refinance proceeds distributed to LPs.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 7.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,SLOW_TIME_HORIZON_DRIFT,medium,LP outcome takes a long time or does not arrive within the horizon.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,HURDLE_TRIGGER_ATTEMPTED_BUT_INSUFFICIENT,high,"Active hurdle completion trigger was eligible, but permitted funding sources were insufficient."
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,REFINANCE_EVENT_OCCURRED,info,One or more configured refinance events generated proceeds.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 7.
-oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,HURDLE_REACHED_BUT_LIQUIDITY_CONSTRAINED,high,Economic hurdle passed before available liquidity could redeem LPs.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_y5,REFI_DEPENDENT_LP_OUTCOME,medium,LP hurdle achievement depended on refinance proceeds distributed to LPs.
+oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,LP_HURDLE_ACHIEVED,info,LP reached 2.00x in year 6.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,GP_SURVIVABILITY_RISK,medium,GP fee income in the early years is below the configured threshold.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,HURDLE_COMPLETION_TRIGGER_EXECUTED,info,Active hurdle completion trigger monetized permitted sources to extinguish LPs.
 oak_cliff_6m_year5_sale_hf25_backend_liquidation_100pct,LP_REDEEMED_VIA_HF_LIQUIDATION,medium,LP hurdle completion used partial hedge fund liquidation.

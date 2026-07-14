@@ -9,6 +9,7 @@ from src.model_types import ModelConfig, Scenario
 def trigger_config(
     *,
     allocation: dict[str, float],
+    max_years: int = 1,
     lp_hurdle_moic: float = 2.0,
     minimum_cash_moic: float = 0.0,
     max_hf_liquidation_pct: float = 1.0,
@@ -22,7 +23,7 @@ def trigger_config(
             "model": {
                 "currency": "USD",
                 "periods_per_year": 1,
-                "max_years": 1,
+                "max_years": max_years,
                 "initial_lp_capital": 10_000_000,
                 "gp_co_investment": 0,
             },
@@ -101,21 +102,24 @@ def trigger_config(
 
 def scenario(
     *,
+    years: int = 1,
     noi_yield: float = 0.0,
-    re_appreciation: float = 0.0,
+    re_appreciation: float | list[float] = 0.0,
     hf_return: float = 0.0,
+    hf_returns: list[float] | None = None,
 ) -> Scenario:
+    annual_returns = hf_returns if hf_returns is not None else [hf_return] * years
     return Scenario.model_validate(
         {
             "description": "Synthetic hurdle trigger scenario.",
-            "years": 1,
+            "years": years,
             "real_estate": {
                 "initial_noi_yield": noi_yield,
                 "annual_noi_growth": 0.0,
                 "annual_nav_appreciation": re_appreciation,
                 "gross_rent_yield": 0.0,
             },
-            "hedge_fund": {"annual_returns": [hf_return]},
+            "hedge_fund": {"annual_returns": annual_returns},
         }
     )
 
@@ -240,7 +244,7 @@ def test_trigger_minimum_cash_moic_cannot_exceed_lp_hurdle() -> None:
         )
 
 
-def test_backend_strategy_executes_only_in_target_year() -> None:
+def test_trigger_can_execute_outside_backend_target_year_using_normal_caps() -> None:
     config = trigger_config(
         allocation={
             "hedge_fund_allocation_pct": 0.0,
@@ -248,6 +252,7 @@ def test_backend_strategy_executes_only_in_target_year() -> None:
             "reserve_allocation_pct": 0.0,
         },
         allow_refi=True,
+        max_refi_pct=1.0,
         backend_liquidity_strategy={
             "enabled": True,
             "target_years": [2],
@@ -264,8 +269,9 @@ def test_backend_strategy_executes_only_in_target_year() -> None:
     row = result.cashflows[0]
 
     assert row.economic_hurdle_passed is True
-    assert row.hurdle_trigger_attempted is False
-    assert row.hurdle_trigger_executed is False
+    assert row.hurdle_trigger_attempted is True
+    assert row.hurdle_trigger_executed is True
+    assert row.trigger_cash_from_refi == pytest.approx(20_000_000)
 
 
 def test_backend_strategy_is_refi_led_before_hf_liquidation() -> None:
@@ -297,3 +303,42 @@ def test_backend_strategy_is_refi_led_before_hf_liquidation() -> None:
     assert row.trigger_cash_from_refi == pytest.approx(10_000_000)
     assert row.trigger_cash_from_hf_liquidation == pytest.approx(5_000_000)
     assert row.refinance_liability == pytest.approx(10_000_000)
+
+
+def test_trigger_retries_after_failed_backend_target_year() -> None:
+    config = trigger_config(
+        allocation={
+            "hedge_fund_allocation_pct": 0.0,
+            "real_estate_allocation_pct": 1.0,
+            "reserve_allocation_pct": 0.0,
+        },
+        max_years=2,
+        max_refi_pct=1.0,
+        allow_refi=True,
+        backend_liquidity_strategy={
+            "enabled": True,
+            "target_years": [1],
+            "refi_first": True,
+            "max_refi_pct_of_re_nav": 0.25,
+            "max_hf_liquidation_pct": 0.0,
+            "use_retained_cash": True,
+            "use_reserve": False,
+            "execute_only_if_lp_hurdle_completed": True,
+        },
+    )
+
+    result = run_scenario(
+        "backend_retry",
+        scenario(years=2, re_appreciation=[1.0, 0.0], hf_returns=[0.0, 0.0]),
+        config,
+    )
+    first_year, second_year = result.cashflows
+
+    assert first_year.hurdle_trigger_attempted is True
+    assert first_year.hurdle_trigger_executed is False
+    assert first_year.lp_hurdle_shortfall_after_trigger == pytest.approx(15_000_000)
+    assert second_year.hurdle_trigger_attempted is True
+    assert second_year.hurdle_trigger_executed is True
+    assert second_year.trigger_cash_from_refi == pytest.approx(20_000_000)
+    assert result.summary["lp_hurdle_achieved"] is True
+    assert result.summary["year_hurdle_achieved"] == 2

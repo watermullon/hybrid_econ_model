@@ -1,0 +1,29 @@
+## Default values pre-populated in the Configure & Run tab of the dashboard.
+## Edit these to change what analysts see when the form first loads.
+## None of these affect the saved scenarios — they are browser-form defaults only.
+
+deal:
+  purchase_price: 10000000
+  assumed_debt: 7000000
+  assumed_liabilities: 0
+  current_noi: 555000
+  stabilized_noi: 930000
+  years_to_stabilization: 4
+  debt_rate_pct: 7.5
+  debt_maturity_year: 5
+  noi_growth_post_stab_pct: 3.0
+  capex_y1: 215000
+  capex_y2: 175000
+  capex_y3: 110000
+  capex_y4: 65000
+  recurring_capex_pct_of_noi: 4.0
+  annual_value_growth_pct: 3.0
+  refi_target_years: "4, 7"
+  refi_ltv_pct: 70.0
+  refi_costs_pct: 2.5
+
+fund:
+  lp_capital: 10000000
+  lp_hurdle_moic: 2.0
+  model_horizon_years: 20
+  hf_annual_returns: "13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13"

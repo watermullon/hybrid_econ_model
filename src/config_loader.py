@@ -56,3 +56,11 @@ def load_inputs(input_dir: Path) -> tuple[ModelConfig, ScenarioSet, DealSet | No
         load_scenarios(input_dir / "scenarios.yaml"),
         load_deals(input_dir / "deals.yaml"),
     )
+
+
+def load_tax_config(input_dir: Path) -> dict[str, Any]:
+    """Load tax config YAML as a raw dict (tax.py handles its own validation)."""
+    path = input_dir / "tax_config.yaml"
+    if not path.exists():
+        return {}
+    return load_yaml(path)

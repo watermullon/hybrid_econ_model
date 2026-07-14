@@ -71,6 +71,14 @@ def calculate_capex(deal: DealConfig, relative_year: int, noi: float) -> float:
 
 def calculate_asset_value(deal: DealConfig, relative_year: int, noi: float) -> float:
     if deal.valuation.method == "growth":
+        by_year = deal.valuation.value_growth_by_year
+        if by_year:
+            # Compound year by year using per-year overrides where specified
+            value = deal.acquisition.asset_value
+            for yr in range(1, relative_year):
+                rate = by_year.get(yr, deal.valuation.annual_value_growth)
+                value *= (1 + rate)
+            return value
         return deal.acquisition.asset_value * ((1 + deal.valuation.annual_value_growth) ** (relative_year - 1))
     if deal.valuation.method == "cap_rate":
         if deal.valuation.exit_cap_rate is None:
@@ -120,6 +128,8 @@ def run_deal_year(
     model_year: int,
     prior_refi_liability: float = 0.0,
     funded: bool = True,
+    prior_debt_paydown: float = 0.0,
+    available_hf_for_cure: float = 0.0,
 ) -> DealYearResult:
     entry_equity_cushion = (
         deal.acquisition.asset_value
@@ -165,13 +175,27 @@ def run_deal_year(
         )
 
     relative_year = relative_deal_year(deal, model_year)
-    debt_balance = deal.capital_stack.assumed_debt
+    debt_balance = deal.capital_stack.assumed_debt - prior_debt_paydown
     assumed_liabilities = deal.capital_stack.assumed_liabilities
     noi = calculate_noi(deal, relative_year)
     gross_rent = calculate_gross_rent(deal, relative_year)
-    debt_service = calculate_debt_service(deal, debt_balance)
     capex = calculate_capex(deal, relative_year, noi)
     asset_value = calculate_asset_value(deal, relative_year, noi)
+
+    covenant_breach = False
+    covenant_ltv: float | None = debt_balance / asset_value if asset_value > 0 else None
+    covenant_paydown_required = 0.0
+    covenant_paydown_applied = 0.0
+    if deal.debt.ltv_covenant is not None and covenant_ltv is not None:
+        if covenant_ltv > deal.debt.ltv_covenant:
+            covenant_breach = True
+            target_debt = asset_value * deal.debt.ltv_covenant
+            covenant_paydown_required = debt_balance - target_debt
+            covenant_paydown_applied = min(covenant_paydown_required, max(0.0, available_hf_for_cure))
+            debt_balance -= covenant_paydown_applied
+            covenant_ltv = debt_balance / asset_value if asset_value > 0 else None
+
+    debt_service = calculate_debt_service(deal, debt_balance)
     free_cashflow = noi - debt_service - capex
     net_equity_value = asset_value - debt_balance - assumed_liabilities
     deal_nav_before_refi_liability = (
@@ -220,4 +244,8 @@ def run_deal_year(
         ),
         new_equity_required=deal.acquisition.new_equity_required,
         refinance_proceeds_use=deal.refinance.proceeds_use,
+        covenant_breach=covenant_breach,
+        covenant_ltv=covenant_ltv,
+        covenant_paydown_required=covenant_paydown_required,
+        covenant_paydown_applied=covenant_paydown_applied,
     )

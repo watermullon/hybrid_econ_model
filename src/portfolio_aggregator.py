@@ -64,6 +64,8 @@ def build_re_portfolio_year(
     deals: DealSet,
     funded_deal_names: set[str],
     cumulative_refi_liability_by_deal: dict[str, float],
+    cumulative_debt_paydown_by_deal: dict[str, float] | None = None,
+    available_hf_for_cure: float = 0.0,
 ) -> tuple[RealEstatePortfolioYearResult, list[DealYearResult]]:
     """Build one stateful bottom-up RE portfolio year.
 
@@ -71,7 +73,9 @@ def build_re_portfolio_year(
     fund-level cash decision. Unfunded deals still emit zero rows for auditability.
     """
     yearly_deals = []
+    remaining_hf = available_hf_for_cure
     for deal_name, deal in deals.deals.items():
+        prior_paydown = (cumulative_debt_paydown_by_deal or {}).get(deal_name, 0.0)
         row = run_deal_year(
             scenario_name=scenario_name,
             deal_name=deal_name,
@@ -79,8 +83,13 @@ def build_re_portfolio_year(
             model_year=year,
             prior_refi_liability=cumulative_refi_liability_by_deal.setdefault(deal_name, 0.0),
             funded=deal_name in funded_deal_names,
+            prior_debt_paydown=prior_paydown,
+            available_hf_for_cure=remaining_hf,
         )
         cumulative_refi_liability_by_deal[deal_name] = row.ending_refi_liability
+        if row.covenant_paydown_applied > 0 and cumulative_debt_paydown_by_deal is not None:
+            cumulative_debt_paydown_by_deal[deal_name] = prior_paydown + row.covenant_paydown_applied
+            remaining_hf = max(0.0, remaining_hf - row.covenant_paydown_applied)
         yearly_deals.append(row)
 
     active_deals = [row for row in yearly_deals if row.active]
@@ -120,6 +129,9 @@ def build_re_portfolio_year(
             deal_nav=deal_nav,
             entry_equity_cushion=entry_equity_cushion,
             value_to_new_equity_multiple=deal_nav / new_equity_required if new_equity_required > 0 else None,
+            covenant_breach=any(row.covenant_breach for row in active_deals),
+            covenant_paydown_required=sum(row.covenant_paydown_required for row in active_deals),
+            covenant_paydown_applied=sum(row.covenant_paydown_applied for row in active_deals),
         ),
         yearly_deals,
     )

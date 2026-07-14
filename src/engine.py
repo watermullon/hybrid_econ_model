@@ -23,8 +23,8 @@ from src.validation import validate_all_scenarios
 from src.waterfall import available_liquidity, pay_lp_distribution, redeem_lp
 
 
-def calculate_initial_allocation(config: ModelConfig, scenario: Scenario) -> tuple[float, float, float]:
-    capital = config.model.initial_lp_capital
+def calculate_initial_allocation(config: ModelConfig, scenario: Scenario, lp_capital_override: float | None = None) -> tuple[float, float, float]:
+    capital = lp_capital_override if lp_capital_override is not None else config.model.initial_lp_capital
     allocation = merge_model(config.allocation, scenario.allocation)
     if allocation.method == "fixed":
         hf_nav = capital * allocation.hedge_fund_allocation_pct
@@ -76,7 +76,7 @@ def run_scenario(
     real_estate_mode = real_estate_settings.mode
     refinance_events_by_year = events_by_year(scenario.refinance_events)
 
-    initial_lp_capital = model_settings.initial_lp_capital
+    initial_lp_capital = scenario.lp_capital_override if scenario.lp_capital_override is not None else model_settings.initial_lp_capital
     lp_hurdle_amount = initial_lp_capital * config.waterfall.lp_hurdle_moic
     portfolio_years: list[RealEstatePortfolioYearResult] = []
     deal_cashflows = []
@@ -101,6 +101,7 @@ def run_scenario(
             if deal.enabled and deal.acquisition_year == 1
         }
         cumulative_refi_liability_by_deal = {deal_name: 0.0 for deal_name in effective_deals.deals}
+        cumulative_debt_paydown_by_deal: dict[str, float] = {deal_name: 0.0 for deal_name in effective_deals.deals}
         initial_portfolio_year, _ = build_re_portfolio_year(
             scenario_name=name,
             deals=effective_deals,
@@ -130,13 +131,15 @@ def run_scenario(
         initial_re_entry_equity_cushion = initial_portfolio_year.entry_equity_cushion
         initial_re_value_to_new_equity_multiple = initial_portfolio_year.value_to_new_equity_multiple
     else:
-        re_nav, hf_nav, reserve_nav = calculate_initial_allocation(config, scenario)
+        re_nav, hf_nav, reserve_nav = calculate_initial_allocation(config, scenario, lp_capital_override=initial_lp_capital)
         initial_re_cash_deployed = re_nav
         initial_re_gross_asset_value = re_nav
         initial_re_net_equity_value = re_nav
     initial_re_nav = re_nav
     initial_hf_nav = hf_nav
 
+    if real_estate_mode != "bottom_up":
+        cumulative_debt_paydown_by_deal: dict[str, float] = {}
     retained_cash = 0.0
     lp_cumulative_distribution = 0.0
     gp_cumulative_fees = 0.0
@@ -175,6 +178,7 @@ def run_scenario(
         acquisition_funding_source = ""
 
         portfolio_year = None
+        covenant_hf_injection = 0.0
         if real_estate_mode == "bottom_up":
             if effective_deals is None:
                 raise ValueError(f"Scenario '{name}' uses bottom_up real estate mode but no deals were provided.")
@@ -226,8 +230,12 @@ def run_scenario(
                 deals=effective_deals,
                 funded_deal_names=funded_deal_names,
                 cumulative_refi_liability_by_deal=cumulative_refi_liability_by_deal,
+                cumulative_debt_paydown_by_deal=cumulative_debt_paydown_by_deal,
+                available_hf_for_cure=hf_nav,
             )
             deal_cashflows.extend(deal_rows)
+            covenant_hf_injection = portfolio_year.covenant_paydown_applied
+            hf_nav -= covenant_hf_injection
 
         acquisition_ending_retained_cash = retained_cash
         acquisition_ending_reserve = reserve_nav
@@ -289,8 +297,9 @@ def run_scenario(
             active_deal_count = portfolio_year.active_deal_count
 
         hf_return = scenario.hedge_fund.annual_returns[year - 1]
-        hf_nav_pre_harvest = hf_opening_nav * (1 + hf_return)
-        hf_gain = max(0.0, hf_nav_pre_harvest - hf_opening_nav)
+        hf_nav_post_injection = hf_nav  # hf_nav reduced by covenant injection (if any)
+        hf_nav_pre_harvest = hf_nav_post_injection * (1 + hf_return)
+        hf_gain = max(0.0, hf_nav_pre_harvest - hf_nav_post_injection)
         hf_harvest = hf_gain * distribution_policy.hf_positive_return_harvest_rate
         hf_harvest_generated = hf_harvest
         hf_nav = hf_nav_pre_harvest - hf_harvest
@@ -464,13 +473,20 @@ def run_scenario(
         )
 
         event_flag = ""
+        if covenant_hf_injection > 0:
+            event_flag = append_event_text(event_flag, "COVENANT_BREACH_HF_INJECTION")
         if acquisition_unfunded_shortfall > 0:
             event_flag = append_event_text(event_flag, "ACQUISITION_FUNDING_SHORTFALL")
         if re_cashflow_shortfall > 0:
             event_flag = append_event_text(event_flag, "RE_CASHFLOW_SHORTFALL")
+        active_backend_strategy = (
+            backend_liquidity_strategy
+            if backend_liquidity_strategy.enabled and year in backend_liquidity_strategy.target_years
+            else None
+        )
         trigger_result = evaluate_hurdle_completion_trigger(
             trigger=hurdle_completion_trigger,
-            backend_strategy=backend_liquidity_strategy,
+            backend_strategy=active_backend_strategy,
             year=year,
             lp_remaining_hurdle=lp_remaining_hurdle,
             lp_cumulative_distribution=lp_cumulative_distribution,
@@ -639,6 +655,7 @@ def run_scenario(
                 hf_nav_liquidated_for_hurdle=trigger_result["from_hf_liquidation"],
                 refi_proceeds_for_hurdle=trigger_result["from_refi"],
                 re_nav_sold_for_hurdle=trigger_result["from_re_sale"],
+                covenant_hf_injection=covenant_hf_injection,
                 event_flag=event_flag,
             )
         )
@@ -859,9 +876,6 @@ def evaluate_hurdle_completion_trigger(
     }
     if not trigger.enabled or lp_remaining_hurdle <= 1e-9:
         return result
-    if backend_strategy and backend_strategy.enabled:
-        if year is None or year not in backend_strategy.target_years:
-            return result
     if trigger.trigger_when_economic_hurdle_passed and not economic_hurdle_passed:
         return result
 
@@ -1130,6 +1144,9 @@ def build_flags(
         add("LP_REDEEMED_VIA_REFI", "medium", "LP hurdle completion used refinance proceeds.")
     if any(row.trigger_cash_from_re_sale > 0 for row in cashflows):
         add("LP_REDEEMED_VIA_PARTIAL_RE_SALE", "medium", "LP hurdle completion used partial real estate sale proceeds.")
+
+    if any(row.covenant_hf_injection > 0 for row in cashflows):
+        add("COVENANT_BREACH_HF_INJECTION", "high", "LTV covenant breached; HF injected equity to cure the debt shortfall.")
 
     if any(row.refinance_proceeds > 0 for row in cashflows):
         add("REFINANCE_EVENT_OCCURRED", "info", "One or more configured refinance events generated proceeds.")

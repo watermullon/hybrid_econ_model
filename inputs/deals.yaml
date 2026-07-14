@@ -2,47 +2,49 @@ deals:
   jon_deal_1:
     enabled: true
     acquisition_year: 1
-    description: "Specific distressed real estate package under review. Placeholder assumptions pending underwriting."
+    description: "Deal 1 — 116-unit Class C value-add multifamily, Southwest US. Purchaser basis $10M. $7M senior debt IO at 70% LTV. NOI $555k T12, occupancy 85%. J-curve: heavy capex early, stabilization Y3-Y5."
 
     acquisition:
-      asset_value: 23000000
-      value_type: "unknown"
-      purchase_price: null
-      new_equity_required: 2000000
+      asset_value: 10000000
+      value_type: "purchase_price"
+      purchase_price: 10000000
+      new_equity_required: 3000000
       closing_costs: 0
       initial_capex_reserve: 0
 
     capital_stack:
-      assumed_debt: 16000000
+      assumed_debt: 7000000
       assumed_liabilities: 0
       liabilities_written_down: 0
       seller_note: 0
       preferred_equity: 0
 
     operations:
-      current_noi: 1200000
-      stabilized_noi: 1800000
-      years_to_stabilization: 3
-      annual_noi_growth_after_stabilization: 0.02
+      current_noi: 555000
+      stabilized_noi: 930000
+      years_to_stabilization: 4
+      annual_noi_growth_after_stabilization: 0.03
       gross_rent: null
-      gross_rent_growth: 0.02
+      gross_rent_growth: 0.03
       vacancy_rate: null
 
     debt:
-      interest_rate: 0.065
+      interest_rate: 0.075
       maturity_year: 5
       amortization_type: "interest_only"
       annual_debt_service: null
       amortization_years: null
       dscr_minimum: 1.25
       recourse: "unknown"
+      ltv_covenant: 0.80
 
     capex:
       annual_capex:
-        1: 300000
-        2: 250000
-        3: 150000
-      recurring_capex_pct_of_noi: 0.03
+        1: 215000
+        2: 175000
+        3: 110000
+        4: 65000
+      recurring_capex_pct_of_noi: 0.04
 
     valuation:
       method: "growth"
@@ -52,9 +54,9 @@ deals:
 
     refinance:
       enabled: true
-      target_years: [5, 7, 10]
-      refi_ltv: 0.65
-      refi_costs_pct: 0.02
+      target_years: [4, 7]
+      refi_ltv: 0.70
+      refi_costs_pct: 0.025
       max_cash_out_pct_of_value: null
       proceeds_use: "fund_liquidity"
 

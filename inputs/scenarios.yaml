@@ -1,73 +1,73 @@
 scenarios:
   base_hit_everyone_happy:
     description: "Moderate real estate and hedge fund performance baseline; tests whether ordinary cash routing can reach the LP cash hurdle."
-    years: 8
+    years: 20
     real_estate:
       initial_noi_yield: 0.075
       annual_noi_growth: 0.025
       annual_nav_appreciation: 0.04
       gross_rent_yield: 0.12
     hedge_fund:
-      annual_returns: [0.30, 0.15, 0.35, 0.12, 0.24, 0.08, 0.40, 0.06]
+      annual_returns: [0.30, 0.15, 0.35, 0.12, 0.24, 0.08, 0.40, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06]
 
   fast_success_crypto_bull:
     description: "Strong hedge fund sleeve over a shorter horizon; tests whether liquid alpha can accelerate LP cash returns."
-    years: 5
+    years: 20
     real_estate:
       initial_noi_yield: 0.07
       annual_noi_growth: 0.02
       annual_nav_appreciation: 0.03
       gross_rent_yield: 0.11
     hedge_fund:
-      annual_returns: [0.60, 0.80, 0.30, 0.25, 0.15]
+      annual_returns: [0.60, 0.80, 0.30, 0.25, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15]
 
   slow_grind:
     description: "Slow real estate growth and uneven hedge fund returns; tests long-duration cash distribution drift."
-    years: 15
+    years: 20
     real_estate:
       initial_noi_yield: 0.065
       annual_noi_growth: 0.015
       annual_nav_appreciation: 0.02
       gross_rent_yield: 0.10
     hedge_fund:
-      annual_returns: [0.19, -0.05, 0.14, 0.03, 0.16, 0.07, 0.25, 0.05, 0.13, -0.02, 0.24, 0.14, 0.33, 0.13, 0.06]
+      annual_returns: [0.19, -0.05, 0.14, 0.03, 0.16, 0.07, 0.25, 0.05, 0.13, -0.02, 0.24, 0.14, 0.33, 0.13, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06]
 
   hedge_fund_failure_re_survival:
     description: "Hedge fund sleeve suffers major impairment, while real estate survives and cash-flows."
-    years: 12
+    years: 20
     real_estate:
       initial_noi_yield: 0.075
       annual_noi_growth: 0.02
       annual_nav_appreciation: 0.025
       gross_rent_yield: 0.11
     hedge_fund:
-      annual_returns: [-0.70, -0.20, 0.05, 0.05, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
+      annual_returns: [-0.70, -0.20, 0.05, 0.05, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
 
   real_estate_distress_crypto_success:
     description: "Real estate underperforms while hedge fund returns are strong; tests whether liquid gains can offset property stress."
-    years: 10
+    years: 20
     real_estate:
       initial_noi_yield: 0.045
       annual_noi_growth: -0.01
       annual_nav_appreciation: -0.03
       gross_rent_yield: 0.08
     hedge_fund:
-      annual_returns: [0.60, 0.40, 0.25, 0.35, 0.10, 0.45, 0.05, 0.12, 0.15, 0.25]
+      annual_returns: [0.60, 0.40, 0.25, 0.35, 0.10, 0.45, 0.05, 0.12, 0.15, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]
 
   exceptional_dynasty_outcome:
     description: "Both sleeves perform strongly; tests the upper-end residual asset outcome after LP cash extinguishment."
-    years: 10
+    years: 20
     real_estate:
       initial_noi_yield: 0.085
       annual_noi_growth: 0.04
       annual_nav_appreciation: 0.08
       gross_rent_yield: 0.13
     hedge_fund:
-      annual_returns: [0.60, 0.50, 0.30, 0.20, 0.15, 0.20, 0.10, 0.28, 0.08, 0.19]
+      annual_returns: [0.60, 0.50, 0.30, 0.20, 0.15, 0.20, 0.10, 0.28, 0.08, 0.19, 0.19, 0.19, 0.19, 0.19, 0.19, 0.19, 0.19, 0.19, 0.19, 0.19]
 
   liquidity_trap:
     description: "High real estate NAV growth with low refinance capacity; tests the gap between paper value and LP cash liquidity."
-    years: 10
+    years: 20
     liquidity:
       max_refinance_or_sale_capacity_pct_of_re_nav: 0.05
     real_estate:
@@ -76,18 +76,239 @@ scenarios:
       annual_nav_appreciation: 0.07
       gross_rent_yield: 0.11
     hedge_fund:
-      annual_returns: [0.10, 0.38, 0.22, 0.05, 0.25, 0.05, 0.34, 0.04, 0.34, 0.04]
+      annual_returns: [0.10, 0.38, 0.22, 0.05, 0.25, 0.05, 0.34, 0.04, 0.34, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.04]
 
   failure_never_reaches_hurdle:
     description: "Both sleeves disappoint; LP never reaches 2.0x."
-    years: 12
+    years: 20
     real_estate:
       initial_noi_yield: 0.045
       annual_noi_growth: 0.00
       annual_nav_appreciation: -0.01
       gross_rent_yield: 0.08
     hedge_fund:
-      annual_returns: [-0.20, 0.10, 0.15, 0.03, 0.24, 0.04, 0.13, 0.18, -0.12, 0.28, 0.12, 0.08]
+      annual_returns: [-0.20, 0.10, 0.15, 0.03, 0.24, 0.04, 0.13, 0.18, -0.12, 0.28, 0.12, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08]
+
+  jon_base_case:
+    description: "Deal 1 base case — 116-unit Class C value-add multifamily, Southwest US. $10M purchase, $3M equity, $7M senior debt at 70% LTV. NOI $555k Y1 ramping to $930k stabilized. 7.5% IO debt. Refi Y4/Y7 at 70% LTV. HF 13% base. Cashflow routing 60/25/15."
+    years: 20
+    real_estate_model:
+      mode: "bottom_up"
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  jon_downside_case:
+    description: "Deal 1 downside — slower lease-up, lower NOI ramp, higher capex, tighter refi. HF -15% Y1 then recovery."
+    years: 20
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      jon_deal_1:
+        operations:
+          current_noi: 435000
+          stabilized_noi: 695000
+          years_to_stabilization: 5
+          annual_noi_growth_after_stabilization: 0.01
+        capex:
+          annual_capex:
+            1: 260000
+            2: 215000
+            3: 155000
+            4: 90000
+            5: 42000
+          recurring_capex_pct_of_noi: 0.05
+        valuation:
+          annual_value_growth: 0.01
+        refinance:
+          refi_ltv: 0.60
+          refi_costs_pct: 0.03
+          target_years: [7, 10, 15]
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [-0.15, -0.10, 0.05, 0.08, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  jon_property_shock_25:
+    description: "Deal 1 property shock — 25% value drop in Year 2 (market correction), 5-year recovery back to pre-shock trajectory. HF 13% base. Cashflow routing 60/25/15."
+    years: 20
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      jon_deal_1:
+        valuation:
+          annual_value_growth: 0.03
+          value_growth_by_year:
+            2: -0.25
+            3: 0.059
+            4: 0.059
+            5: 0.059
+            6: 0.059
+            7: 0.059
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  jon_property_shock_40:
+    description: "Deal 1 severe shock — 40% value drop in Year 2, property deeply underwater (debt > value). 5-year recovery at 10.8%/yr. Tests LP resilience when all scheduled refis fail. HF 13% base. Cashflow routing 60/25/15."
+    years: 20
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      jon_deal_1:
+        valuation:
+          annual_value_growth: 0.03
+          value_growth_by_year:
+            2: -0.40
+            3: 0.108
+            4: 0.108
+            5: 0.108
+            6: 0.108
+            7: 0.108
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  five_million_fund:
+    description: "$5M LP raise — $3M deployed into real estate equity, $2M into hedge fund. No initial reserve. LP hurdle $10M (2x). Same RE and HF assumptions as jon_base_case. Cashflow routing 60/25/15."
+    years: 20
+    lp_capital_override: 5000000
+    allocation:
+      method: "fixed"
+      real_estate_allocation_pct: 0.60
+      hedge_fund_allocation_pct: 0.40
+      reserve_allocation_pct: 0.00
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+
+  jon_upside_case:
+    description: "Deal 1 upside — faster lease-up, stronger NOI, 5% value growth, better HF returns (25%)."
+    years: 20
+    real_estate_model:
+      mode: "bottom_up"
+    deal_overrides:
+      jon_deal_1:
+        operations:
+          current_noi: 655000
+          stabilized_noi: 1085000
+          years_to_stabilization: 3
+          annual_noi_growth_after_stabilization: 0.04
+        capex:
+          annual_capex:
+            1: 155000
+            2: 110000
+            3: 65000
+          recurring_capex_pct_of_noi: 0.025
+        valuation:
+          annual_value_growth: 0.05
+        refinance:
+          refi_ltv: 0.70
+          refi_costs_pct: 0.015
+          target_years: [4, 7, 10]
+    real_estate:
+      initial_noi_yield: 0.055
+      annual_noi_growth: 0.03
+      annual_nav_appreciation: 0.03
+      gross_rent_yield: 0.10
+    hedge_fund:
+      annual_returns: [0.25, 0.25, 0.20, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15]
+    cashflow_routing:
+      enabled: true
+      re_cashflow:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
+      hf_harvest:
+        lp_distribution_pct: 0.60
+        hf_reinvestment_pct: 0.25
+        reserve_pct: 0.15
 
   oak_cliff_base_no_refi:
     description: "Oak Cliff base case using independent underwriting, no deal-level refi."

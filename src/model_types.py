@@ -188,7 +188,6 @@ class HurdleCompletionTriggerSettings(BaseModel):
     allow_refi: bool = True
     allow_partial_re_sale: bool = False
     max_partial_re_sale_pct_of_re_nav: float = Field(default=0.0, ge=0, le=1)
-    execute_only_if_lp_fully_redeemed: bool = True
 
 
 class BackendLiquidityStrategySettings(BaseModel):
@@ -199,7 +198,6 @@ class BackendLiquidityStrategySettings(BaseModel):
     max_hf_liquidation_pct: float = Field(default=0.50, ge=0, le=1)
     use_retained_cash: bool = True
     use_reserve: bool = True
-    execute_only_if_lp_hurdle_completed: bool = True
 
     @field_validator("target_years")
     @classmethod
@@ -291,6 +289,7 @@ class Scenario(BaseModel):
     real_estate_model: dict[str, Any] | None = None
     deal_overrides: dict[str, Any] | None = None
     refinance_events: list[RefinanceEvent] = Field(default_factory=list)
+    lp_capital_override: float | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
     def validate_years(self) -> "Scenario":
@@ -412,6 +411,7 @@ class YearlyResult:
     hf_nav_liquidated_for_hurdle: float = 0.0
     refi_proceeds_for_hurdle: float = 0.0
     re_nav_sold_for_hurdle: float = 0.0
+    covenant_hf_injection: float = 0.0
     event_flag: str = ""
 
 

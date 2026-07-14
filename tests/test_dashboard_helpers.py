@@ -120,12 +120,17 @@ def test_streamlit_app_exposes_routing_controls(monkeypatch) -> None:
     monkeypatch.setenv("STREAMLIT_BROWSER_GATHER_USAGE_STATS", "false")
     # Point to the app.py in the root dashboard directory
     app = AppTest.from_file(str(ROOT / "dashboard" / "app.py"))
+    app.session_state["authenticated"] = True
+    app.run(timeout=30)
+    for checkbox in app.checkbox:
+        if checkbox.label == "Walkthrough mode":
+            checkbox.set_value(False)
+            break
     app.run(timeout=30)
 
     slider_labels = {slider.label for slider in app.slider}
     assert "RE cashflow to LP" in slider_labels
     assert "HF harvest to reserve" in slider_labels
-    assert "Initial HF allocation (%)" in slider_labels
     assert "Minimum LP cash MOIC before trigger" in slider_labels
 
 

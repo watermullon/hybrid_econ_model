@@ -13,6 +13,19 @@ projects:
       - liquidity_trap
       - failure_never_reaches_hurdle
 
+  jon_deal_package:
+    label: "Jon deal package"
+    description: "Remote branch Jon deal scenarios, including downside, upside, property shock, and resized fund cases."
+    deals:
+      - jon_deal_1
+    scenarios:
+      - jon_base_case
+      - jon_downside_case
+      - jon_property_shock_25
+      - jon_property_shock_40
+      - five_million_fund
+      - jon_upside_case
+
   oak_cliff_anchor:
     label: "Oak Cliff anchor fund"
     description: "Oak Cliff as the primary real estate asset with HF sleeve, sale/refi proxies, and backend LP completion tests."

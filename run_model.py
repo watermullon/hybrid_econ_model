@@ -3,10 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from src.chatgpt_export import build_chatgpt_context
-from src.config_loader import ConfigError, load_inputs
+from src.config_loader import ConfigError, load_inputs, load_yaml
 from src.engine import run_all_scenarios
 from src.outputs import write_outputs
 from src.reporting import write_markdown_report
+from src.report_html import build_html_report
+from src.tax import TaxConfig, run_tax_analysis, write_tax_outputs
+from src.charts import build_all_charts
+from src.charts_gp_lp import build_all_splits
 
 
 def main() -> None:
@@ -18,6 +22,56 @@ def main() -> None:
         if config.reporting.output_markdown:
             write_markdown_report(results, frames["summary"], root / "outputs" / "scenario_report.md")
         build_chatgpt_context(root)
+
+        # --- Tax analysis (separate post-processing module) ---
+        tax_config_path = root / "inputs" / "tax_config.yaml"
+        if tax_config_path.exists():
+            tax_config = TaxConfig.from_yaml(tax_config_path)
+            deal_dict = deals.model_dump() if deals else None
+            tax_results = run_tax_analysis(
+                results=results,
+                deals=deal_dict,
+                tax_config=tax_config,
+                initial_lp_capital=config.model.initial_lp_capital,
+            )
+            tax_frames = write_tax_outputs(tax_results, root / "outputs", tax_config)
+            # Merge tax summary into Excel if Excel output is enabled
+            if tax_config.output_excel_sheet and config.reporting.output_excel:
+                import pandas as pd
+                from src.outputs import format_worksheet
+                excel_path = root / "outputs" / "scenario_summary.xlsx"
+                if excel_path.exists():
+                    with pd.ExcelWriter(excel_path, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+                        tax_frames["tax_summary"].to_excel(writer, sheet_name="Tax Summary", index=False)
+                        tax_frames["tax_yearly"].to_excel(writer, sheet_name="Tax Yearly", index=False)
+                        format_worksheet(writer.sheets["Tax Summary"])
+                        format_worksheet(writer.sheets["Tax Yearly"])
+
+        # --- Chart generation ---
+        output_dir = root / "outputs"
+        charts_dir = output_dir / "charts"
+        build_all_charts(
+            csv_path=output_dir / "scenario_cashflows.csv",
+            summary_csv_path=output_dir / "scenario_summary.csv",
+            deal_csv_path=output_dir / "deal_cashflows.csv",
+            tax_summary_csv=output_dir / "tax_summary.csv",
+            tax_yearly_csv=output_dir / "tax_yearly.csv",
+            output_dir=charts_dir,
+        )
+        build_all_splits(
+            csv_path=output_dir / "scenario_cashflows.csv",
+            output_dir=charts_dir,
+        )
+
+        # --- HTML Report (self-contained, all charts embedded as base64) ---
+        build_html_report(
+            summary_csv=root / "outputs" / "scenario_summary.csv",
+            charts_dir=root / "outputs" / "charts",
+            output_path=root / "outputs" / "report.html",
+            config=config.model_dump(),
+            scenarios={name: s.model_dump() for name, s in scenarios.scenarios.items()},
+        )
+
     except PermissionError as exc:
         raise SystemExit(
             "Model failed: could not write one or more output files. "
