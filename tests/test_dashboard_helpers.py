@@ -8,6 +8,7 @@ from dashboard.app import (
     calculate_implied_re_allocation,
     build_traditional_statement,
     comparison_table,
+    default_simulator_scenario,
     flatten_assumptions,
     format_statement_for_display,
     format_money,
@@ -135,6 +136,13 @@ def test_oak_cliff_saved_outputs_are_resized_away_from_10m() -> None:
 
     assert not oak.empty
     assert set(oak["lp_initial_capital"]) == {6_000_000}
+
+
+def test_oak_cliff_simulator_defaults_to_year6_backend_case() -> None:
+    _, summary, _ = read_dashboard_data()
+    oak = summary[summary["scenario"].str.startswith("oak_cliff")]
+
+    assert default_simulator_scenario(oak) == "oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6"
 
 
 def test_streamlit_app_exposes_routing_controls(monkeypatch) -> None:

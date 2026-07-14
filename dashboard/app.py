@@ -14,6 +14,7 @@ import yaml
 
 
 APP_VERSION = "Stage 1 dashboard v0.2"
+DEFAULT_SIMULATOR_SCENARIO = "oak_cliff_6m_year5_sale_hf25_backend_liquidation_y6"
 ROOT = Path(__file__).resolve().parents[1]
 CASHFLOW_PATH = ROOT / "outputs" / "scenario_cashflows.csv"
 SUMMARY_CSV_PATH = ROOT / "outputs" / "scenario_summary.csv"
@@ -427,6 +428,15 @@ def scenario_order(summary: pd.DataFrame) -> list[str]:
     if "lp_cash_moic" not in summary.columns:
         return list(summary["scenario"])
     return list(summary.sort_values("lp_cash_moic", ascending=True)["scenario"])
+
+
+def default_simulator_scenario(summary: pd.DataFrame) -> str | None:
+    """Pick a stable simulator default, preferring the main Oak Cliff presentation case."""
+    scenarios = list(summary["scenario"]) if "scenario" in summary.columns else []
+    if DEFAULT_SIMULATOR_SCENARIO in scenarios:
+        return DEFAULT_SIMULATOR_SCENARIO
+    ordered = scenario_order(summary) if scenarios else []
+    return ordered[0] if ordered else None
 
 
 def run_model_with_routing_override(
@@ -2710,9 +2720,19 @@ def render_simulator_tab(
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        options = [display_name(s) for s in scenario_order(summary)]
+        ordered_scenarios = scenario_order(summary)
+        options = [display_name(s) for s in ordered_scenarios]
         label_to_scenario = {display_name(s): s for s in summary["scenario"]}
-        selected_label = st.selectbox("Select scenario to simulate", options=options, key="sim_selector")
+        default_scenario = default_simulator_scenario(summary)
+        default_label = display_name(default_scenario) if default_scenario else options[0]
+        if st.session_state.get("sim_selector") not in options:
+            st.session_state["sim_selector"] = default_label
+        selected_label = st.selectbox(
+            "Select scenario to simulate",
+            options=options,
+            index=options.index(default_label),
+            key="sim_selector",
+        )
         selected_scenario = label_to_scenario[selected_label]
         st.session_state["simulator_scenario_select"] = selected_scenario
 
@@ -3051,7 +3071,7 @@ def main() -> None:
         if _sim_label and _sim_label in _label_to_scenario:
             _sim_scenario = _label_to_scenario[_sim_label]
         elif not summary.empty:
-            _sim_scenario = scenario_order(summary)[0]
+            _sim_scenario = default_simulator_scenario(summary)
         else:
             _sim_scenario = None
         if _sim_scenario:
